@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c291f276b13b7be438f56700152e6ce9
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/Water.controller
+  uploadId: 666391

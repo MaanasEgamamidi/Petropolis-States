@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d7f25281416d28c45917902301295ec0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/Jump.controller
+  uploadId: 666391

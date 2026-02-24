@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 65f39d3428391844782fb284c2db3e4c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Materials/Dog_01.mat
+  uploadId: 666391

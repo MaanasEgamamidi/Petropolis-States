@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d5130e031c3a2b54f86055e4fbe8acf4
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/Run_Jump.anim
+  uploadId: 666391

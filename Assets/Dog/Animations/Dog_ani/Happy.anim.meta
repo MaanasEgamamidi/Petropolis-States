@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 94f36e0c9e99b6343baab96162f648e4
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/Happy.anim
+  uploadId: 666391

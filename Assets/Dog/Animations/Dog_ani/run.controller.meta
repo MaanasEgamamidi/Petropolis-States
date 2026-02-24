@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 23838ebdd84bea14f8cd0fd148424d61
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/run.controller
+  uploadId: 666391

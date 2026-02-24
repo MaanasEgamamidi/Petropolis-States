@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d55d3fe0d50c29946bfec7c565375ef1
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/Game.anim
+  uploadId: 666391

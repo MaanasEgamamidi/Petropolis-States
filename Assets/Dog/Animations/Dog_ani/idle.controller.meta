@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ffbe808d5bd46884384aa47405c5ca35
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/idle.controller
+  uploadId: 666391

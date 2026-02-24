@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5bbdbb544774d98418776bfbb796eefd
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/Walk.controller
+  uploadId: 666391

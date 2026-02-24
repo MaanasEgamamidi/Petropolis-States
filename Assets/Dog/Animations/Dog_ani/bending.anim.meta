@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b3a1500e8caffe247bbb4a10d954be58
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/bending.anim
+  uploadId: 666391

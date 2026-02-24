@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a2e10954ed8a7d243bcbdec42fbbbce7
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285728
+  packageName: Stylized Dog and Animations
+  packageVersion: 1.0
+  assetPath: Assets/Dog/Animations/Dog_ani/T_pose.anim
+  uploadId: 666391
