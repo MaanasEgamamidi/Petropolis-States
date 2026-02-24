@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: ab8aaf8b402d013459d342574d15b0ef
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 159791
+  packageName: PolyArt Characters
+  packageVersion: 1.0
+  assetPath: Assets/PolyArt/Characters/Female/Script/Male_body_select.cs
+  uploadId: 344411

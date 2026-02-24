@@ -1,0 +1,165 @@
+fileFormatVersion: 2
+guid: 4ee58708f20b44e46be43864894fa9bb
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: bench
+    100002: Cube
+    100004: fence
+    100006: lamp
+    100008: //RootNode
+    100010: Plane_grass
+    100012: Plane_road
+    100014: raw
+    100016: Tree_01
+    100018: Tree_02
+    100020: Tree_03
+    100022: Tree_04
+    100024: Tree_05
+    100026: Tree_06
+    400000: bench
+    400002: Cube
+    400004: fence
+    400006: lamp
+    400008: //RootNode
+    400010: Plane_grass
+    400012: Plane_road
+    400014: raw
+    400016: Tree_01
+    400018: Tree_02
+    400020: Tree_03
+    400022: Tree_04
+    400024: Tree_05
+    400026: Tree_06
+    2100000: Char_color
+    2300000: bench
+    2300002: Cube
+    2300004: fence
+    2300006: lamp
+    2300008: Plane_grass
+    2300010: Plane_road
+    2300012: raw
+    2300014: Tree_01
+    2300016: Tree_02
+    2300018: Tree_03
+    2300020: Tree_04
+    2300022: Tree_05
+    2300024: Tree_06
+    3300000: bench
+    3300002: Cube
+    3300004: fence
+    3300006: lamp
+    3300008: Plane_grass
+    3300010: Plane_road
+    3300012: raw
+    3300014: Tree_01
+    3300016: Tree_02
+    3300018: Tree_03
+    3300020: Tree_04
+    3300022: Tree_05
+    3300024: Tree_06
+    4300000: Plane_road
+    4300002: Plane_grass
+    4300004: Cube
+    4300006: raw
+    4300008: lamp
+    4300010: bench
+    4300012: fence
+    4300014: Tree_01
+    4300016: Tree_06
+    4300018: Tree_03
+    4300020: Tree_04
+    4300022: Tree_02
+    4300024: Tree_05
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Char_color
+    second: {fileID: 2100000, guid: 027b0776a22f40f4897c9a967789d8c4, type: 2}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 0
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 0
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 159791
+  packageName: PolyArt Characters
+  packageVersion: 1.0
+  assetPath: Assets/PolyArt/Characters/Male/FBX/Objects_01.fbx
+  uploadId: 344411
