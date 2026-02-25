@@ -1,8 +1,13 @@
 **Asset List**
-1. Mega City
-2. PolyArt Characters
-3. Stylized Dog
-4. Sprout Lands UI
-5. Unity MCP
-6. Third-Person Starter Assets
-7. Dynamic Day Night Cycle
+- Mega City - Dev
+- Fruit Market - Dev
+- Weather Market - Dev
+- Fantasy RPG GUI - Dev
+- Human Animations - Dev
+
+- PolyArt Characters - DONE
+- Stylized Dog - DONE
+- Sprout Lands UI - DONE
+- Unity MCP - DONE
+- Third-Person Starter Assets - DONE
+- Dynamic Day Night Cycle - DONE
