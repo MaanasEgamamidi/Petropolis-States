@@ -1,0 +1,19 @@
+- player and pet home
+- 2-3 parks where pets can go - park zones
+- vet - heal zones
+- groomer - clean zones
+- grocery/food store - store ui when going to add things
+- bank - bank money ui, includes c# graphs with appropriate libraries and updating ui
+- job locations - player spends time to 
+- 1 in game day is about 5-10 minutes, use day night cycle
+  - need to work at least once a week of in game time
+  - extra work time -> more money
+- dog - there are 5 different materials, which are the skins for the dog. the player can choose the dog skin they want. this ui should show up when the player goes to the pet store. the dog mesh thing is the same, it is just the skin that changes, animations are also same for all. inside inspector, it should be so that i can just drag in the different materials into an array of materials and it will apply the corect one based on the choice on the ui
+- the dog will have following stats: hunger, health, happiness, energy, cleanliness, attatchment, and runaway risk (derived). only the main ones will be always showed and the other can be showed through ui menu or somewhere else. 
+- have a cost of care system where you use the money that you have
+- banks system will be there, possibly things like loans, interest. this may be simplified basedd on time. 
+- you will also get a weekly allowance
+- the prices will be different based on the level of your job, ex: level 2 would have *_% cheaper food,* _% cheaper health care from vet, etc.
+- certain stats can change how much your pet wants to run away
+- person - there are 5 heads, 5 bodies, for both male and female. ui will be similar as dog for this, but this is at start. 
+
