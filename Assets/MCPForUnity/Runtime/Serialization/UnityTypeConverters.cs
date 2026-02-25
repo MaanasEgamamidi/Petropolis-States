@@ -364,7 +364,9 @@ namespace MCPForUnity.Runtime.Serialization
                 if (jo.TryGetValue("instanceID", out JToken idToken) && idToken.Type == JTokenType.Integer)
                 {
                     int instanceId = idToken.ToObject<int>();
+#pragma warning disable CS0618 // InstanceIDToObject obsolete in Unity 6; Runtime cannot use Editor helper
                     UnityEngine.Object obj = UnityEditor.EditorUtility.InstanceIDToObject(instanceId);
+#pragma warning restore CS0618
                     if (obj != null)
                     {
                         // Direct type match

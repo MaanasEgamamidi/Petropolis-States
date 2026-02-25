@@ -369,7 +369,11 @@ namespace MCPForUnity.Editor.Tools
 
                 // Check Screen Capture module availability and warn if not available
                 bool screenCaptureAvailable = ScreenshotUtility.IsScreenCaptureModuleAvailable;
+#if UNITY_2023_1_OR_NEWER
+                bool hasCameraFallback = Camera.main != null || UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).Length > 0;
+#else
                 bool hasCameraFallback = Camera.main != null || UnityEngine.Object.FindObjectsOfType<Camera>().Length > 0;
+#endif
 
 #if UNITY_2022_1_OR_NEWER
                 if (!screenCaptureAvailable && !hasCameraFallback)
@@ -708,7 +712,7 @@ namespace MCPForUnity.Editor.Tools
                 {
                     if (int.TryParse(targetToken.ToString(), out int id))
                     {
-                        var obj = EditorUtility.InstanceIDToObject(id);
+                        var obj = EditorObjectResolver.InstanceIdToObject(id);
                         if (obj is GameObject go) return go;
                         if (obj is Component c) return c.gameObject;
                     }

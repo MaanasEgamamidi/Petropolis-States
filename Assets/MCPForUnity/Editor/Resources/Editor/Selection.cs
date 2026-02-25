@@ -16,12 +16,19 @@ namespace MCPForUnity.Editor.Resources.Editor
         {
             try
             {
+#if UNITY_6000_0_OR_NEWER
+                int activeId = UnityEditor.Selection.activeObject != null ? UnityEditor.Selection.activeObject.GetInstanceID() : 0;
+#else
+#pragma warning disable CS0618 // activeInstanceID obsolete in Unity 6; use activeEntityId
+                int activeId = UnityEditor.Selection.activeInstanceID;
+#pragma warning restore CS0618
+#endif
                 var selectionInfo = new
                 {
                     activeObject = UnityEditor.Selection.activeObject?.name,
                     activeGameObject = UnityEditor.Selection.activeGameObject?.name,
                     activeTransform = UnityEditor.Selection.activeTransform?.name,
-                    activeInstanceID = UnityEditor.Selection.activeInstanceID,
+                    activeInstanceID = activeId,
                     count = UnityEditor.Selection.count,
                     objects = UnityEditor.Selection.objects
                         .Select(obj => new
