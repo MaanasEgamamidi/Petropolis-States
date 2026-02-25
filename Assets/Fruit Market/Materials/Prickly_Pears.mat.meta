@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 64cde30dec062c148a00f009598a6089
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152337
+  packageName: Fruit Market
+  packageVersion: 3.2
+  assetPath: Assets/Fruit Market/Materials/Prickly_Pears.mat
+  uploadId: 840008

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7ec1211d613c5b546bbbc0fdb559531c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152337
+  packageName: Fruit Market
+  packageVersion: 3.2
+  assetPath: Assets/Fruit Market/Materials/Fruit_Net.mat
+  uploadId: 840008

@@ -1,7 +1,7 @@
 **Asset List**
-- Mega City - Dev
+- Mega City - Done
 - Fruit Market - Dev
-- Weather Market - Dev
+- Weather Maker - Dev
 - Fantasy RPG GUI - Dev
 - Human Animations - Dev
 

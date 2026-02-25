@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 760954511c455014bbffdf5645db6a0c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152337
+  packageName: Fruit Market
+  packageVersion: 3.2
+  assetPath: Assets/Fruit Market/Materials/Pineapple.mat
+  uploadId: 840008

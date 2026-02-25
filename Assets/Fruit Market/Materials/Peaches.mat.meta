@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: cc0c16dde95362346b91a111833161a0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152337
+  packageName: Fruit Market
+  packageVersion: 3.2
+  assetPath: Assets/Fruit Market/Materials/Peaches.mat
+  uploadId: 840008

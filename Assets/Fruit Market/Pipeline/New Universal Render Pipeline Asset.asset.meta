@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 27484c065c1c96d498fb2744ea1fc3c5
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152337
+  packageName: Fruit Market
+  packageVersion: 3.2
+  assetPath: Assets/Fruit Market/Pipeline/New Universal Render Pipeline Asset.asset
+  uploadId: 840008

@@ -1,0 +1,29 @@
+
+
+Project Setup For URP
+
+Instructions using 'Unity 2021.3.6f1' 
+
+
+1. Go to 'Window' -> 'Package Manager' -> Packages: 'Unity Registry' -> Search: 'render'
+
+2. Install 'Universal RP'
+
+3. 'Package Manager' -> Packages: 'Unity Registry' -> Search: 'shader'
+
+
+** ONLY IF 'Shader Graph' is NOT already installed: Install 'Shader Graph'**
+
+
+5. Go to 'Project Settings' -> 'Graphics' -> 'URP Global Settings' -> 'New' -> create a new Universal Render Pipeline Asset
+
+6. Right click on 'Assets' folder in the Project Window -> 'Create' -> 'Rendering' -> 'URP Asset (With URP Renderer)' will create a new URP Asset 
+
+7. Go back to your 'Project Settings' -> 'Graphics' -> select the new URP Asset for the Scriptable Render Pipeline Settings 
+
+8. Now Open Folder: 'Fruit Market' -> 'URP Package' -> double click the package file. Import all the settings and click 'OK'
+
+9. Now Open the 'Fruit Lineup' scene file under the Scenes folder and the URP ready assets will appear!
+
+
+And you're done! :) 

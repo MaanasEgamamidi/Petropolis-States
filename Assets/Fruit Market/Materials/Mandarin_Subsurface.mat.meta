@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: db99a6a5c9f26b340afe5eb943a9f81f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152337
+  packageName: Fruit Market
+  packageVersion: 3.2
+  assetPath: Assets/Fruit Market/Materials/Mandarin_Subsurface.mat
+  uploadId: 840008
