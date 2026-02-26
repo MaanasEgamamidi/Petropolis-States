@@ -43,7 +43,7 @@ public class MainMenu : MonoBehaviour
             {
                 cg.alpha = 0f;
                 panel.SetActive(true);
-                StartCoroutine(FadeToBlackAndQuit(cg, 1f));
+                StartCoroutine(FadeToBlackAndQuit(cg, 0.85f));
                 return;
             }
         }
