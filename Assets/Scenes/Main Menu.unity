@@ -1334,13 +1334,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   canvas: {fileID: 1752364429}
   fadeImage: {fileID: 1437579917}
-  fadeSpeed: 2
+  fadeSpeed: 0.25
   presets:
   - name: Settings
     fade: 0
     gameObjects: []
   - name: Quit
-    fade: 1
+    fade: 0
     gameObjects:
     - {fileID: 150391752}
 --- !u!1 &1956883808
