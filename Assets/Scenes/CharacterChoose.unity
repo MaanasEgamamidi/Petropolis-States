@@ -1683,7 +1683,7 @@ MonoBehaviour:
   - {fileID: 1607846162}
   - {fileID: 1202765570}
   confirmButton: {fileID: 1151571519}
-  nameInputField: {fileID: 0}
+  nameInputField: {fileID: 1490168710}
   nextSceneName: World
   selectedGender: 0
   selectedBody: 0
