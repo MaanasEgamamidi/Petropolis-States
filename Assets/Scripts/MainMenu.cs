@@ -119,6 +119,17 @@ public class MainMenu : MonoBehaviour
     [Tooltip("Define presets, then call HideUnchosen() for preset 0 or HideUnchosenWithPreset(0), (1), (2)... from buttons.")]
     [SerializeField] KeepVisiblePreset[] presets;
 
+    void Start()
+    {
+        // Offset Dog_01 (09)'s animation by 1 second so both dogs don't animate in sync
+        var dog09 = GameObject.Find("Dog_01 (09)");
+        if (dog09 != null)
+        {
+            var animator = dog09.GetComponent<Animator>();
+            if (animator != null) animator.Update(1f);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
