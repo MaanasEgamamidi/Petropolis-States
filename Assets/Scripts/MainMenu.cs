@@ -1,4 +1,108 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+/// <summary>Persistent runner for scene transitions. Survives scene loads so fade-out can complete.</summary>
+public class FadeTransitionRunner : MonoBehaviour
+{
+    public static void RunFadeThenLoadScene(GameObject fadePanel, float fadeDuration, string sceneName)
+    {
+        CanvasGroup cg = fadePanel != null ? fadePanel.GetComponent<CanvasGroup>() : null;
+        if (cg == null) return;
+
+        GameObject root = new GameObject("FadeTransitionRoot");
+        DontDestroyOnLoad(root);
+
+        GameObject canvasObj = new GameObject("FadeCanvas");
+        canvasObj.transform.SetParent(root.transform, false);
+        var canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 32767;
+        var scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        canvasObj.AddComponent<GraphicRaycaster>();
+
+        fadePanel.transform.SetParent(canvasObj.transform, false);
+
+        var runner = root.AddComponent<FadeTransitionRunner>();
+        runner.StartCoroutine(runner.FadeOutFadeInAndLoadScene(cg, fadeDuration, sceneName));
+    }
+
+    public static void RunFadeThenQuit(GameObject fadePanel, float fadeDuration)
+    {
+        CanvasGroup cg = fadePanel != null ? fadePanel.GetComponent<CanvasGroup>() : null;
+        if (cg == null) return;
+
+        GameObject root = new GameObject("FadeTransitionRoot");
+        DontDestroyOnLoad(root);
+
+        GameObject canvasObj = new GameObject("FadeCanvas");
+        canvasObj.transform.SetParent(root.transform, false);
+        var canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 32767;
+        var scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        canvasObj.AddComponent<GraphicRaycaster>();
+
+        fadePanel.transform.SetParent(canvasObj.transform, false);
+
+        var runner = root.AddComponent<FadeTransitionRunner>();
+        runner.StartCoroutine(runner.FadeOutFadeInAndQuit(cg, fadeDuration));
+    }
+
+    System.Collections.IEnumerator FadeOutFadeInAndLoadScene(CanvasGroup cg, float duration, string sceneName)
+    {
+        cg.alpha = 0f;
+        cg.gameObject.SetActive(true);
+
+        float half = duration * 0.5f;
+        float elapsed = 0f;
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            cg.alpha = Mathf.Lerp(0f, 1f, elapsed / half);
+            yield return null;
+        }
+        cg.alpha = 1f;
+
+        SceneManager.LoadScene(sceneName);
+        yield return null;
+
+        elapsed = 0f;
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            cg.alpha = Mathf.Lerp(1f, 0f, elapsed / half);
+            yield return null;
+        }
+        cg.alpha = 0f;
+        Destroy(gameObject);
+    }
+
+    System.Collections.IEnumerator FadeOutFadeInAndQuit(CanvasGroup cg, float duration)
+    {
+        cg.alpha = 0f;
+        cg.gameObject.SetActive(true);
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            cg.alpha = Mathf.Lerp(0f, 1f, elapsed / duration);
+            yield return null;
+        }
+        cg.alpha = 1f;
+
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
+}
 
 [System.Serializable]
 public class KeepVisiblePreset
@@ -23,7 +127,15 @@ public class MainMenu : MonoBehaviour
 
     public void Play()
     {
-        
+        GameObject panel = fadeToBlackPanel;
+        if (panel == null && canvas != null)
+            panel = canvas.transform.Find("FadePanel")?.gameObject;
+        if (panel != null && panel.GetComponent<CanvasGroup>() != null)
+        {
+            FadeTransitionRunner.RunFadeThenLoadScene(panel, 0.85f, "CharacterChoose");
+            return;
+        }
+        SceneManager.LoadScene("CharacterChoose");
     }
     
     public void Settings()
@@ -36,36 +148,11 @@ public class MainMenu : MonoBehaviour
         GameObject panel = fadeToBlackPanel;
         if (panel == null && canvas != null)
             panel = canvas.transform.Find("FadePanel")?.gameObject;
-        if (panel != null)
+        if (panel != null && panel.GetComponent<CanvasGroup>() != null)
         {
-            CanvasGroup cg = panel.GetComponent<CanvasGroup>();
-            if (cg != null)
-            {
-                cg.alpha = 0f;
-                panel.SetActive(true);
-                StartCoroutine(FadeToBlackAndQuit(cg, 0.85f));
-                return;
-            }
+            FadeTransitionRunner.RunFadeThenQuit(panel, 0.85f);
+            return;
         }
-        // If no fade panel assigned or no CanvasGroup, quit immediately
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Application.Quit();
-        #endif
-    }
-
-    private System.Collections.IEnumerator FadeToBlackAndQuit(CanvasGroup canvasGroup, float duration)
-    {
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Lerp(0f, 1f, elapsed / duration);
-            yield return null;
-        }
-        canvasGroup.alpha = 1f;
-
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
         #else
