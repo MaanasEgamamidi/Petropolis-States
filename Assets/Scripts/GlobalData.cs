@@ -21,7 +21,7 @@ public class GlobalData : MonoBehaviour
         StoredGender = gender ?? "";
         StoredBody = body;
         StoredHead = head;
-        StoredName = name ?? "";
+        StoredName = string.IsNullOrWhiteSpace(name) ? "Player" : name;
         _printedForCurrentChoice = false;
     }
 
