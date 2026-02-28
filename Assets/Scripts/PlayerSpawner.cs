@@ -10,6 +10,10 @@ public class PlayerSpawner : MonoBehaviour
     public Transform spawnPoint;
     public Vector3 spawnPosition = new Vector3(0, 0, 0);
 
+    [Header("Character Container")]
+    [Tooltip("The child 'Player' transform where character content is instantiated. Create an empty child named 'Player' if not present.")]
+    public Transform playerCharacterRoot;
+
     [Header("Existing Player (optional)")]
     [Tooltip("Disable this when spawning custom character (e.g. default PlayerArmature).")]
     public Transform defaultPlayerToDisable;
@@ -33,14 +37,22 @@ public class PlayerSpawner : MonoBehaviour
         if (defaultPlayerToDisable != null)
             defaultPlayerToDisable.gameObject.SetActive(false);
 
+        Transform container = playerCharacterRoot != null ? playerCharacterRoot : transform;
+
         Vector3 pos = spawnPoint != null ? spawnPoint.position : spawnPosition;
-        GameObject player = Instantiate(prefab, pos, Quaternion.identity);
-        player.name = "Player";
-        player.transform.SetParent(transform);
+        GameObject instance = Instantiate(prefab, pos, Quaternion.identity);
+
+        // Reparent all prefab children to the child Player (playerCharacterRoot) and destroy the prefab root
+        while (instance.transform.childCount > 0)
+        {
+            Transform child = instance.transform.GetChild(0);
+            child.SetParent(container, true);
+        }
+        Destroy(instance);
 
         // Collect and destroy unused body/head meshes so only the chosen pair remains
         System.Collections.Generic.List<GameObject> toDestroy = new System.Collections.Generic.List<GameObject>();
-        foreach (Transform child in player.GetComponentsInChildren<Transform>(true))
+        foreach (Transform child in container.GetComponentsInChildren<Transform>(true))
         {
             string name = child.gameObject.name;
             if ((name.StartsWith("Body_") || name.StartsWith("Body-")) && name.Length > 5
