@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 /// <summary>
 /// Manages the character-selection screen.
@@ -55,6 +56,8 @@ public class ChracterChoose : MonoBehaviour
     // ─── Confirm ─────────────────────────────────────────────────────────────
     [Header("Confirm")]
     public Button confirmButton;
+    [Tooltip("TMP InputField for the player's name.")]
+    public TMP_InputField nameInputField;
     [Tooltip("Name of the scene to load after confirming.")]
     public string nextSceneName = "SampleScene";
 
@@ -142,6 +145,13 @@ public class ChracterChoose : MonoBehaviour
     /// <summary>Saves the selection and loads the gameplay scene.</summary>
     public void OnConfirm()
     {
+        string genderStr = selectedGender == 0 ? "male" : "female";
+        int bodyOneBased = selectedBody + 1; // GlobalData uses 1-5
+        int headOneBased = selectedHead + 1;
+        string playerName = (nameInputField != null) ? nameInputField.text : "";
+
+        GlobalData.SaveChoice(genderStr, bodyOneBased, headOneBased, playerName);
+
         PlayerPrefs.SetInt("SelectedGender", selectedGender);
         PlayerPrefs.SetInt("SelectedBody",   selectedBody);
         PlayerPrefs.SetInt("SelectedHead",   selectedHead);
