@@ -34,9 +34,7 @@ public class PlayerSpawner : MonoBehaviour
             return;
         }
 
-        if (defaultPlayerToDisable != null)
-            defaultPlayerToDisable.gameObject.SetActive(false);
-
+        // Keep movement object (PlayerArmature) always enabled - do not disable defaultPlayerToDisable
         Transform container = playerCharacterRoot != null ? playerCharacterRoot : transform;
 
         Vector3 pos = spawnPoint != null ? spawnPoint.position : spawnPosition;
