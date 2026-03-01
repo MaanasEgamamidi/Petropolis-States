@@ -2,6 +2,41 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>Static audio volumes persisted via PlayerPrefs. Music/SFX sliders control these. Uses dB conversion for natural perceived volume.</summary>
+public static class AudioSettings
+{
+    const string PREFS_MUSIC = "Petropolis_MusicVolume";
+    const string PREFS_SFX = "Petropolis_SFXVolume";
+
+    static float _musicVolumeRaw = -1f;
+    static float _sfxVolumeRaw = -1f;
+
+    /// <summary>Converts slider value (0–1) to linear volume. Uses -24dB at bottom so 1/3 slider ≈ 15% volume.</summary>
+    public static float SliderToLinear(float sliderValue)
+    {
+        if (sliderValue <= 0f) return 0f;
+        return Mathf.Pow(10f, (sliderValue * 24f - 24f) / 20f);
+    }
+
+    public static float MusicVolumeRaw
+    {
+        get { if (_musicVolumeRaw < 0) _musicVolumeRaw = PlayerPrefs.GetFloat(PREFS_MUSIC, 1f); return _musicVolumeRaw; }
+        set { _musicVolumeRaw = Mathf.Clamp01(value); PlayerPrefs.SetFloat(PREFS_MUSIC, _musicVolumeRaw); PlayerPrefs.Save(); }
+    }
+
+    public static float SFXVolumeRaw
+    {
+        get { if (_sfxVolumeRaw < 0) _sfxVolumeRaw = PlayerPrefs.GetFloat(PREFS_SFX, 1f); return _sfxVolumeRaw; }
+        set { _sfxVolumeRaw = Mathf.Clamp01(value); PlayerPrefs.SetFloat(PREFS_SFX, _sfxVolumeRaw); PlayerPrefs.Save(); }
+    }
+
+    /// <summary>Linear volume for music playback (0–1, dB-converted).</summary>
+    public static float MusicVolume => SliderToLinear(MusicVolumeRaw);
+
+    /// <summary>Linear volume for SFX playback (0–1, dB-converted).</summary>
+    public static float SFXVolume => SliderToLinear(SFXVolumeRaw);
+}
+
 /// <summary>Persistent runner for scene transitions. Survives scene loads so fade-out can complete.</summary>
 public class FadeTransitionRunner : MonoBehaviour
 {
@@ -119,6 +154,16 @@ public class MainMenu : MonoBehaviour
     [Tooltip("Define presets, then call HideUnchosen() for preset 0 or HideUnchosenWithPreset(0), (1), (2)... from buttons.")]
     [SerializeField] KeepVisiblePreset[] presets;
 
+    [Header("Audio")]
+    [Tooltip("Music slider. Found by name 'MusicSlider' if not assigned.")]
+    [SerializeField] Slider musicSlider;
+    [Tooltip("SFX slider. Found by name 'SFXSlider' if not assigned.")]
+    [SerializeField] Slider sfxSlider;
+    [Tooltip("Background music clip (e.g. Assets/AUDIO/background_music.mp3).")]
+    [SerializeField] AudioClip backgroundMusicClip;
+
+    static AudioSource _musicSource;
+
     void Start()
     {
         // Offset Dog_01 (09)'s animation by 1 second so both dogs don't animate in sync
@@ -128,6 +173,69 @@ public class MainMenu : MonoBehaviour
             var animator = dog09.GetComponent<Animator>();
             if (animator != null) animator.Update(1f);
         }
+
+        SetupAudio();
+    }
+
+    void SetupAudio()
+    {
+        if (musicSlider == null)
+        {
+            musicSlider = GameObject.Find("MusicSlider")?.GetComponent<Slider>();
+            if (musicSlider == null && canvas != null)
+            {
+                foreach (var t in canvas.GetComponentsInChildren<Transform>(true))
+                    if (t.name == "MusicSlider") { musicSlider = t.GetComponent<Slider>(); break; }
+            }
+        }
+        if (sfxSlider == null)
+        {
+            sfxSlider = GameObject.Find("SFXSlider")?.GetComponent<Slider>();
+            if (sfxSlider == null && canvas != null)
+            {
+                foreach (var t in canvas.GetComponentsInChildren<Transform>(true))
+                    if (t.name == "SFXSlider") { sfxSlider = t.GetComponent<Slider>(); break; }
+            }
+        }
+
+        if (musicSlider != null)
+        {
+            musicSlider.value = AudioSettings.MusicVolumeRaw;
+            musicSlider.onValueChanged.RemoveAllListeners();
+            musicSlider.onValueChanged.AddListener(SetMusicVolume);
+        }
+        if (sfxSlider != null)
+        {
+            sfxSlider.value = AudioSettings.SFXVolumeRaw;
+            sfxSlider.onValueChanged.RemoveAllListeners();
+            sfxSlider.onValueChanged.AddListener(SetSFXVolume);
+        }
+
+        if (backgroundMusicClip != null && _musicSource == null)
+        {
+            var go = new GameObject("MusicPlayer");
+            _musicSource = go.AddComponent<AudioSource>();
+            _musicSource.clip = backgroundMusicClip;
+            _musicSource.loop = true;
+            _musicSource.volume = AudioSettings.MusicVolume;
+            _musicSource.Play();
+            DontDestroyOnLoad(go);
+        }
+        else if (_musicSource != null)
+        {
+            _musicSource.volume = AudioSettings.MusicVolume;
+        }
+    }
+
+    public void SetMusicVolume(float value)
+    {
+        AudioSettings.MusicVolumeRaw = value;
+        if (_musicSource != null) _musicSource.volume = AudioSettings.MusicVolume;
+    }
+
+    public void SetSFXVolume(float value)
+    {
+        AudioSettings.SFXVolumeRaw = value;
     }
 
     // Update is called once per frame
