@@ -66,14 +66,22 @@ namespace StarterAssets
 			sprint = newSprintState;
 		}
 
-		private void OnApplicationFocus(bool hasFocus)
+		private void Start()
 		{
 			SetCursorState(cursorLocked);
+		}
+
+		private void OnApplicationFocus(bool hasFocus)
+		{
+			// When game loses focus, unlock and show cursor so user can interact with other windows.
+			// When game gains focus, lock and hide cursor if cursorLocked is set.
+			SetCursorState(hasFocus && cursorLocked);
 		}
 
 		private void SetCursorState(bool newState)
 		{
 			Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
+			Cursor.visible = !newState;
 		}
 	}
 	
