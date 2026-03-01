@@ -569,8 +569,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 67.24283, y: -5.7}
-  m_SizeDelta: {x: 434.2399, y: 20}
+  m_AnchoredPosition: {x: 58.006622, y: -5.7}
+  m_SizeDelta: {x: 415.7674, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &388373587
 MonoBehaviour:
@@ -619,7 +619,7 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -2046,8 +2046,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -220.06815, y: -21.505213}
-  m_SizeDelta: {x: 114.6508, y: 83.0323}
+  m_AnchoredPosition: {x: -220.06815, y: -28.549707}
+  m_SizeDelta: {x: 114.6508, y: 97.1213}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1091203972
 MonoBehaviour:
@@ -2106,12 +2106,12 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 1
   m_HorizontalAlignment: 4
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
   m_wordSpacing: 0
-  m_lineSpacing: 0
+  m_lineSpacing: 28.68
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
@@ -2750,8 +2750,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 314.27, y: -89.650024}
-  m_SizeDelta: {x: 628.54, y: 179.3}
+  m_AnchoredPosition: {x: 314.27, y: -117.63794}
+  m_SizeDelta: {x: 628.54, y: 235.2759}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1674178105 stripped
 GameObject:
@@ -3059,8 +3059,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 67.24283, y: -44.4}
-  m_SizeDelta: {x: 434.2399, y: 20}
+  m_AnchoredPosition: {x: 58.006622, y: -54.9}
+  m_SizeDelta: {x: 415.7674, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1943275356
 MonoBehaviour:
@@ -3109,7 +3109,7 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
