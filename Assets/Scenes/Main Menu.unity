@@ -2912,6 +2912,9 @@ MonoBehaviour:
     gameObjects:
     - {fileID: 399581173}
     - {fileID: 1999496433}
+  musicSlider: {fileID: 388373587}
+  sfxSlider: {fileID: 1943275356}
+  backgroundMusicClip: {fileID: 8300000, guid: 258ef92b05d319c45b15bf912abcd874, type: 3}
 --- !u!1 &1759845367
 GameObject:
   m_ObjectHideFlags: 0
