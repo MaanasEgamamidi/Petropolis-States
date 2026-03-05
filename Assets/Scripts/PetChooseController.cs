@@ -88,13 +88,28 @@ public class PetChooseController : MonoBehaviour
     {
         GlobalData.SavePetChoice(_currentIndex);
 
-        if (fadePanel != null && fadePanel.GetComponent<CanvasGroup>() != null)
+        if (GlobalData.PetChooseOpenedFromWorld)
         {
-            FadeTransitionRunner.RunFadeThenLoadScene(fadePanel, 0.85f, nextSceneName);
+            GlobalData.PetChooseOpenedFromWorld = false;
+            if (fadePanel != null && fadePanel.GetComponent<CanvasGroup>() != null)
+            {
+                FadeTransitionRunner.RunFadeThenUnloadScene(fadePanel, 0.85f, "PetChoose");
+            }
+            else
+            {
+                UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync("PetChoose");
+            }
         }
         else
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(nextSceneName);
+            if (fadePanel != null && fadePanel.GetComponent<CanvasGroup>() != null)
+            {
+                FadeTransitionRunner.RunFadeThenLoadScene(fadePanel, 0.85f, nextSceneName);
+            }
+            else
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene(nextSceneName);
+            }
         }
     }
 

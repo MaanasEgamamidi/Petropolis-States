@@ -120,14 +120,33 @@ public class SceneTriggerZone : MonoBehaviour
             if (oneTimeUse)
                 _usedZoneIds.Add(ZoneId);
 
-            var panel = fadeToBlackPanel;
-            if (panel != null && panel.GetComponent<CanvasGroup>() != null)
+            // When leaving World to PetChoose, load additively so World stays in memory
+            bool isWorldToPetChoose = targetSceneName == "PetChoose" && gameObject.scene.name == "World";
+            if (isWorldToPetChoose)
             {
-                FadeTransitionRunner.RunFadeThenLoadScene(panel, fadeDuration, targetSceneName);
+                GlobalData.PetChooseOpenedFromWorld = true;
+                AdditiveSceneHelper.FreezeWorldBeforePetChooseLoad(); // Freeze before load to avoid "only one EventSystem" warning
+                var panel = fadeToBlackPanel;
+                if (panel != null && panel.GetComponent<CanvasGroup>() != null)
+                {
+                    FadeTransitionRunner.RunFadeThenLoadSceneAdditive(panel, fadeDuration, targetSceneName);
+                }
+                else
+                {
+                    SceneManager.LoadScene(targetSceneName, LoadSceneMode.Additive);
+                }
             }
             else
             {
-                SceneManager.LoadScene(targetSceneName);
+                var panel = fadeToBlackPanel;
+                if (panel != null && panel.GetComponent<CanvasGroup>() != null)
+                {
+                    FadeTransitionRunner.RunFadeThenLoadScene(panel, fadeDuration, targetSceneName);
+                }
+                else
+                {
+                    SceneManager.LoadScene(targetSceneName);
+                }
             }
         }
     }

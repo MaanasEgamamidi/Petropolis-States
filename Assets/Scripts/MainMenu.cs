@@ -88,6 +88,54 @@ public class FadeTransitionRunner : MonoBehaviour
         runner.StartCoroutine(runner.FadeOutFadeInAndQuit(cg, fadeDuration));
     }
 
+    public static void RunFadeThenLoadSceneAdditive(GameObject fadePanel, float fadeDuration, string sceneName)
+    {
+        CanvasGroup cg = fadePanel != null ? fadePanel.GetComponent<CanvasGroup>() : null;
+        if (cg == null) return;
+
+        GameObject root = new GameObject("FadeTransitionRoot");
+        DontDestroyOnLoad(root);
+
+        GameObject canvasObj = new GameObject("FadeCanvas");
+        canvasObj.transform.SetParent(root.transform, false);
+        var canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 32767;
+        var scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        canvasObj.AddComponent<GraphicRaycaster>();
+
+        fadePanel.transform.SetParent(canvasObj.transform, false);
+
+        var runner = root.AddComponent<FadeTransitionRunner>();
+        runner.StartCoroutine(runner.FadeOutFadeInAndLoadSceneAdditive(cg, fadeDuration, sceneName));
+    }
+
+    public static void RunFadeThenUnloadScene(GameObject fadePanel, float fadeDuration, string sceneName)
+    {
+        CanvasGroup cg = fadePanel != null ? fadePanel.GetComponent<CanvasGroup>() : null;
+        if (cg == null) return;
+
+        GameObject root = new GameObject("FadeTransitionRoot");
+        DontDestroyOnLoad(root);
+
+        GameObject canvasObj = new GameObject("FadeCanvas");
+        canvasObj.transform.SetParent(root.transform, false);
+        var canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 32767;
+        var scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        canvasObj.AddComponent<GraphicRaycaster>();
+
+        fadePanel.transform.SetParent(canvasObj.transform, false);
+
+        var runner = root.AddComponent<FadeTransitionRunner>();
+        runner.StartCoroutine(runner.FadeOutFadeInAndUnloadScene(cg, fadeDuration, sceneName));
+    }
+
     System.Collections.IEnumerator FadeOutFadeInAndLoadScene(CanvasGroup cg, float duration, string sceneName)
     {
         cg.alpha = 0f;
@@ -104,6 +152,71 @@ public class FadeTransitionRunner : MonoBehaviour
         cg.alpha = 1f;
 
         SceneManager.LoadScene(sceneName);
+        yield return null;
+
+        elapsed = 0f;
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            cg.alpha = Mathf.Lerp(1f, 0f, elapsed / half);
+            yield return null;
+        }
+        cg.alpha = 0f;
+        Destroy(gameObject);
+    }
+
+    System.Collections.IEnumerator FadeOutFadeInAndLoadSceneAdditive(CanvasGroup cg, float duration, string sceneName)
+    {
+        cg.alpha = 0f;
+        cg.gameObject.SetActive(true);
+
+        float half = duration * 0.5f;
+        float elapsed = 0f;
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            cg.alpha = Mathf.Lerp(0f, 1f, elapsed / half);
+            yield return null;
+        }
+        cg.alpha = 1f;
+
+        SceneManager.LoadScene(sceneName, LoadSceneMode.Additive);
+        yield return null;
+
+        elapsed = 0f;
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            cg.alpha = Mathf.Lerp(1f, 0f, elapsed / half);
+            yield return null;
+        }
+        cg.alpha = 0f;
+        Destroy(gameObject);
+    }
+
+    System.Collections.IEnumerator FadeOutFadeInAndUnloadScene(CanvasGroup cg, float duration, string sceneName)
+    {
+        cg.alpha = 0f;
+        cg.gameObject.SetActive(true);
+
+        float half = duration * 0.5f;
+        float elapsed = 0f;
+        while (elapsed < half)
+        {
+            elapsed += Time.deltaTime;
+            cg.alpha = Mathf.Lerp(0f, 1f, elapsed / half);
+            yield return null;
+        }
+        cg.alpha = 1f;
+
+        var scene = SceneManager.GetSceneByName(sceneName);
+        if (scene.isLoaded)
+        {
+            var op = SceneManager.UnloadSceneAsync(sceneName);
+            if (op != null)
+                while (!op.isDone)
+                    yield return null;
+        }
         yield return null;
 
         elapsed = 0f;

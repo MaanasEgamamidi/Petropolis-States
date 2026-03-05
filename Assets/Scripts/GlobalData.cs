@@ -15,6 +15,8 @@ public class GlobalData : MonoBehaviour
     public static string StoredName { get; private set; }
     /// <summary>Pet skin index 1-6 (Dog_01 through Dog_06).</summary>
     public static int StoredPetSkin { get; private set; }
+    /// <summary>True when PetChoose was opened additively from World. On Confirm, unload PetChoose instead of loading World.</summary>
+    public static bool PetChooseOpenedFromWorld { get; set; }
     static bool _printedForCurrentChoice;
 
     /// <summary>Call from character selection when the player confirms. Stores choice for the next scene.</summary>
