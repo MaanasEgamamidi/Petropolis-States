@@ -1,0 +1,134 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+
+/// <summary>
+/// Attach to a trigger collider (e.g. TriggerZone1). When the player enters the zone and presses the interact key,
+/// loads the target scene.
+/// </summary>
+[RequireComponent(typeof(Collider))]
+public class SceneTriggerZone : MonoBehaviour
+{
+    [Tooltip("Scene to load when player is in zone and presses the interact key (must be in Build Settings).")]
+    public string targetSceneName = "Map";
+
+    [Header("Fade Transition (optional)")]
+    [Tooltip("Full-screen black image with CanvasGroup for fade-to-black. If set, uses fade before loading; otherwise loads immediately.")]
+    public GameObject fadeToBlackPanel;
+    [Tooltip("Total fade duration (fade out + load + fade in). Only used when fadeToBlackPanel is assigned.")]
+    public float fadeDuration = 0.85f;
+
+    [Tooltip("Key to press while in zone to load the target scene.")]
+#if ENABLE_INPUT_SYSTEM
+    public Key interactKey = Key.E;
+#else
+    public KeyCode interactKey = KeyCode.E;
+#endif
+
+    [Tooltip("Tag used to identify the player. Default is \"Player\".")]
+    public string playerTag = "Player";
+
+    [Tooltip("Enable debug logs in Console to help troubleshoot.")]
+    public bool debugLogs = true;
+
+    [Tooltip("If true, this zone can only be used once per play session. After use, it won't trigger again when returning to this scene.")]
+    public bool oneTimeUse = true;
+
+    static System.Collections.Generic.HashSet<string> _usedZoneIds = new System.Collections.Generic.HashSet<string>();
+
+    bool _playerInZone;
+
+    string ZoneId => $"{gameObject.scene.name}_{gameObject.name}";
+
+    void Awake()
+    {
+        // Static objects often don't detect CharacterController - must be non-static
+        if (gameObject.isStatic)
+        {
+            gameObject.isStatic = false;
+            if (debugLogs) Debug.Log("[SceneTriggerZone] Cleared Static flag - triggers need non-static for detection.");
+        }
+
+        Collider col = GetComponent<Collider>();
+        if (col != null && !col.isTrigger)
+        {
+            Debug.LogWarning($"[SceneTriggerZone] Collider on {gameObject.name} should have Is Trigger enabled for zone detection.");
+        }
+        // Trigger needs Rigidbody (kinematic) to detect CharacterController
+        if (GetComponent<Rigidbody>() == null)
+        {
+            var rb = gameObject.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            if (debugLogs) Debug.Log("[SceneTriggerZone] Added kinematic Rigidbody for trigger detection.");
+        }
+    }
+
+    bool IsPlayer(Collider other)
+    {
+        if (other.CompareTag(playerTag)) return true;
+        // Also check root (collider might be on child like PlayerArmature)
+        var root = other.transform.root;
+        return root != other.transform && root.CompareTag(playerTag);
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (debugLogs) Debug.Log($"[SceneTriggerZone] Something entered: {other.gameObject.name} (tag: {other.tag}, root: {other.transform.root.name})");
+        if (IsPlayer(other))
+        {
+            _playerInZone = true;
+            if (debugLogs) Debug.Log("[SceneTriggerZone] Player is now in zone.");
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (IsPlayer(other))
+        {
+            _playerInZone = false;
+            if (debugLogs) Debug.Log("[SceneTriggerZone] Player left zone.");
+        }
+    }
+
+    void Update()
+    {
+        if (!_playerInZone)
+            return;
+
+#if ENABLE_INPUT_SYSTEM
+        if (Keyboard.current != null && Keyboard.current[interactKey].wasPressedThisFrame)
+#else
+        if (Input.GetKeyDown(interactKey))
+#endif
+        {
+            if (oneTimeUse && _usedZoneIds.Contains(ZoneId))
+            {
+                if (debugLogs) Debug.Log("[SceneTriggerZone] Zone already used this session; ignoring.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(targetSceneName))
+            {
+                Debug.LogWarning("[SceneTriggerZone] Target scene name is empty.");
+                return;
+            }
+            if (debugLogs) Debug.Log($"[SceneTriggerZone] Loading scene: {targetSceneName}");
+
+            if (oneTimeUse)
+                _usedZoneIds.Add(ZoneId);
+
+            var panel = fadeToBlackPanel;
+            if (panel != null && panel.GetComponent<CanvasGroup>() != null)
+            {
+                FadeTransitionRunner.RunFadeThenLoadScene(panel, fadeDuration, targetSceneName);
+            }
+            else
+            {
+                SceneManager.LoadScene(targetSceneName);
+            }
+        }
+    }
+}

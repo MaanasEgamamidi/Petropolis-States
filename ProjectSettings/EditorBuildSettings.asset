@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/SCENES/World.unity
     guid: 076cb2f367ce37d4aa3ee4769e8307af
+  - enabled: 1
+    path: Assets/SCENES/PetChoose.unity
+    guid: fd0b6fb85d3d7cb4ebc8a88ec5888fa9
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
