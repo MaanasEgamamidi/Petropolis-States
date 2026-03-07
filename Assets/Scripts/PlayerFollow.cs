@@ -20,8 +20,18 @@ public class PlayerFollow : MonoBehaviour
     [Tooltip("Offset from the player (e.g. behind and to the side). X=right, Z=behind.")]
     [SerializeField] Vector3 followOffset = new Vector3(0.8f, 0f, -1.2f);
 
-    [Tooltip("How fast the dog moves toward the target. Should roughly match player SprintSpeed (~5.35) to keep up.")]
-    [SerializeField] float followSpeed = 5.5f;
+    [Tooltip("How fast the dog moves toward the target. Should be slightly above player SprintSpeed to keep up.")]
+    [SerializeField] float followSpeed = 8.5f;
+
+    [Header("Ground")]
+    [Tooltip("Layers to raycast for ground (roads, sidewalks, etc.). Should match player's GroundLayers.")]
+    [SerializeField] LayerMask groundLayers = 1;
+
+    [Tooltip("How far down to raycast for ground. Increase if you have tall steps or terrain.")]
+    [SerializeField] float groundRaycastDistance = 5f;
+
+    [Tooltip("Height offset from detected ground (e.g. dog's feet pivot). Adjust if dog sinks or floats.")]
+    [SerializeField] float groundHeightOffset = 0f;
 
     [Header("Skin (from GlobalData.StoredPetSkin)")]
     [Tooltip("Dog materials in order: Dog_01, Dog_02, Dog_03, Dog_04, Dog_05, Dog_06.")]
@@ -35,6 +45,8 @@ public class PlayerFollow : MonoBehaviour
     Animator _animator;
     CharacterController _playerController;
     StarterAssets.StarterAssetsInputs _playerInputs;
+    float _playerMoveSpeed = 3.5f;
+    float _playerSprintSpeed = 8f;
 
     void Awake()
     {
@@ -102,8 +114,8 @@ public class PlayerFollow : MonoBehaviour
             _animator.SetFloat(SpeedParam, targetSpeed);
 
         Vector3 targetPos = followTarget.position + followTarget.TransformDirection(followOffset);
-        targetPos.y = transform.position.y;
-        float moveSpeed = targetSpeed > 0.1f ? followSpeed * Mathf.Clamp01(targetSpeed / 5.335f) : 0f;
+        targetPos.y = GetGroundHeightAt(targetPos) + groundHeightOffset;
+        float moveSpeed = targetSpeed > 0.1f ? followSpeed * Mathf.Clamp01(targetSpeed / _playerSprintSpeed) : 0f;
 
         if (moveSpeed > 0.01f)
         {
@@ -113,10 +125,23 @@ public class PlayerFollow : MonoBehaviour
             if (toTarget.sqrMagnitude > 0.01f)
             {
                 float step = moveSpeed * Time.deltaTime;
-                transform.position = Vector3.MoveTowards(transform.position, targetPos, step);
+                Vector3 newPos = Vector3.MoveTowards(transform.position, targetPos, step);
+                newPos.y = GetGroundHeightAt(newPos) + groundHeightOffset;
+                transform.position = newPos;
                 transform.rotation = Quaternion.Slerp(transform.rotation,
                     Quaternion.LookRotation(toTarget.normalized),
                     Time.deltaTime * 10f);
+            }
+        }
+        else
+        {
+            // Even when idle, keep dog on the surface beneath it (e.g. if player moved away)
+            float groundY = GetGroundHeightAt(transform.position) + groundHeightOffset;
+            if (Mathf.Abs(transform.position.y - groundY) > 0.01f)
+            {
+                Vector3 pos = transform.position;
+                pos.y = Mathf.Lerp(pos.y, groundY, Time.deltaTime * 5f);
+                transform.position = pos;
             }
         }
     }
@@ -134,6 +159,23 @@ public class PlayerFollow : MonoBehaviour
                 followTarget = _playerController.transform;
             else if (followTarget == null)
                 followTarget = root;
+
+            // Read player speeds from ThirdPersonController so pet keeps up
+            var tpc = root.GetComponentInChildren<ThirdPersonController>();
+            if (tpc != null)
+            {
+                _playerMoveSpeed = tpc.MoveSpeed;
+                _playerSprintSpeed = tpc.SprintSpeed;
+            }
+            else
+            {
+                var tpcSA = root.GetComponentInChildren<StarterAssets.ThirdPersonController>();
+                if (tpcSA != null)
+                {
+                    _playerMoveSpeed = tpcSA.MoveSpeed;
+                    _playerSprintSpeed = tpcSA.SprintSpeed;
+                }
+            }
         }
     }
 
@@ -144,14 +186,26 @@ public class PlayerFollow : MonoBehaviour
         float velSpeed = new Vector3(v.x, 0f, v.z).magnitude;
         if (velSpeed > 0.05f) return velSpeed;
         if (_playerInputs != null && _playerInputs.move.sqrMagnitude > 0.01f)
-            return _playerInputs.sprint ? 5.335f : 2f;
+            return _playerInputs.sprint ? _playerSprintSpeed : _playerMoveSpeed;
         return 0f;
     }
 
     float ComputeDogSpeed(float playerSpeed, bool playerSprinting)
     {
         if (playerSpeed < 0.1f) return 0f;
-        return playerSprinting ? 5.335f : Mathf.Min(playerSpeed, 2f);
+        return playerSprinting ? _playerSprintSpeed : Mathf.Min(playerSpeed, _playerMoveSpeed);
+    }
+
+    /// <summary>
+    /// Raycasts downward from the given position to find ground (roads, sidewalks, etc.).
+    /// Returns the hit point Y, or the input Y if no ground is found (fallback).
+    /// </summary>
+    float GetGroundHeightAt(Vector3 position)
+    {
+        Vector3 origin = position + Vector3.up * (groundRaycastDistance * 0.5f);
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, groundRaycastDistance, groundLayers, QueryTriggerInteraction.Ignore))
+            return hit.point.y;
+        return position.y;
     }
 
     void ApplySkinFromGlobalData()
