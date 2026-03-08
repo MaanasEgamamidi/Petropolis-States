@@ -89,14 +89,14 @@ Material:
     - FlareSpeed: 2
     - FoamAmount: 0.38
     - FoamPosition: 1.5
-    - FoamScale: 859
+    - FoamScale: 1896
     - FoamSpeed: 20
     - NormalSpeed: 0.1
     - NormalStrength: 0.199
     - NormalTiling: 40
     - WaveIntensity: 0.2
-    - WaveScale: 100
-    - WaveSpeed: 500
+    - WaveScale: 10000
+    - WaveSpeed: 50000
     - _AddPrecomputedVelocity: 0
     - _AlphaCutoffEnable: 0
     - _AlphaDstBlend: 10
