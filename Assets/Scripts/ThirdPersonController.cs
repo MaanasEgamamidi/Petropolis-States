@@ -230,6 +230,7 @@ public class ThirdPersonController : MonoBehaviour
         _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
         if (_animationBlend < 0.01f) _animationBlend = 0f;
 
+        // Negate to fix inverted movement (W moves forward, A moves left)
         Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
         if (_input.move != Vector2.zero)
