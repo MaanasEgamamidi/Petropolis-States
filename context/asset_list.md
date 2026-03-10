@@ -1,12 +1,16 @@
 **Asset List**
-- PolyArt Characters - DONE
-- Stylized Dog - DONE
-- Sprout Lands UI - DONE
-- Unity MCP - DONE
-- Third-Person Starter Assets - DONE
-- Dynamic Day Night Cycle - DONE
-- Mega City - DONE
-- Fruit Market - DONE
-- Weather Maker - DONE
-- Fantasy RPG GUI - TODO
-- Human Animations - TODO
+- PolyArt Characters
+- Stylized Dog
+- Sprout Lands UI
+- Unity MCP
+- Third-Person Starter Assets
+- Dynamic Day Night Cycle
+- Mega City (JC_LP_MegaCity)
+- Fruit Market
+- SimplePoly City - Low Poly Assets
+- 3D Stylized Petshop Asset (Bublisher)
+- Low-Poly Medieval Market
+- Lean Transition / Lean Common / Lean GUI
+- PolyRonin
+- TextMesh Pro
+- OpenAI API (for Bernie NPC)
