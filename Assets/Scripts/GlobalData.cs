@@ -17,6 +17,10 @@ public class GlobalData : MonoBehaviour
     public static int StoredPetSkin { get; private set; }
     /// <summary>True when PetChoose was opened additively from World. On Confirm, unload PetChoose instead of loading World.</summary>
     public static bool PetChooseOpenedFromWorld { get; set; }
+    /// <summary>Current hour of day (0–23). Updated by DayNightController when the hour changes.</summary>
+    public static int CurrentHour { get; private set; }
+    /// <summary>Full time of day (0–24, e.g. 7.5 = 7:30 AM). Updated when the hour changes.</summary>
+    public static float CurrentTimeOfDay { get; private set; }
     static bool _printedForCurrentChoice;
 
     /// <summary>Call from character selection when the player confirms. Stores choice for the next scene.</summary>
@@ -33,6 +37,13 @@ public class GlobalData : MonoBehaviour
     public static void SavePetChoice(int petSkin)
     {
         StoredPetSkin = Mathf.Clamp(petSkin, 1, 6);
+    }
+
+    /// <summary>Call from DayNightController when the hour changes. Updates CurrentHour and CurrentTimeOfDay.</summary>
+    public static void SetTimeOfDay(float timeOfDay)
+    {
+        CurrentTimeOfDay = timeOfDay;
+        CurrentHour = Mathf.FloorToInt(timeOfDay) % 24;
     }
 
     /// <summary>Prints the stored character choice to the console (once per choice).</summary>
