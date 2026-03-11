@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2049203200194233612}
   - component: {fileID: 6005751700708208187}
   - component: {fileID: 7408699323253289110}
+  - component: {fileID: 7423467283254665616}
   m_Layer: 0
   m_Name: SM_Buildings_House_08_Door_02
   m_TagString: Untagged
@@ -59,6 +60,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
@@ -81,9 +87,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &7408699323253289110
 BoxCollider:
@@ -106,6 +114,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0750003, y: 2.5876527, z: 0.38609895}
   m_Center: {x: 0.53750014, y: 1.2938263, z: -0.07472737}
+--- !u!114 &7423467283254665616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2271326650620800600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
+  interactDistance: 2
+  playerTag: Player
+  pivotSide: 0
+  openAngle: 90
+  rotationSpeed: 120
+  doorTransform: {fileID: 0}
 --- !u!1 &2973175407020768640
 GameObject:
   m_ObjectHideFlags: 0
@@ -171,6 +197,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
@@ -193,9 +224,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &6734760288364586731
 MeshCollider:
@@ -231,6 +264,7 @@ GameObject:
   - component: {fileID: 8532968638811859628}
   - component: {fileID: 9066687417344306514}
   - component: {fileID: 3641019350158041850}
+  - component: {fileID: 6055553900276095416}
   m_Layer: 0
   m_Name: SM_Buildings_House_08_DoorR
   m_TagString: Untagged
@@ -278,6 +312,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
@@ -300,9 +339,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &3641019350158041850
 BoxCollider:
@@ -325,6 +366,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.075, y: 2.5876527, z: 0.38609886}
   m_Center: {x: 0.5375, y: 1.2938263, z: -0.07472736}
+--- !u!114 &6055553900276095416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3299089301932134131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
+  interactDistance: 2
+  playerTag: Player
+  pivotSide: 0
+  openAngle: 90
+  rotationSpeed: 120
+  doorTransform: {fileID: 0}
 --- !u!1 &4179133233488380351
 GameObject:
   m_ObjectHideFlags: 0
@@ -337,6 +396,7 @@ GameObject:
   - component: {fileID: 1358669400092232259}
   - component: {fileID: 1984100874146981164}
   - component: {fileID: 9004877465679981310}
+  - component: {fileID: 4738652141208557721}
   m_Layer: 0
   m_Name: SM_Buildings_House_08_Door
   m_TagString: Untagged
@@ -384,6 +444,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
@@ -406,9 +471,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &9004877465679981310
 BoxCollider:
@@ -431,6 +498,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.075, y: 2.5876527, z: 0.38609886}
   m_Center: {x: -0.5375, y: 1.2938263, z: -0.07472736}
+--- !u!114 &4738652141208557721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4179133233488380351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
+  interactDistance: 2
+  playerTag: Player
+  pivotSide: 1
+  openAngle: 90
+  rotationSpeed: 120
+  doorTransform: {fileID: 0}
 --- !u!1 &6451899455830201387
 GameObject:
   m_ObjectHideFlags: 0
@@ -443,6 +528,7 @@ GameObject:
   - component: {fileID: 4985152380897062895}
   - component: {fileID: 5969334546194244346}
   - component: {fileID: 6864418251332864614}
+  - component: {fileID: 3295281413557631010}
   m_Layer: 0
   m_Name: SM_Buildings_ElevatorDoor_L
   m_TagString: Untagged
@@ -490,6 +576,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
@@ -511,9 +602,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &6864418251332864614
 BoxCollider:
@@ -536,6 +629,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.66999996, y: 2.41, z: 0.10204126}
   m_Center: {x: 0.33499998, y: 1.2049998, z: 0.001665527}
+--- !u!114 &3295281413557631010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6451899455830201387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
+  interactDistance: 2
+  playerTag: Player
+  pivotSide: 0
+  openAngle: 90
+  rotationSpeed: 120
+  doorTransform: {fileID: 0}
 --- !u!1 &6816004581661288992
 GameObject:
   m_ObjectHideFlags: 0
@@ -548,6 +659,7 @@ GameObject:
   - component: {fileID: 7425820107797691616}
   - component: {fileID: 1829608842474058502}
   - component: {fileID: 6332302730947539644}
+  - component: {fileID: 6391301497082195603}
   m_Layer: 0
   m_Name: SM_Buildings_ElevatorDoor_R
   m_TagString: Untagged
@@ -595,6 +707,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
@@ -616,9 +733,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &6332302730947539644
 BoxCollider:
@@ -641,6 +760,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.67, y: 2.41, z: 0.10204126}
   m_Center: {x: -0.33499995, y: 1.205, z: 0.001665527}
+--- !u!114 &6391301497082195603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6816004581661288992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
+  interactDistance: 2
+  playerTag: Player
+  pivotSide: 1
+  openAngle: 90
+  rotationSpeed: 120
+  doorTransform: {fileID: 0}
 --- !u!1 &6861760658484163968
 GameObject:
   m_ObjectHideFlags: 0
@@ -653,6 +790,7 @@ GameObject:
   - component: {fileID: 8359970445842932006}
   - component: {fileID: 4691102843467864405}
   - component: {fileID: 5921608896928060560}
+  - component: {fileID: 7073385252068773798}
   m_Layer: 0
   m_Name: SM_Buildings_House_08_DoorL
   m_TagString: Untagged
@@ -700,6 +838,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 257
   m_RendererPriority: 0
   m_Materials:
@@ -722,9 +865,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &5921608896928060560
 BoxCollider:
@@ -747,3 +892,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.075, y: 2.5876527, z: 0.38609886}
   m_Center: {x: -0.5375, y: 1.2938263, z: -0.07472736}
+--- !u!114 &7073385252068773798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6861760658484163968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
+  interactDistance: 2
+  playerTag: Player
+  pivotSide: 1
+  openAngle: 90
+  rotationSpeed: 120
+  doorTransform: {fileID: 0}

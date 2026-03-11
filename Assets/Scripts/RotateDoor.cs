@@ -52,8 +52,6 @@ public class RotateDoor : MonoBehaviour
             doorTransform = transform;
 
         _closedAngle = doorTransform.localEulerAngles.y;
-        // Normalize closed angle to -180..180 for consistent math
-        if (_closedAngle > 180f) _closedAngle -= 360f;
 
         float sign = pivotSide == PivotSide.Left ? -1f : 1f;
         _openAngle = _closedAngle + sign * openAngle;
@@ -92,9 +90,8 @@ public class RotateDoor : MonoBehaviour
         if (!_isAnimating) return;
 
         float currentY = doorTransform.localEulerAngles.y;
-        if (currentY > 180f) currentY -= 360f;
 
-        float newY = Mathf.MoveTowards(currentY, _targetAngle, rotationSpeed * Time.deltaTime);
+        float newY = Mathf.MoveTowardsAngle(currentY, _targetAngle, rotationSpeed * Time.deltaTime);
         doorTransform.localRotation = Quaternion.Euler(doorTransform.localEulerAngles.x, newY, doorTransform.localEulerAngles.z);
 
         if (Mathf.Abs(Mathf.DeltaAngle(newY, _targetAngle)) < 0.1f)
