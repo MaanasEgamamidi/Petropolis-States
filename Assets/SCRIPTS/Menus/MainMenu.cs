@@ -364,10 +364,10 @@ public class MainMenu : MonoBehaviour
             panel = canvas.transform.Find("FadePanel")?.gameObject;
         if (panel != null && panel.GetComponent<CanvasGroup>() != null)
         {
-            FadeTransitionRunner.RunFadeThenLoadScene(panel, 0.85f, "CharacterChoose");
+            FadeTransitionRunner.RunFadeThenLoadScene(panel, 0.85f, "Instructions");
             return;
         }
-        SceneManager.LoadScene("CharacterChoose");
+        SceneManager.LoadScene("Instructions");
     }
     
     public void Settings()

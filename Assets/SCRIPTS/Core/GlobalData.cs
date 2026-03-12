@@ -21,6 +21,15 @@ public class GlobalData : MonoBehaviour
     public static float CurrentTimeOfDay { get; private set; }
     static bool _printedForCurrentChoice;
 
+    // Pet stats and economy
+    public static float PlayerMoney { get; set; } = 150.0f;
+    public static string PetName { get; set; } = "Max";
+    public static float PetHunger { get; set; } = 100f;
+    public static float PetHealth { get; set; } = 100f;
+    public static float PetHappiness { get; set; } = 100f;
+    public static float PetEnergy { get; set; } = 100f;
+    public static float PetCleanliness { get; set; } = 100f;
+
     /// <summary>Call from character selection when the player confirms. Stores choice for the next scene.</summary>
     public static void SaveChoice(string gender, int body, int head, string name = "")
     {

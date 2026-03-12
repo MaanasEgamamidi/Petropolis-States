@@ -48,6 +48,7 @@
 - [ ] Pet store UI:
   - [ ] Display 5 dog skin choices with preview
   - [ ] Confirm selection button
+  - [ ] Pet naming (text input field)
 - [ ] Create dog prefab (single mesh + rig)
 - [ ] Create 5 material variants (skins)
 - [ ] In Inspector: expose `dogSkins[]` material array
@@ -70,7 +71,7 @@
 - [ ] Define dog level system (XP gained through interactions: walks, feeding, grooming, etc.)
 - [ ] Level-up thresholds and XP amounts per interaction type
 - [ ] Display dog level and XP progress bar in stats UI
-- [ ] Implement level-up event (notification + stat bonuses or unlocks — TBD)
+- [ ] Implement level-up event (notification + stat bonuses, unlocking tricks, or earning badges)
 
 ---
 
@@ -84,6 +85,7 @@
 - [ ] Define stat thresholds at which Runaway Risk increases (e.g. low Happiness + low Attachment)
 - [ ] Implement runaway event when Runaway Risk exceeds threshold
 - [ ] Notification system: alert player when stats are critically low (e.g. "Your dog is hungry!")
+- [ ] **Pet Reactions** — Implement visual reactions (animations, particles, UI emotions) based on stat thresholds and care level
 
 ---
 
@@ -133,6 +135,7 @@
 - [ ] Display balance history as a C# line graph (use appropriate charting library)
 - [ ] Implement deposit / withdraw functionality
 - [ ] Update bank graph dynamically when balance changes
+- [ ] Display running total of pet care expenses
 - [ ] (Optional / time-permitting) Loan system with interest tracking
 
 ---
