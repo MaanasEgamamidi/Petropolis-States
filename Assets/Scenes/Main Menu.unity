@@ -4864,7 +4864,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -5714,6 +5714,7 @@ MonoBehaviour:
   sfxSlider: {fileID: 1943275356}
   minimapModeDropdown: {fileID: 509679781}
   petInfoModeDropdown: {fileID: 2118068852}
+  lengthOfDayInput: {fileID: 0}
   backgroundMusicClip: {fileID: 8300000, guid: 258ef92b05d319c45b15bf912abcd874, type: 3}
 --- !u!1 &1759845367
 GameObject:
