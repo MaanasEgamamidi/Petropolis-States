@@ -16,12 +16,15 @@ public static class MinimapSettings
 
     static int _cached = -1;
 
+    /// <summary>True after the player has chosen a minimap mode (prefs key exists).</summary>
+    public static bool HasModePreferenceBeenSaved => PlayerPrefs.HasKey(PrefsKey);
+
     public static MinimapMode Mode
     {
         get
         {
             if (_cached < 0)
-                _cached = PlayerPrefs.GetInt(PrefsKey, (int)MinimapMode.Circle);
+                _cached = PlayerPrefs.GetInt(PrefsKey, (int)MinimapMode.None);
             _cached = Mathf.Clamp(_cached, 0, 2);
             return (MinimapMode)_cached;
         }

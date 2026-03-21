@@ -314,8 +314,11 @@ public class MainMenu : MonoBehaviour
         if (minimapModeDropdown == null)
             return;
 
-        int saved = (int)MinimapSettings.Mode;
-        minimapModeDropdown.SetValueWithoutNotify(Mathf.Clamp(saved, 0, minimapModeDropdown.options.Count - 1));
+        // No saved choice yet: show "Circle" in the UI but gameplay default stays None (minimap off) until they pick an option.
+        int displayIndex = MinimapSettings.HasModePreferenceBeenSaved
+            ? Mathf.Clamp((int)MinimapSettings.Mode, 0, minimapModeDropdown.options.Count - 1)
+            : 0;
+        minimapModeDropdown.SetValueWithoutNotify(displayIndex);
         minimapModeDropdown.onValueChanged.RemoveListener(OnMinimapModeDropdownChanged);
         minimapModeDropdown.onValueChanged.AddListener(OnMinimapModeDropdownChanged);
     }

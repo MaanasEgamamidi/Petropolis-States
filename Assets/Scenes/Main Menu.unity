@@ -1556,7 +1556,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 78.031, y: -33.4}
+  m_AnchoredPosition: {x: 78.031, y: -18.950294}
   m_SizeDelta: {x: 375.72, y: 54.6798}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &509679781
@@ -4608,7 +4608,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -200.04337, y: -28.549707}
+  m_AnchoredPosition: {x: -200.04337, y: -14.1}
   m_SizeDelta: {x: 154.7003, y: 44.979}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1548892142
@@ -5227,6 +5227,7 @@ MonoBehaviour:
   musicSlider: {fileID: 388373587}
   sfxSlider: {fileID: 1943275356}
   minimapModeDropdown: {fileID: 0}
+  petInfoModeDropdown: {fileID: 0}
   backgroundMusicClip: {fileID: 8300000, guid: 258ef92b05d319c45b15bf912abcd874, type: 3}
 --- !u!1 &1759845367
 GameObject:
@@ -5510,7 +5511,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -200.04337, y: -100.1}
+  m_AnchoredPosition: {x: -200.04337, y: -85.65029}
   m_SizeDelta: {x: 154.7003, y: 44.979}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1813421939
@@ -6275,7 +6276,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 78.031, y: -104.950325}
+  m_AnchoredPosition: {x: 78.031, y: -90.50062}
   m_SizeDelta: {x: 375.72, y: 54.6798}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2118068852

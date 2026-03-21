@@ -22,7 +22,10 @@ public class GlobalData : MonoBehaviour
     static bool _printedForCurrentChoice;
 
     // Pet stats and economy
-    public static float PlayerMoney { get; set; } = 150.0f;
+    /// <summary>Starting cash for a new session; live balance is <c>PlayerMoney</c>.</summary>
+    public const float StartingPlayerMoney = 150f;
+
+    public static float PlayerMoney { get; set; } = StartingPlayerMoney;
     public static string PetName { get; set; } = "Max";
     public static float PetHunger { get; set; } = 100f;
     public static float PetHealth { get; set; } = 100f;
