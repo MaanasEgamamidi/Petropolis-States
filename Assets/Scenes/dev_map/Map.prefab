@@ -5738,6 +5738,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1068016282368957543, guid: 1d0408fb29f3c344d85eb1ffe365812a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2952281952619758382}
+    - targetCorrespondingSourceObject: {fileID: 1068016282368957543, guid: 1d0408fb29f3c344d85eb1ffe365812a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8522094951829013050}
     - targetCorrespondingSourceObject: {fileID: 3437247510080224447, guid: 1d0408fb29f3c344d85eb1ffe365812a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7428831574118296543}
@@ -5748,6 +5751,28 @@ GameObject:
   m_PrefabInstance: {fileID: 1504641704005129580}
   m_PrefabAsset: {fileID: 0}
 --- !u!64 &2952281952619758382
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1888086375645415691}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 424887796139189563, guid: 468fb9e8843e7bf41b2c733d8e4a9370, type: 3}
+--- !u!64 &8522094951829013050
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -26502,107 +26527,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3096363298509408097, guid: a46b33795ded93a49ada972a3449dd1f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 40860452112139808}
-    - targetCorrespondingSourceObject: {fileID: 3096363298509408097, guid: a46b33795ded93a49ada972a3449dd1f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 733331282698636328}
-    - targetCorrespondingSourceObject: {fileID: 7696733114173805612, guid: a46b33795ded93a49ada972a3449dd1f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8959724101646431070}
-    - targetCorrespondingSourceObject: {fileID: 7696733114173805612, guid: a46b33795ded93a49ada972a3449dd1f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 763170045197368480}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a46b33795ded93a49ada972a3449dd1f, type: 3}
 --- !u!4 &489316954828899252 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8640191772667321042, guid: a46b33795ded93a49ada972a3449dd1f, type: 3}
   m_PrefabInstance: {fileID: 8152156951547058534}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &2013687871334075722 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7696733114173805612, guid: a46b33795ded93a49ada972a3449dd1f, type: 3}
-  m_PrefabInstance: {fileID: 8152156951547058534}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8959724101646431070
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2013687871334075722}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
-  interactDistance: 2
-  playerTag: Player
-  pivotSide: 0
-  openAngle: 90
-  rotationSpeed: 120
-  doorTransform: {fileID: 0}
---- !u!114 &763170045197368480
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2013687871334075722}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
-  interactDistance: 2
-  playerTag: Player
-  pivotSide: 0
-  openAngle: 90
-  rotationSpeed: 120
-  doorTransform: {fileID: 0}
---- !u!1 &6618665884238241287 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3096363298509408097, guid: a46b33795ded93a49ada972a3449dd1f, type: 3}
-  m_PrefabInstance: {fileID: 8152156951547058534}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &40860452112139808
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6618665884238241287}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
-  interactDistance: 2
-  playerTag: Player
-  pivotSide: 0
-  openAngle: 90
-  rotationSpeed: 120
-  doorTransform: {fileID: 0}
---- !u!114 &733331282698636328
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6618665884238241287}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a525cee88c4cd46478936755e51c0a9e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RotateDoor
-  interactDistance: 2
-  playerTag: Player
-  pivotSide: 0
-  openAngle: 90
-  rotationSpeed: 120
-  doorTransform: {fileID: 0}
 --- !u!1001 &8187182546713735994
 PrefabInstance:
   m_ObjectHideFlags: 0

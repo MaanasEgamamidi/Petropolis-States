@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 /// Supports left or right pivot; opens outward 90 degrees. Press E again to close.
 /// </summary>
 [RequireComponent(typeof(Collider))]
+[DisallowMultipleComponent]
 public class RotateDoor : MonoBehaviour
 {
     public enum PivotSide
@@ -45,9 +46,12 @@ public class RotateDoor : MonoBehaviour
     bool _isOpen;
     bool _isAnimating;
     Transform _player;
+    Collider _collider;
 
     void Start()
     {
+        _collider = GetComponent<Collider>();
+
         if (doorTransform == null)
             doorTransform = transform;
 
@@ -66,7 +70,7 @@ public class RotateDoor : MonoBehaviour
     {
         if (_player == null) return;
 
-        float dist = Vector3.Distance(transform.position, _player.position);
+        float dist = InteractionDistanceToPlayer();
         if (dist > interactDistance) return;
 
 #if ENABLE_INPUT_SYSTEM
@@ -96,6 +100,13 @@ public class RotateDoor : MonoBehaviour
 
         if (Mathf.Abs(Mathf.DeltaAngle(newY, _targetAngle)) < 0.1f)
             _isAnimating = false;
+    }
+
+    float InteractionDistanceToPlayer()
+    {
+        if (_collider == null)
+            return Vector3.Distance(transform.position, _player.position);
+        return Vector3.Distance(_collider.ClosestPoint(_player.position), _player.position);
     }
 
     void OnDrawGizmosSelected()
