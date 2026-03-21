@@ -43,18 +43,55 @@ public class MinimapDisplayController : MonoBehaviour
     [Tooltip("Higher = softer shape edge fade. Typical 1.5–3.")]
     [SerializeField] float edgeAa = 2f;
 
+    [Header("Fade")]
+    [Tooltip("Seconds to fade minimap in/out when toggled or on load. Default 0.1s.")]
+    [SerializeField] [Min(0.01f)] float fadeDuration = 0.1f;
+
     Material _materialInstance;
+    CanvasGroup _canvasGroup;
+    float _presentationAlpha;
 
     void Awake()
     {
+        if (Application.isPlaying)
+            return;
         EnsureMaterialInstance();
         ApplyMaterialSettings();
     }
 
+    void Start()
+    {
+        if (!Application.isPlaying) return;
+        ApplyFromPlayerSettings();
+    }
+
+    void Update()
+    {
+        if (!Application.isPlaying || MinimapSettings.Mode == MinimapMode.None)
+            return;
+
+        if (minimapRawImage == null)
+            minimapRawImage = GetComponentInChildren<RawImage>(true);
+
+        if (minimapRawImage == null)
+            return;
+
+        CanvasGroup cg = EnsureCanvasGroup();
+        float target = MinimapSettings.IsVisible ? 1f : 0f;
+        float step = Time.deltaTime / Mathf.Max(0.01f, fadeDuration);
+        _presentationAlpha = Mathf.MoveTowards(_presentationAlpha, target, step);
+        cg.alpha = _presentationAlpha;
+        cg.blocksRaycasts = _presentationAlpha > 0.01f;
+        MinimapSettings.PresentationAlpha = _presentationAlpha;
+    }
+
     void OnEnable()
     {
-        EnsureMaterialInstance();
-        ApplyMaterialSettings();
+        if (!Application.isPlaying)
+        {
+            EnsureMaterialInstance();
+            ApplyMaterialSettings();
+        }
     }
 
     void OnValidate()
@@ -62,8 +99,54 @@ public class MinimapDisplayController : MonoBehaviour
         if (minimapRawImage == null)
             minimapRawImage = GetComponentInChildren<RawImage>(true);
 
+        if (!Application.isPlaying)
+        {
+            EnsureMaterialInstance();
+            ApplyMaterialSettings();
+        }
+    }
+
+    void ApplyFromPlayerSettings()
+    {
+        MinimapSettings.RuntimeSuppressed = false;
+
+        switch (MinimapSettings.Mode)
+        {
+            case MinimapMode.None:
+                MinimapSettings.PresentationAlpha = 0f;
+                gameObject.SetActive(false);
+                return;
+            case MinimapMode.Circle:
+                displayShape = MinimapDisplayShape.Circle;
+                break;
+            case MinimapMode.Square:
+                displayShape = MinimapDisplayShape.Square;
+                break;
+        }
+
+        gameObject.SetActive(true);
+        if (minimapRawImage == null)
+            minimapRawImage = GetComponentInChildren<RawImage>(true);
+        if (minimapRawImage != null)
+            minimapRawImage.gameObject.SetActive(true);
+
+        _presentationAlpha = 0f;
+        MinimapSettings.PresentationAlpha = 0f;
+        CanvasGroup cg = EnsureCanvasGroup();
+        cg.alpha = 0f;
+        cg.blocksRaycasts = false;
+
         EnsureMaterialInstance();
         ApplyMaterialSettings();
+    }
+
+    CanvasGroup EnsureCanvasGroup()
+    {
+        if (_canvasGroup == null)
+            _canvasGroup = GetComponent<CanvasGroup>();
+        if (_canvasGroup == null)
+            _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        return _canvasGroup;
     }
 
     void OnDestroy()

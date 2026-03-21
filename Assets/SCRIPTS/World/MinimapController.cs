@@ -1,4 +1,7 @@
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 /// <summary>
 /// Keeps an orthographic minimap camera above the player, looking straight down (north-up).
@@ -23,8 +26,41 @@ public class MinimapController : MonoBehaviour
         _cam.orthographicSize = orthographicSize;
     }
 
+    void Update()
+    {
+        if (!Application.isPlaying || MinimapSettings.Mode == MinimapMode.None)
+            return;
+
+#if ENABLE_INPUT_SYSTEM
+        if (Keyboard.current != null && Keyboard.current[Key.M].wasPressedThisFrame)
+#else
+        if (Input.GetKeyDown(KeyCode.M))
+#endif
+            MinimapSettings.RuntimeSuppressed = !MinimapSettings.RuntimeSuppressed;
+    }
+
     void LateUpdate()
     {
+        if (Application.isPlaying)
+        {
+            if (MinimapSettings.Mode == MinimapMode.None)
+            {
+                _cam.enabled = false;
+                return;
+            }
+
+            // Keep rendering while fading out after M (PresentationAlpha still > 0).
+            bool needCamera = !MinimapSettings.RuntimeSuppressed
+                || MinimapSettings.PresentationAlpha > 0.001f;
+            if (!needCamera)
+            {
+                _cam.enabled = false;
+                return;
+            }
+        }
+
+        _cam.enabled = true;
+
         if (followTarget == null)
         {
             var go = GameObject.FindGameObjectWithTag(playerTag);

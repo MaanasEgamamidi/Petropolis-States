@@ -480,13 +480,14 @@ GameObject:
   - component: {fileID: 522841722}
   - component: {fileID: 522841724}
   - component: {fileID: 522841723}
+  - component: {fileID: 522841725}
   m_Layer: 5
   m_Name: PetStats
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &522841722
 RectTransform:
   m_ObjectHideFlags: 0
@@ -503,8 +504,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 300, y: -300}
-  m_SizeDelta: {x: 473.0883, y: 473.0883}
+  m_AnchoredPosition: {x: 300, y: -408.3097}
+  m_SizeDelta: {x: 473.0883, y: 689.7076}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &522841723
 MonoBehaviour:
@@ -544,6 +545,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 522841721}
   m_CullTransparentMesh: 1
+--- !u!114 &522841725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522841721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d3c2b1a0f9e8d7c6b5a49382716554, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetStatsPanelController
 --- !u!1 &558561476
 GameObject:
   m_ObjectHideFlags: 0
@@ -1473,6 +1486,45 @@ RectTransform:
   m_AnchoredPosition: {x: -1102.7974, y: -644.5057}
   m_SizeDelta: {x: 354.4057, y: 150.9886}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!21 &993336340
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MinimapRawImageUI(Clone)
+  m_Shader: {fileID: 4800000, guid: 7b8c9d0e1f2a4b6c8d0e2f4a6b8c0d2e, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Transparent
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BorderWidthUV: 0.03
+    - _EdgeAA: 2
+    - _UseBorder: 0
+    - _UseCircularClip: 1
+    m_Colors:
+    - _BorderColor: {r: 0.08, g: 0.08, b: 0.12, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &994074975
 GameObject:
   m_ObjectHideFlags: 0
@@ -2126,45 +2178,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!21 &1613819012
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: MinimapRawImageUI(Clone)
-  m_Shader: {fileID: 4800000, guid: 7b8c9d0e1f2a4b6c8d0e2f4a6b8c0d2e, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Transparent
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _BorderWidthUV: 0.03
-    - _EdgeAA: 2
-    - _UseBorder: 0
-    - _UseCircularClip: 1
-    m_Colors:
-    - _BorderColor: {r: 0.08, g: 0.08, b: 0.12, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!95 &1823606647
 Animator:
   serializedVersion: 7
@@ -2925,7 +2938,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
-  m_Material: {fileID: 1613819012}
+  m_Material: {fileID: 993336340}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -12538,6 +12551,9 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 860f0c38232dab7498ec732177ddf555, type: 2}
   - {fileID: 2100000, guid: 3357fe387a73ced47913a2ea647033b5, type: 2}
   dogMeshRenderer: {fileID: 1108722889955143909}
+  snapIfBeyondHorizontal: 12
+  idleCatchUpSpeed: 3.5
+  catchUpDistance: 2.5
 --- !u!1 &5749046379122425499
 GameObject:
   m_ObjectHideFlags: 0

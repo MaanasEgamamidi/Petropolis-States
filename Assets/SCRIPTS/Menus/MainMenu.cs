@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>Static audio volumes persisted via PlayerPrefs. Music/SFX sliders control these. Uses dB conversion for natural perceived volume.</summary>
 public static class AudioSettings
@@ -272,6 +273,10 @@ public class MainMenu : MonoBehaviour
     [SerializeField] Slider musicSlider;
     [Tooltip("SFX slider. Found by name 'SFXSlider' if not assigned.")]
     [SerializeField] Slider sfxSlider;
+    [Tooltip("Gameplay minimap mode (Circle / Square / None). Found under Canvas if not assigned.")]
+    [SerializeField] TMP_Dropdown minimapModeDropdown;
+    [Tooltip("Pet info panel (Always on / Toggle Q / Hold Q). Found under Canvas if not assigned.")]
+    [SerializeField] TMP_Dropdown petInfoModeDropdown;
     [Tooltip("Background music clip (e.g. Assets/AUDIO/background_music.mp3).")]
     [SerializeField] AudioClip backgroundMusicClip;
 
@@ -288,6 +293,64 @@ public class MainMenu : MonoBehaviour
         }
 
         SetupAudio();
+        SetupMinimapDropdown();
+        SetupPetInfoDropdown();
+    }
+
+    void SetupMinimapDropdown()
+    {
+        if (minimapModeDropdown == null && canvas != null)
+        {
+            foreach (var dd in canvas.GetComponentsInChildren<TMP_Dropdown>(true))
+            {
+                if (dd.gameObject.name == "MinimapDropdown" || dd.gameObject.name == "Dropdown")
+                {
+                    minimapModeDropdown = dd;
+                    break;
+                }
+            }
+        }
+
+        if (minimapModeDropdown == null)
+            return;
+
+        int saved = (int)MinimapSettings.Mode;
+        minimapModeDropdown.SetValueWithoutNotify(Mathf.Clamp(saved, 0, minimapModeDropdown.options.Count - 1));
+        minimapModeDropdown.onValueChanged.RemoveListener(OnMinimapModeDropdownChanged);
+        minimapModeDropdown.onValueChanged.AddListener(OnMinimapModeDropdownChanged);
+    }
+
+    void OnMinimapModeDropdownChanged(int index)
+    {
+        MinimapSettings.Mode = (MinimapMode)Mathf.Clamp(index, 0, 2);
+    }
+
+    void SetupPetInfoDropdown()
+    {
+        if (petInfoModeDropdown == null && canvas != null)
+        {
+            foreach (var dd in canvas.GetComponentsInChildren<TMP_Dropdown>(true))
+            {
+                if (dd.gameObject.name == "PetInfoDropdown")
+                {
+                    petInfoModeDropdown = dd;
+                    break;
+                }
+            }
+        }
+
+        if (petInfoModeDropdown == null)
+            return;
+
+        int saved = (int)PetInfoSettings.Mode;
+        petInfoModeDropdown.SetValueWithoutNotify(Mathf.Clamp(saved, 0, petInfoModeDropdown.options.Count - 1));
+        petInfoModeDropdown.onValueChanged.RemoveListener(OnPetInfoModeDropdownChanged);
+        petInfoModeDropdown.onValueChanged.AddListener(OnPetInfoModeDropdownChanged);
+    }
+
+    void OnPetInfoModeDropdownChanged(int index)
+    {
+        PetInfoSettings.Mode = (PetInfoDisplayMode)Mathf.Clamp(index, 0, 2);
     }
 
     void SetupAudio()
