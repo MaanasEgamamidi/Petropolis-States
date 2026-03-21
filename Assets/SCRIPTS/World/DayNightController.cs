@@ -24,8 +24,8 @@ public class DayNightController : MonoBehaviour
     [Header("Day/Night Balance")]
     [Tooltip("Time of day when the game starts (24h format, e.g. 7 = 7 AM).")]
     [SerializeField] float startTimeOfDay = 7f;
-    [Tooltip("Real-time duration of one full 24h cycle in minutes. Day is 80% of this, night 20%.")]
-    [SerializeField] float fullCycleMinutes = 15f;
+    [Tooltip("Real-time duration of one full 24h cycle in minutes. Day is 80% of this, night 20%. Overridden by main-menu save when set.")]
+    [SerializeField] float fullCycleMinutes = DayNightSettings.DefaultMinutes;
     float baseDaySpeed;
     int _lastHourSent = -1;
 
@@ -49,7 +49,9 @@ public class DayNightController : MonoBehaviour
         if (dayNightCycle != null)
             dayNightCycle.startTimeOfDay = startTimeOfDay;
 
-        // Full cycle = 15 min. With 80/20 split: day 12h takes 12 min, night 12h takes 3 min.
+        fullCycleMinutes = DayNightSettings.GetFullCycleMinutes(fullCycleMinutes);
+
+        // Full cycle (default 15 min). With 80/20 split: day 12h uses 80% of real time, night 12h uses 20% (4× faster in-game speed).
         if (dayNightCycle != null && fullCycleMinutes > 0f)
         {
             float dayRealSeconds = fullCycleMinutes * 60f * 0.8f;  // 80% of cycle

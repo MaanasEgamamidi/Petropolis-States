@@ -1,3 +1,4 @@
+using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -277,6 +278,8 @@ public class MainMenu : MonoBehaviour
     [SerializeField] TMP_Dropdown minimapModeDropdown;
     [Tooltip("Pet info panel (Always on / Toggle Q / Hold Q). Found under Canvas if not assigned.")]
     [SerializeField] TMP_Dropdown petInfoModeDropdown;
+    [Tooltip("Length of one full in-game day in real minutes (digits only). Found by name LengthOfDayInput if not assigned.")]
+    [SerializeField] TMP_InputField lengthOfDayInput;
     [Tooltip("Background music clip (e.g. Assets/AUDIO/background_music.mp3).")]
     [SerializeField] AudioClip backgroundMusicClip;
 
@@ -295,6 +298,7 @@ public class MainMenu : MonoBehaviour
         SetupAudio();
         SetupMinimapDropdown();
         SetupPetInfoDropdown();
+        SetupLengthOfDayInput();
     }
 
     void SetupMinimapDropdown()
@@ -354,6 +358,83 @@ public class MainMenu : MonoBehaviour
     void OnPetInfoModeDropdownChanged(int index)
     {
         PetInfoSettings.Mode = (PetInfoDisplayMode)Mathf.Clamp(index, 0, 2);
+    }
+
+    void SetupLengthOfDayInput()
+    {
+        if (lengthOfDayInput == null && canvas != null)
+        {
+            foreach (var field in canvas.GetComponentsInChildren<TMP_InputField>(true))
+            {
+                if (field.gameObject.name == "LengthOfDayInput")
+                {
+                    lengthOfDayInput = field;
+                    break;
+                }
+            }
+        }
+
+        if (lengthOfDayInput == null)
+            return;
+
+        lengthOfDayInput.contentType = TMP_InputField.ContentType.IntegerNumber;
+        lengthOfDayInput.characterValidation = TMP_InputField.CharacterValidation.Digit;
+        lengthOfDayInput.characterLimit = 3;
+        lengthOfDayInput.onValidateInput = OnLengthOfDayValidateChar;
+        lengthOfDayInput.onValueChanged.RemoveListener(OnLengthOfDayValueChanged);
+        lengthOfDayInput.onValueChanged.AddListener(OnLengthOfDayValueChanged);
+        lengthOfDayInput.onEndEdit.RemoveListener(OnLengthOfDayEndEdit);
+        lengthOfDayInput.onEndEdit.AddListener(OnLengthOfDayEndEdit);
+
+        lengthOfDayInput.SetTextWithoutNotify(DayNightSettings.GetMenuDisplayMinutes());
+    }
+
+    static char OnLengthOfDayValidateChar(string text, int charIndex, char addedChar)
+    {
+        return char.IsDigit(addedChar) ? addedChar : '\0';
+    }
+
+    void OnLengthOfDayValueChanged(string text)
+    {
+        if (lengthOfDayInput == null || string.IsNullOrEmpty(text))
+            return;
+
+        var sb = new StringBuilder(text.Length);
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (char.IsDigit(text[i]))
+                sb.Append(text[i]);
+        }
+
+        string filtered = sb.ToString();
+        if (filtered == text)
+            return;
+
+        int caret = lengthOfDayInput.caretPosition;
+        lengthOfDayInput.SetTextWithoutNotify(filtered);
+        lengthOfDayInput.caretPosition = Mathf.Min(caret, filtered.Length);
+    }
+
+    void OnLengthOfDayEndEdit(string text)
+    {
+        if (lengthOfDayInput == null)
+            return;
+
+        if (string.IsNullOrEmpty(text?.Trim()))
+        {
+            lengthOfDayInput.SetTextWithoutNotify(DayNightSettings.GetMenuDisplayMinutes());
+            return;
+        }
+
+        if (!int.TryParse(text.Trim(), out int minutes) || minutes < (int)DayNightSettings.MinMinutes)
+        {
+            lengthOfDayInput.SetTextWithoutNotify(DayNightSettings.GetMenuDisplayMinutes());
+            return;
+        }
+
+        minutes = Mathf.Clamp(minutes, (int)DayNightSettings.MinMinutes, (int)DayNightSettings.MaxMinutes);
+        DayNightSettings.SetFullCycleMinutes(minutes);
+        lengthOfDayInput.SetTextWithoutNotify(minutes.ToString());
     }
 
     void SetupAudio()

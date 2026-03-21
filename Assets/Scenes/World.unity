@@ -353,14 +353,14 @@ MonoBehaviour:
     fogDensity: 0
     waterColor: {r: 0.33, g: 0.86, b: 0.97, a: 0.69}
   sunset:
-    ambientColor: {r: 0.96, g: 0.53, b: 0.36, a: 0}
-    sunColor: {r: 0.77, g: 0.71, b: 0.59, a: 0}
-    backgroundColor: {r: 0.75, g: 0.38, b: 0.33, a: 0}
-    sunIntensity: 1.6
-    shadowStrength: 0.7
-    fogColor: {r: 0.31, g: 0.23, b: 0.19, a: 0}
+    ambientColor: {r: 0.58, g: 0.60, b: 0.66, a: 0}
+    sunColor: {r: 0.94, g: 0.90, b: 0.82, a: 0}
+    backgroundColor: {r: 0.32, g: 0.40, b: 0.52, a: 0}
+    sunIntensity: 0.95
+    shadowStrength: 0.92
+    fogColor: {r: 0.48, g: 0.50, b: 0.55, a: 0}
     fogDensity: 0.004
-    waterColor: {r: 0.43, g: 0.35, b: 0.36, a: 0.72}
+    waterColor: {r: 0.28, g: 0.48, b: 0.62, a: 0.72}
   night:
     ambientColor: {r: 0.4, g: 0.47, b: 0.53, a: 0}
     sunColor: {r: 0.1, g: 0.11, b: 0.19, a: 0}
