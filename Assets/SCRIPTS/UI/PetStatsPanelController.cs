@@ -5,7 +5,8 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Shows/hides the PetStats UI in the World scene per PetInfoSettings (Q toggle / hold).
-/// Keeps this GameObject active and uses CanvasGroup alpha so input still runs when hidden.
+/// Hidden until a pet is confirmed (<see cref="GlobalData.SavePetChoice"/>); Q does nothing before that.
+/// After the first pet choice this run, shows once (toggle opens / hold mode peek), then settings apply normally.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(RectTransform))]
@@ -15,10 +16,18 @@ public class PetStatsPanelController : MonoBehaviour
     [Tooltip("Seconds to fade pet stats in/out (same timing as minimap). Default 0.1s.")]
     [SerializeField] [Min(0.01f)] float fadeDuration = 0.1f;
 
+    [Header("After first pet choice")]
+    [Tooltip("Hold-to-show only: brief automatic reveal so stats are seen once before hold is required.")]
+    [SerializeField] [Min(0f)] float holdModeIntroPeekDuration = 2f;
+
     CanvasGroup _canvasGroup;
     PetInfoDisplayMode _lastMode;
     bool _toggleOpen;
     float _presentationAlpha;
+    float _holdIntroPeekRemaining;
+
+    /// <summary>True after we applied the one-time post-choice presentation for this play session.</summary>
+    static bool s_PostPetChoiceIntroDone;
 
     void Awake()
     {
@@ -44,6 +53,16 @@ public class PetStatsPanelController : MonoBehaviour
         if (!Application.isPlaying)
             return;
 
+        bool petChosen = GlobalData.StoredPetSkin > 0;
+        if (!petChosen)
+        {
+            s_PostPetChoiceIntroDone = false;
+            _holdIntroPeekRemaining = 0f;
+            _toggleOpen = false;
+            FadeTowardsShown(false);
+            return;
+        }
+
         PetInfoDisplayMode mode = PetInfoSettings.Mode;
         if (mode != _lastMode)
         {
@@ -51,6 +70,15 @@ public class PetStatsPanelController : MonoBehaviour
             if (mode == PetInfoDisplayMode.Toggle)
                 _toggleOpen = false;
         }
+
+        if (!s_PostPetChoiceIntroDone)
+        {
+            ApplyFirstPetChoiceIntro(mode);
+            s_PostPetChoiceIntroDone = true;
+        }
+
+        if (_holdIntroPeekRemaining > 0f)
+            _holdIntroPeekRemaining -= Time.deltaTime;
 
 #if ENABLE_INPUT_SYSTEM
         bool qPressed = Keyboard.current != null && Keyboard.current[Key.Q].wasPressedThisFrame;
@@ -63,7 +91,30 @@ public class PetStatsPanelController : MonoBehaviour
         if (mode == PetInfoDisplayMode.Toggle && qPressed)
             _toggleOpen = !_toggleOpen;
 
-        float target = ComputeShownForMode(mode, qHeld) ? 1f : 0f;
+        bool wantShown = _holdIntroPeekRemaining > 0f || ComputeShownForMode(mode, qHeld);
+        FadeTowardsShown(wantShown);
+    }
+
+    void ApplyFirstPetChoiceIntro(PetInfoDisplayMode mode)
+    {
+        switch (mode)
+        {
+            case PetInfoDisplayMode.Toggle:
+                _toggleOpen = true;
+                break;
+            case PetInfoDisplayMode.HoldToShow:
+                if (holdModeIntroPeekDuration > 0f)
+                    _holdIntroPeekRemaining = holdModeIntroPeekDuration;
+                break;
+            case PetInfoDisplayMode.AlwaysOn:
+            default:
+                break;
+        }
+    }
+
+    void FadeTowardsShown(bool shown)
+    {
+        float target = shown ? 1f : 0f;
         float step = Time.deltaTime / Mathf.Max(0.01f, fadeDuration);
         _presentationAlpha = Mathf.MoveTowards(_presentationAlpha, target, step);
         _canvasGroup.alpha = _presentationAlpha;
