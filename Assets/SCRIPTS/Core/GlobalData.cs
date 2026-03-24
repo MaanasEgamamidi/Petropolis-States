@@ -17,9 +17,19 @@ public class GlobalData : MonoBehaviour
     public static int StoredPetSkin { get; private set; }
     /// <summary>True when PetChoose was opened additively from World. On Confirm, unload PetChoose instead of loading World.</summary>
     public static bool PetChooseOpenedFromWorld { get; set; }
+
+    /// <summary>Set when the player starts loading PetChoose from World (persists until app exit). Used for follow-up UI hints.</summary>
+    public static bool HasOpenedPetChooseFlowFromWorld { get; private set; }
     /// <summary>Full time of day (0–24, e.g. 7.5 = 7:30 AM). Updated by DayNightController when the hour changes. Use Mathf.FloorToInt(CurrentTimeOfDay) for hour.</summary>
     public static float CurrentTimeOfDay { get; private set; }
     static bool _printedForCurrentChoice;
+
+    /// <summary><see cref="Time.realtimeSinceStartup"/> when the welcome toast should appear (set at character confirm).</summary>
+    static float _welcomeNotificationShowAtRealtime = -1f;
+    /// <summary><see cref="Time.realtimeSinceStartup"/> when the pet-stats toast should appear (set at pet confirm).</summary>
+    static float _petStatsNotificationShowAtRealtime = -1f;
+    /// <summary>True while a pet-confirm toast is scheduled or playing so <see cref="WorldOnboardingNotifications"/> does not duplicate it.</summary>
+    public static bool PetStatsToastFromPetConfirmPending { get; private set; }
 
     // Pet stats and economy
     /// <summary>Starting cash for a new session; live balance is <c>PlayerMoney</c>.</summary>
@@ -47,6 +57,68 @@ public class GlobalData : MonoBehaviour
     public static void SavePetChoice(int petSkin)
     {
         StoredPetSkin = Mathf.Clamp(petSkin, 1, 6);
+    }
+
+    /// <summary>True after the player has confirmed a character in CharacterChoose.</summary>
+    public static bool HasCharacterChoice()
+    {
+        return !string.IsNullOrEmpty(StoredGender) && StoredBody > 0;
+    }
+
+    /// <summary>Call when starting additive PetChoose from the World pet shop trigger.</summary>
+    public static void MarkPetChooseFlowStartedFromWorld()
+    {
+        HasOpenedPetChooseFlowFromWorld = true;
+    }
+
+    /// <summary>Call when the player confirms character (before loading World). Toast shows <paramref name="delaySeconds"/> after this moment (wall clock).</summary>
+    public static void ScheduleWorldWelcomeNotification(float delaySeconds)
+    {
+        _welcomeNotificationShowAtRealtime = Time.realtimeSinceStartup + Mathf.Max(0f, delaySeconds);
+    }
+
+    /// <summary>Call when the player confirms a pet (before leaving PetChoose). Toast shows <paramref name="delaySeconds"/> after this moment.</summary>
+    public static void ScheduleWorldPetStatsNotification(float delaySeconds)
+    {
+        _petStatsNotificationShowAtRealtime = Time.realtimeSinceStartup + Mathf.Max(0f, delaySeconds);
+        PetStatsToastFromPetConfirmPending = true;
+    }
+
+    /// <summary>True while a welcome toast is still scheduled (not cleared after show).</summary>
+    internal static bool PollWelcomeNotificationDue(out float showAtRealtime)
+    {
+        if (_welcomeNotificationShowAtRealtime < 0f)
+        {
+            showAtRealtime = 0f;
+            return false;
+        }
+
+        showAtRealtime = _welcomeNotificationShowAtRealtime;
+        return true;
+    }
+
+    internal static void ClearWelcomeNotificationSchedule()
+    {
+        _welcomeNotificationShowAtRealtime = -1f;
+    }
+
+    /// <summary>True while a pet-stats toast is still scheduled.</summary>
+    internal static bool PollPetStatsNotificationDue(out float showAtRealtime)
+    {
+        if (_petStatsNotificationShowAtRealtime < 0f)
+        {
+            showAtRealtime = 0f;
+            return false;
+        }
+
+        showAtRealtime = _petStatsNotificationShowAtRealtime;
+        return true;
+    }
+
+    internal static void ClearPetStatsNotificationSchedule()
+    {
+        _petStatsNotificationShowAtRealtime = -1f;
+        PetStatsToastFromPetConfirmPending = false;
     }
 
     /// <summary>Call from DayNightController when the hour changes. Updates CurrentTimeOfDay.</summary>

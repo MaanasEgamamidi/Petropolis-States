@@ -4,53 +4,49 @@ using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
-/// Shows/hides the PetStats UI in the World scene per PetInfoSettings (Q toggle / hold).
-/// Hidden until a pet is confirmed (<see cref="GlobalData.SavePetChoice"/>); Q does nothing before that.
-/// After the first pet choice this run, shows once (toggle opens / hold mode peek), then settings apply normally.
+/// Drives the Pet Statistics screen-space canvas: hidden until a pet is confirmed, then slides
+/// <see cref="leftBox"/> horizontally based on <see cref="PetInfoSettings"/> and Q (hold / toggle / always open).
 /// </summary>
-[DisallowMultipleComponent]
-[RequireComponent(typeof(RectTransform))]
-public class PetStatsPanelController : MonoBehaviour
+public class PetStatisticsPanelController : MonoBehaviour
 {
-    [Header("Fade")]
-    [Tooltip("Seconds to fade pet stats in/out (same timing as minimap). Default 0.1s.")]
-    [SerializeField] [Min(0.01f)] float fadeDuration = 0.1f;
+    [SerializeField] GameObject petStatisticsRoot;
+    [SerializeField] RectTransform leftBox;
 
-    [Header("After first pet choice")]
-    [Tooltip("Hold-to-show only: brief automatic reveal so stats are seen once before hold is required.")]
+    [Tooltip("Anchored X when only the tab/handle is visible (panel mostly off-screen left).")]
+    [SerializeField] float closedAnchoredX = -290f;
+
+    [Tooltip("Anchored X when the panel is fully shown.")]
+    [SerializeField] float openAnchoredX = 400f;
+
+    [Tooltip("How fast the panel moves between closed and open (units per second, anchored space).")]
+    [SerializeField] [Min(1f)] float slideSpeed = 2000f;
+
+    [Tooltip("Hold-to-show only: brief automatic open after first pet choice this session.")]
     [SerializeField] [Min(0f)] float holdModeIntroPeekDuration = 2f;
 
-    CanvasGroup _canvasGroup;
     PetInfoDisplayMode _lastMode;
-    bool _toggleOpen;
-    float _presentationAlpha;
+    bool _toggleExpanded;
     float _holdIntroPeekRemaining;
+    float _currentAnchoredX;
 
-    /// <summary>True after we applied the one-time post-choice presentation for this play session.</summary>
     static bool s_PostPetChoiceIntroDone;
 
     void Awake()
     {
-        _canvasGroup = GetComponent<CanvasGroup>();
-        if (_canvasGroup == null)
-            _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        if (leftBox != null)
+            _currentAnchoredX = leftBox.anchoredPosition.x;
     }
 
     void OnEnable()
     {
         _lastMode = PetInfoSettings.Mode;
         if (_lastMode == PetInfoDisplayMode.Toggle)
-            _toggleOpen = false;
-
-        _presentationAlpha = 0f;
-        _canvasGroup.alpha = 0f;
-        _canvasGroup.blocksRaycasts = false;
-        _canvasGroup.interactable = false;
+            _toggleExpanded = false;
     }
 
     void Update()
     {
-        if (!Application.isPlaying)
+        if (!Application.isPlaying || petStatisticsRoot == null || leftBox == null)
             return;
 
         bool petChosen = GlobalData.StoredPetSkin > 0;
@@ -58,17 +54,19 @@ public class PetStatsPanelController : MonoBehaviour
         {
             s_PostPetChoiceIntroDone = false;
             _holdIntroPeekRemaining = 0f;
-            _toggleOpen = false;
-            FadeTowardsShown(false);
+            _toggleExpanded = false;
+            petStatisticsRoot.SetActive(false);
             return;
         }
+
+        petStatisticsRoot.SetActive(true);
 
         PetInfoDisplayMode mode = PetInfoSettings.Mode;
         if (mode != _lastMode)
         {
             _lastMode = mode;
             if (mode == PetInfoDisplayMode.Toggle)
-                _toggleOpen = false;
+                _toggleExpanded = false;
         }
 
         if (!s_PostPetChoiceIntroDone)
@@ -89,10 +87,16 @@ public class PetStatsPanelController : MonoBehaviour
 #endif
 
         if (mode == PetInfoDisplayMode.Toggle && qPressed)
-            _toggleOpen = !_toggleOpen;
+            _toggleExpanded = !_toggleExpanded;
 
-        bool wantShown = _holdIntroPeekRemaining > 0f || ComputeShownForMode(mode, qHeld);
-        FadeTowardsShown(wantShown);
+        bool wantOpen = _holdIntroPeekRemaining > 0f || ComputeOpenForMode(mode, qHeld);
+        float targetX = wantOpen ? openAnchoredX : closedAnchoredX;
+        float step = slideSpeed * Time.deltaTime;
+        _currentAnchoredX = Mathf.MoveTowards(_currentAnchoredX, targetX, step);
+
+        Vector2 p = leftBox.anchoredPosition;
+        p.x = _currentAnchoredX;
+        leftBox.anchoredPosition = p;
     }
 
     void ApplyFirstPetChoiceIntro(PetInfoDisplayMode mode)
@@ -100,37 +104,29 @@ public class PetStatsPanelController : MonoBehaviour
         switch (mode)
         {
             case PetInfoDisplayMode.Toggle:
-                _toggleOpen = true;
+                _toggleExpanded = true;
+                _currentAnchoredX = openAnchoredX;
                 break;
             case PetInfoDisplayMode.HoldToShow:
                 if (holdModeIntroPeekDuration > 0f)
                     _holdIntroPeekRemaining = holdModeIntroPeekDuration;
+                _currentAnchoredX = openAnchoredX;
                 break;
             case PetInfoDisplayMode.AlwaysOn:
             default:
+                _currentAnchoredX = openAnchoredX;
                 break;
         }
     }
 
-    void FadeTowardsShown(bool shown)
-    {
-        float target = shown ? 1f : 0f;
-        float step = Time.deltaTime / Mathf.Max(0.01f, fadeDuration);
-        _presentationAlpha = Mathf.MoveTowards(_presentationAlpha, target, step);
-        _canvasGroup.alpha = _presentationAlpha;
-        bool canInteract = _presentationAlpha > 0.01f;
-        _canvasGroup.blocksRaycasts = canInteract;
-        _canvasGroup.interactable = canInteract;
-    }
-
-    bool ComputeShownForMode(PetInfoDisplayMode mode, bool qHeld)
+    bool ComputeOpenForMode(PetInfoDisplayMode mode, bool qHeld)
     {
         switch (mode)
         {
             case PetInfoDisplayMode.AlwaysOn:
                 return true;
             case PetInfoDisplayMode.Toggle:
-                return _toggleOpen;
+                return _toggleExpanded;
             case PetInfoDisplayMode.HoldToShow:
                 return qHeld;
             default:

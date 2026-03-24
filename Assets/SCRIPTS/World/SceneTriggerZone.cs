@@ -127,6 +127,8 @@ public class SceneTriggerZone : MonoBehaviour
             if (isWorldToPetChoose)
             {
                 GlobalData.PetChooseOpenedFromWorld = true;
+                GlobalData.MarkPetChooseFlowStartedFromWorld();
+                WorldOnboardingNotifications.ConsumePetShopHintIfNeeded();
                 AdditiveSceneHelper.FreezeWorldBeforePetChooseLoad(); // Freeze before load to avoid "only one EventSystem" warning
                 var panel = fadeToBlackPanel;
                 if (panel != null && panel.GetComponent<CanvasGroup>() != null)
