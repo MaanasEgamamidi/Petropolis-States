@@ -87,7 +87,6 @@ public class PetChooseController : MonoBehaviour
     public void OnConfirmClicked()
     {
         GlobalData.SavePetChoice(_currentIndex);
-        GlobalData.ScheduleWorldPetStatsNotification(2f);
 
         if (GlobalData.PetChooseOpenedFromWorld)
         {

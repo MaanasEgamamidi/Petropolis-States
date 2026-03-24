@@ -4,19 +4,20 @@ using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
-/// Drives the Pet Statistics screen-space canvas: hidden until a pet is confirmed, then slides
-/// <see cref="leftBox"/> horizontally based on <see cref="PetInfoSettings"/> and Q (hold / toggle / always open).
+/// Drives the Pet Statistics screen-space canvas: keep <see cref="petStatisticsRoot"/> active in the scene for
+/// editing; on play, Awake hides it briefly before <see cref="Update"/> applies pet-confirmed visibility and slides
+/// <see cref="leftBox"/> via <see cref="PetInfoSettings"/> and Q (hold / toggle / always open).
 /// </summary>
 public class PetStatisticsPanelController : MonoBehaviour
 {
     [SerializeField] GameObject petStatisticsRoot;
     [SerializeField] RectTransform leftBox;
 
-    [Tooltip("Anchored X when only the tab/handle is visible (panel mostly off-screen left).")]
-    [SerializeField] float closedAnchoredX = -290f;
+    [Tooltip("Anchored X when closed (toggle off / not holding). Match Left Box X in the scene so edit mode and play mode look the same.")]
+    [SerializeField] float closedAnchoredX = 0f;
 
     [Tooltip("Anchored X when the panel is fully shown.")]
-    [SerializeField] float openAnchoredX = 400f;
+    [SerializeField] float openAnchoredX = 560f;
 
     [Tooltip("How fast the panel moves between closed and open (units per second, anchored space).")]
     [SerializeField] [Min(1f)] float slideSpeed = 2000f;
@@ -35,6 +36,8 @@ public class PetStatisticsPanelController : MonoBehaviour
     {
         if (leftBox != null)
             _currentAnchoredX = leftBox.anchoredPosition.x;
+        if (Application.isPlaying && petStatisticsRoot != null)
+            petStatisticsRoot.SetActive(false);
     }
 
     void OnEnable()

@@ -13,7 +13,7 @@ public class MoneyCounterDisplay : MonoBehaviour
 
     [Header("Balance testing (arrow keys)")]
     [Tooltip("When enabled, Up/Down arrow change PlayerMoney for testing. Turn off for normal play.")]
-    [SerializeField] bool enableMoneyArrowTest;
+    [SerializeField] bool enableMoneyArrowTest = true;
     [SerializeField] int moneyTestStep = 100;
     [SerializeField] Color moneyIncreaseColor = new Color(0.35f, 0.95f, 0.45f, 1f);
     [SerializeField] Color moneyDecreaseColor = new Color(0.95f, 0.35f, 0.35f, 1f);

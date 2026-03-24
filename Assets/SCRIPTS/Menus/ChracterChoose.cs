@@ -151,7 +151,6 @@ public class ChracterChoose : MonoBehaviour
         string playerName = (nameInputField != null) ? nameInputField.text : "";
 
         GlobalData.SaveChoice(genderStr, bodyOneBased, headOneBased, playerName);
-        GlobalData.ScheduleWorldWelcomeNotification(3f);
 
         PlayerPrefs.SetInt("SelectedGender", selectedGender);
         PlayerPrefs.SetInt("SelectedBody",   selectedBody);

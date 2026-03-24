@@ -24,13 +24,6 @@ public class GlobalData : MonoBehaviour
     public static float CurrentTimeOfDay { get; private set; }
     static bool _printedForCurrentChoice;
 
-    /// <summary><see cref="Time.realtimeSinceStartup"/> when the welcome toast should appear (set at character confirm).</summary>
-    static float _welcomeNotificationShowAtRealtime = -1f;
-    /// <summary><see cref="Time.realtimeSinceStartup"/> when the pet-stats toast should appear (set at pet confirm).</summary>
-    static float _petStatsNotificationShowAtRealtime = -1f;
-    /// <summary>True while a pet-confirm toast is scheduled or playing so <see cref="WorldOnboardingNotifications"/> does not duplicate it.</summary>
-    public static bool PetStatsToastFromPetConfirmPending { get; private set; }
-
     // Pet stats and economy
     /// <summary>Starting cash for a new session; live balance is <c>PlayerMoney</c>.</summary>
     public const float StartingPlayerMoney = 150f;
@@ -69,56 +62,6 @@ public class GlobalData : MonoBehaviour
     public static void MarkPetChooseFlowStartedFromWorld()
     {
         HasOpenedPetChooseFlowFromWorld = true;
-    }
-
-    /// <summary>Call when the player confirms character (before loading World). Toast shows <paramref name="delaySeconds"/> after this moment (wall clock).</summary>
-    public static void ScheduleWorldWelcomeNotification(float delaySeconds)
-    {
-        _welcomeNotificationShowAtRealtime = Time.realtimeSinceStartup + Mathf.Max(0f, delaySeconds);
-    }
-
-    /// <summary>Call when the player confirms a pet (before leaving PetChoose). Toast shows <paramref name="delaySeconds"/> after this moment.</summary>
-    public static void ScheduleWorldPetStatsNotification(float delaySeconds)
-    {
-        _petStatsNotificationShowAtRealtime = Time.realtimeSinceStartup + Mathf.Max(0f, delaySeconds);
-        PetStatsToastFromPetConfirmPending = true;
-    }
-
-    /// <summary>True while a welcome toast is still scheduled (not cleared after show).</summary>
-    internal static bool PollWelcomeNotificationDue(out float showAtRealtime)
-    {
-        if (_welcomeNotificationShowAtRealtime < 0f)
-        {
-            showAtRealtime = 0f;
-            return false;
-        }
-
-        showAtRealtime = _welcomeNotificationShowAtRealtime;
-        return true;
-    }
-
-    internal static void ClearWelcomeNotificationSchedule()
-    {
-        _welcomeNotificationShowAtRealtime = -1f;
-    }
-
-    /// <summary>True while a pet-stats toast is still scheduled.</summary>
-    internal static bool PollPetStatsNotificationDue(out float showAtRealtime)
-    {
-        if (_petStatsNotificationShowAtRealtime < 0f)
-        {
-            showAtRealtime = 0f;
-            return false;
-        }
-
-        showAtRealtime = _petStatsNotificationShowAtRealtime;
-        return true;
-    }
-
-    internal static void ClearPetStatsNotificationSchedule()
-    {
-        _petStatsNotificationShowAtRealtime = -1f;
-        PetStatsToastFromPetConfirmPending = false;
     }
 
     /// <summary>Call from DayNightController when the hour changes. Updates CurrentTimeOfDay.</summary>

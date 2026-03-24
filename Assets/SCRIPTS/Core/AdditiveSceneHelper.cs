@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -68,14 +67,6 @@ public class AdditiveSceneHelper : MonoBehaviour
         // Restore cursor lock for World (look-around mode)
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        StartCoroutine(DeferredWorldHints());
-    }
-
-    IEnumerator DeferredWorldHints()
-    {
-        yield return null;
-        WorldOnboardingNotifications.EvaluateWorldHintsFromWorldScene();
     }
 
     /// <summary>Call before loading PetChoose additively. Disables only World's EventSystem to avoid "2 EventSystems" warning.
