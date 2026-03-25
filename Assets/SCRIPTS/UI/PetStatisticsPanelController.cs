@@ -13,6 +13,9 @@ public class PetStatisticsPanelController : MonoBehaviour
     [SerializeField] GameObject petStatisticsRoot;
     [SerializeField] RectTransform leftBox;
 
+    [Tooltip("Fades the drag-handle bar and \"Pet Statistics\" label with the panel: full when collapsed (left), invisible when open (right). Auto-added under Left Box / Drag Handle if unset.")]
+    [SerializeField] CanvasGroup dragHandleChrome;
+
     [Tooltip("Anchored X when closed (toggle off / not holding). Match Left Box X in the scene so edit mode and play mode look the same.")]
     [SerializeField] float closedAnchoredX = 0f;
 
@@ -36,8 +39,32 @@ public class PetStatisticsPanelController : MonoBehaviour
     {
         if (leftBox != null)
             _currentAnchoredX = leftBox.anchoredPosition.x;
+        EnsureDragHandleChrome();
         if (Application.isPlaying && petStatisticsRoot != null)
             petStatisticsRoot.SetActive(false);
+    }
+
+    void EnsureDragHandleChrome()
+    {
+        if (dragHandleChrome != null || leftBox == null)
+            return;
+        Transform handle = leftBox.Find("Drag Handle");
+        if (handle == null)
+            return;
+        dragHandleChrome = handle.GetComponent<CanvasGroup>();
+        if (dragHandleChrome == null)
+            dragHandleChrome = handle.gameObject.AddComponent<CanvasGroup>();
+        dragHandleChrome.blocksRaycasts = true;
+        dragHandleChrome.interactable = true;
+    }
+
+    void ApplyDragHandleFade()
+    {
+        if (dragHandleChrome == null || leftBox == null)
+            return;
+        float x = leftBox.anchoredPosition.x;
+        float t = Mathf.InverseLerp(closedAnchoredX, openAnchoredX, x);
+        dragHandleChrome.alpha = 1f - Mathf.Clamp01(t);
     }
 
     void OnEnable()
@@ -100,6 +127,8 @@ public class PetStatisticsPanelController : MonoBehaviour
         Vector2 p = leftBox.anchoredPosition;
         p.x = _currentAnchoredX;
         leftBox.anchoredPosition = p;
+
+        ApplyDragHandleFade();
     }
 
     void ApplyFirstPetChoiceIntro(PetInfoDisplayMode mode)
