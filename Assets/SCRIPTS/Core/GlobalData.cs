@@ -24,11 +24,29 @@ public class GlobalData : MonoBehaviour
     public static float CurrentTimeOfDay { get; private set; }
     static bool _printedForCurrentChoice;
 
+    // ─── Events ──────────────────────────────────────────────────────────────
+    /// <summary>Fires when PlayerMoney changes. Positive delta = gain, negative = loss.</summary>
+    public static event Action<float> OnMoneyChanged;
+    /// <summary>Fires when the player confirms character selection.</summary>
+    public static event Action OnCharacterConfirmed;
+    /// <summary>Fires when the player confirms pet selection.</summary>
+    public static event Action OnPetConfirmed;
+
     // Pet stats and economy
     /// <summary>Starting cash for a new session; live balance is <c>PlayerMoney</c>.</summary>
     public const float StartingPlayerMoney = 150f;
 
-    public static float PlayerMoney { get; set; } = StartingPlayerMoney;
+    static float _playerMoney = StartingPlayerMoney;
+    public static float PlayerMoney
+    {
+        get => _playerMoney;
+        set
+        {
+            float delta = value - _playerMoney;
+            _playerMoney = value;
+            if (delta != 0f) OnMoneyChanged?.Invoke(delta);
+        }
+    }
     public static string PetName { get; set; } = "Max";
     public static float PetHunger { get; set; } = 100f;
     public static float PetHealth { get; set; } = 100f;
@@ -44,12 +62,14 @@ public class GlobalData : MonoBehaviour
         StoredHead = head;
         StoredName = string.IsNullOrWhiteSpace(name) ? "Player" : name;
         _printedForCurrentChoice = false;
+        OnCharacterConfirmed?.Invoke();
     }
 
     /// <summary>Call from PetChoose when the player confirms. Stores pet skin (1-6) for World scene.</summary>
     public static void SavePetChoice(int petSkin)
     {
         StoredPetSkin = Mathf.Clamp(petSkin, 1, 6);
+        OnPetConfirmed?.Invoke();
     }
 
     /// <summary>True after the player has confirmed a character in CharacterChoose.</summary>

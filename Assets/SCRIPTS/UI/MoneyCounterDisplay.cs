@@ -4,7 +4,8 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Drives the money label on this GameObject (same object as <see cref="TextMeshProUGUI"/>).
-/// Includes optional arrow-key test hooks and color feedback.
+/// Subscribes to <see cref="GlobalData.OnMoneyChanged"/> so the flash triggers from any source.
+/// Includes optional arrow-key test hooks.
 /// </summary>
 [DisallowMultipleComponent]
 public class MoneyCounterDisplay : MonoBehaviour
@@ -40,6 +41,24 @@ public class MoneyCounterDisplay : MonoBehaviour
             _moneyBaseColor = label.color;
     }
 
+    void OnEnable()
+    {
+        GlobalData.OnMoneyChanged += HandleMoneyChanged;
+    }
+
+    void OnDisable()
+    {
+        GlobalData.OnMoneyChanged -= HandleMoneyChanged;
+    }
+
+    void HandleMoneyChanged(float delta)
+    {
+        if (delta > 0f)
+            StartMoneyColorPulse(moneyIncreaseColor);
+        else if (delta < 0f)
+            StartMoneyColorPulse(moneyDecreaseColor);
+    }
+
     void Update()
     {
         if (label == null)
@@ -48,15 +67,9 @@ public class MoneyCounterDisplay : MonoBehaviour
         if (enableMoneyArrowTest && Keyboard.current != null)
         {
             if (Keyboard.current[Key.UpArrow].wasPressedThisFrame)
-            {
                 GlobalData.PlayerMoney += moneyTestStep;
-                StartMoneyColorPulse(moneyIncreaseColor);
-            }
             else if (Keyboard.current[Key.DownArrow].wasPressedThisFrame)
-            {
                 GlobalData.PlayerMoney = Mathf.Max(0f, GlobalData.PlayerMoney - moneyTestStep);
-                StartMoneyColorPulse(moneyDecreaseColor);
-            }
         }
 
         TickMoneyColorAnimation();
