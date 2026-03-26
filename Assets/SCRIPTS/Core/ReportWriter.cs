@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using UnityEngine;
@@ -33,8 +35,9 @@ public static class ReportWriter
         float startHour = snapshots.Count > 0 ? snapshots[0].GameHour : 0f;
         string pointsJs = BuildPointsArray(snapshots);
 
+        string reportTimestamp = FormatWashingtonLocalTimestamp(DateTime.UtcNow);
         string html = BuildHtml(
-            reportNumber, playerName, petName, sessionLength,
+            reportTimestamp, playerName, petName, sessionLength,
             startingMoney, endingMoney, netChange, highestMoney, lowestMoney,
             pointsJs, startHour, totalGameHours);
 
@@ -57,6 +60,28 @@ public static class ReportWriter
             }
         }
         return max + 1;
+    }
+
+    /// <summary>US Pacific (America/Los_Angeles) — same civil time as Washington state.</summary>
+    static TimeZoneInfo WashingtonTimeZone()
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles");
+        }
+        catch
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+        }
+    }
+
+    static string FormatWashingtonLocalTimestamp(DateTime utcNow)
+    {
+        if (utcNow.Kind != DateTimeKind.Utc)
+            utcNow = utcNow.ToUniversalTime();
+
+        DateTime local = TimeZoneInfo.ConvertTimeFromUtc(utcNow, WashingtonTimeZone());
+        return local.ToString("MMMM d, yyyy, h:mm:ss tt", CultureInfo.InvariantCulture);
     }
 
     static string FormatSessionLength(float gameHours)
@@ -89,7 +114,7 @@ public static class ReportWriter
     }
 
     static string BuildHtml(
-        int reportNumber,
+        string reportTimestamp,
         string playerName, string petName, string sessionLength,
         float startingMoney, float endingMoney, float netChange,
         float highestMoney, float lowestMoney,
@@ -105,7 +130,7 @@ public static class ReportWriter
 <head>
 <meta charset=""UTF-8"">
 <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-<title>Session Report #{reportNumber}</title>
+<title>Session Report — {Escape(reportTimestamp)}</title>
 <style>
   * {{ box-sizing: border-box; }}
   body {{
@@ -122,7 +147,12 @@ public static class ReportWriter
     font-weight: 600;
     border-bottom: 2px solid #d0d0d0;
     padding-bottom: 8px;
-    margin-bottom: 22px;
+    margin-bottom: 4px;
+  }}
+  .report-ts {{
+    margin: 0 0 22px 0;
+    color: #666;
+    font-size: 0.95em;
   }}
   h2 {{
     font-size: 1.05em;
@@ -165,7 +195,8 @@ public static class ReportWriter
 </head>
 <body>
 
-<h1>Session Report #{reportNumber}</h1>
+<h1>Session Report</h1>
+<p class=""report-ts"">{Escape(reportTimestamp)}</p>
 
 <h2>Player Info</h2>
 <table>
