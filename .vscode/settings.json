@@ -67,5 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Petropolis-States.slnx"
+    "dotnet.defaultSolution": "Petropolis-States.slnx",
+    "dotnet.preferCSharpExtension": true
 }

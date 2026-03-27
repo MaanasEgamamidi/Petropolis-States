@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeFlow — Code Presentation Tool</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg0: #0d1117;
+  --bg1: #161b22;
+  --bg2: #21262d;
+  --bg3: #30363d;
+  --bg4: #3d4451;
+  --border: #30363d;
+  --border-muted: #21262d;
+  --text0: #e6edf3;
+  --text1: #c9d1d9;
+  --text2: #8b949e;
+  --text3: #484f58;
+  --accent: #388bfd;
+  --accent-dim: rgba(56,139,253,0.15);
+  --accent-border: rgba(56,139,253,0.4);
+  --green: #3fb950;
+  --orange: #d29922;
+  --purple: #a371f7;
+  --red: #f85149;
+  --pink: #ff7b72;
+  --snip-colors: #388bfd, #3fb950, #d29922, #a371f7, #f85149;
+  --radius: 6px;
+  --font-ui: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: var(--bg0);
+  color: var(--text1);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ─── LAYOUT ─── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── TITLEBAR ─── */
+#titlebar {
+  height: 40px;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 12px;
+  flex-shrink: 0;
+  user-select: none;
+  z-index: 200;
+}
+
+.title-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text0);
+  flex-shrink: 0;
+}
+
+.title-brand .logo {
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+#project-info {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.title-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text1);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg3); border-color: var(--bg4); color: var(--text0); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: #58a6ff; border-color: #58a6ff; }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--text2); padding: 4px 6px; }
+.btn.ghost:hover { background: var(--bg2); color: var(--text0); border-color: transparent; }
+.btn.danger:hover { border-color: var(--red); color: var(--red); background: rgba(248,81,73,0.08); }
+.btn.xs { padding: 3px 7px; font-size: 11px; }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+
+/* ─── MAIN ─── */
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ─── EXPLORER ─── */
+#explorer {
+  width: 240px;
+  min-width: 140px;
+  max-width: 500px;
+  background: var(--bg1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.panel-head {
+  padding: 8px 12px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-muted);
+  flex-shrink: 0;
+}
+
+.panel-head-actions { display: flex; gap: 3px; }
+
+#drop-zone {
+  margin: 8px 10px 4px;
+  border: 1px dashed var(--bg4);
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+#drop-zone:hover, #drop-zone.dragover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+#file-tree {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 0 8px;
+}
+
+/* tree items */
+.tree-dir, .tree-file {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  min-height: 22px;
+  border-radius: 0;
+  transition: background 0.08s;
+}
+.tree-dir:hover, .tree-file:hover { background: rgba(255,255,255,0.04); }
+.tree-file.active { background: rgba(56,139,253,0.15); color: var(--text0); }
+.tree-file.active .tree-filename { color: var(--text0); }
+
+.tree-arrow {
+  width: 16px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 9px;
+  color: var(--text3);
+}
+.tree-icon { flex-shrink: 0; width: 17px; text-align: center; font-size: 12px; }
+.tree-filename, .tree-dirname {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text1);
+}
+.tree-dirname { color: var(--text2); }
+
+/* ─── RESIZER ─── */
+.resizer {
+  width: 3px;
+  background: transparent;
+  cursor: col-resize;
+  flex-shrink: 0;
+  transition: background 0.2s;
+  position: relative;
+  z-index: 10;
+}
+.resizer::after {
+  content: '';
+  position: absolute;
+  inset: 0 -3px;
+}
+.resizer:hover, .resizer.dragging { background: var(--accent); }
+
+/* ─── EDITOR AREA ─── */
+#editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 200px;
+  position: relative;
+  background: var(--bg0);
+}
+
+/* ─── TABS ─── */
+#editor-tabs {
+  display: flex;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-shrink: 0;
+  height: 35px;
+  align-items: stretch;
+  scrollbar-width: none;
+}
+#editor-tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  cursor: pointer;
+  border-right: 1px solid var(--border-muted);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text2);
+  white-space: nowrap;
+  user-select: none;
+  min-width: 70px;
+  max-width: 180px;
+  position: relative;
+  transition: color 0.1s, background 0.1s;
+  flex-shrink: 0;
+}
+.tab:hover { background: var(--bg2); color: var(--text1); }
+.tab.active {
+  background: var(--bg0);
+  color: var(--text0);
+  border-top: 2px solid var(--accent);
+  padding-top: 2px;
+}
+.tab-name { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.tab-close {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.1s;
+  color: var(--text2);
+}
+.tab:hover .tab-close { opacity: 0.6; }
+.tab-close:hover { opacity: 1 !important; background: var(--bg4); color: var(--text0); }
+
+/* ─── MONACO WRAPPER ─── */
+#monaco-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+#monaco-container {
+  position: absolute;
+  inset: 0;
+}
+
+/* ─── EDITOR EMPTY STATE ─── */
+#editor-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--bg0);
+  z-index: 5;
+  pointer-events: none;
+}
+#editor-empty.hidden { display: none; }
+#editor-empty .empty-title {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text0);
+  letter-spacing: -0.5px;
+}
+#editor-empty .empty-sub {
+  font-size: 12px;
+  color: var(--text2);
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.7;
+}
+#editor-empty .empty-actions {
+  display: flex;
+  gap: 8px;
+  pointer-events: all;
+}
+#editor-empty .empty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  opacity: 0.12;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#editor-empty .empty-grid span {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  padding: 3px 6px;
+  line-height: 1.4;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* ─── STATUS BAR ─── */
+#statusbar {
+  height: 22px;
+  background: var(--accent);
+  color: rgba(255,255,255,0.9);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 14px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.sb-item { display: flex; align-items: center; gap: 4px; opacity: 0.9; }
+.sb-sep { opacity: 0.3; }
+#sb-right { margin-left: auto; }
+
+/* ─── SNIPPET PANEL ─── */
+#snippet-panel {
+  width: 270px;
+  min-width: 160px;
+  max-width: 420px;
+  background: var(--bg1);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+#snippet-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.snippet-empty {
+  padding: 20px 12px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+/* snippet cards */
+.snip-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--text3);
+  border-radius: var(--radius);
+  padding: 9px 10px 8px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
+  position: relative;
+  user-select: none;
+}
+.snip-card:hover { background: var(--bg3); border-color: var(--bg4); border-left-color: inherit; }
+.snip-card.snip-active {
+  background: rgba(56,139,253,0.1);
+  border-color: var(--accent-border);
+  border-left-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent-border);
+}
+.snip-card.dragging { opacity: 0.35; transform: scale(0.97); }
+.snip-card.drop-above::before {
+  content: '';
+  position: absolute;
+  top: -3px; left: 0; right: 0; height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.snip-card.drop-below::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 0; right: 0; height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.snip-num {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+  margin-bottom: 3px;
+}
+.snip-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+.snip-location {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.snip-btns {
+  display: flex;
+  gap: 4px;
+  margin-top: 7px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.snip-card:hover .snip-btns { opacity: 1; }
+
+/* ─── PRESENTATION BAR ─── */
+#pres-bar {
+  background: #0d1117;
+  border-top: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+#pres-bar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--purple), var(--green));
+}
+#pres-bar.hidden { display: none; }
+
+.pres-nav {
+  width: 34px;
+  height: 34px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.pres-nav:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pres-nav:disabled { opacity: 0.25; cursor: not-allowed; }
+
+.pres-info { flex: 1; text-align: center; overflow: hidden; }
+.pres-counter {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1px;
+}
+.pres-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pres-loc {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text2);
+}
+
+.pres-hint {
+  font-size: 10px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ─── MODAL ─── */
+#modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+#modal-bg.hidden { display: none; }
+.modal-box {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px 24px 20px;
+  width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text0);
+  margin-bottom: 6px;
+}
+.modal-sub {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+.modal-input {
+  width: 100%;
+  background: var(--bg0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text0);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  outline: none;
+  margin-bottom: 16px;
+  transition: border-color 0.15s;
+}
+.modal-input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ─── TOAST ─── */
+#toast {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text1);
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  z-index: 99999;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── SCROLLBARS ─── */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bg4); }
+
+/* ─── SNIPPET HIGHLIGHT CLASSES (injected into Monaco) ─── */
+.snip-hl-0 { background: rgba(56,139,253,0.18) !important; border-left: 2px solid rgba(56,139,253,0.7) !important; }
+.snip-hl-1 { background: rgba(63,185,80,0.18) !important; border-left: 2px solid rgba(63,185,80,0.7) !important; }
+.snip-hl-2 { background: rgba(210,153,34,0.18) !important; border-left: 2px solid rgba(210,153,34,0.7) !important; }
+.snip-hl-3 { background: rgba(163,113,247,0.18) !important; border-left: 2px solid rgba(163,113,247,0.7) !important; }
+.snip-hl-4 { background: rgba(248,81,73,0.18) !important; border-left: 2px solid rgba(248,81,73,0.7) !important; }
+.snip-hl-active { background: rgba(56,139,253,0.30) !important; border-left: 3px solid #388bfd !important; }
+
+.snip-color-0 { border-left-color: #388bfd !important; }
+.snip-color-1 { border-left-color: #3fb950 !important; }
+.snip-color-2 { border-left-color: #d29922 !important; }
+.snip-color-3 { border-left-color: #a371f7 !important; }
+.snip-color-4 { border-left-color: #f85149 !important; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── TITLE BAR ─── -->
+  <div id="titlebar">
+    <div class="title-brand">
+      <div class="logo">⌥</div>
+      CodeFlow
+    </div>
+    <div id="project-info">no project · drop files to begin</div>
+    <div class="title-actions">
+      <button class="btn xs" id="btn-import">⤵ Import</button>
+      <button class="btn xs" id="btn-export">⤴ Export</button>
+      <button class="btn xs primary" id="btn-present">▶ Present</button>
+    </div>
+  </div>
+
+  <!-- ─── MAIN ─── -->
+  <div id="main">
+
+    <!-- File Explorer -->
+    <div id="explorer">
+      <div class="panel-head">
+        Explorer
+        <div class="panel-head-actions">
+          <button class="btn ghost xs" id="btn-files" title="Add files">📄</button>
+          <button class="btn ghost xs" id="btn-folder" title="Add folder">📁</button>
+          <button class="btn ghost xs" id="btn-clear" title="Clear all" style="color:var(--red)">🗑</button>
+        </div>
+      </div>
+      <div id="drop-zone">Drop files or folder here<br><span style="font-size:10px;color:var(--text3)">or click buttons above</span></div>
+      <div id="file-tree"></div>
+    </div>
+
+    <div class="resizer" id="res-left"></div>
+
+    <!-- Editor -->
+    <div id="editor-area">
+      <div id="editor-tabs"></div>
+      <div id="monaco-wrap">
+        <div id="monaco-container"></div>
+        <div id="editor-empty">
+          <div class="empty-grid" id="empty-grid"></div>
+          <div style="font-size:40px;z-index:1">⌥</div>
+          <div class="empty-title" style="z-index:1">CodeFlow</div>
+          <div class="empty-sub" style="z-index:1">Load your codebase, select line ranges, and build a guided code walkthrough.</div>
+          <div class="empty-actions" style="z-index:1">
+            <button class="btn" id="btn-files-2">Upload Files</button>
+            <button class="btn" id="btn-folder-2">Upload Folder</button>
+          </div>
+        </div>
+      </div>
+      <div id="statusbar">
+        <span class="sb-item" id="sb-file">CodeFlow</span>
+        <span class="sb-sep">·</span>
+        <span class="sb-item" id="sb-cursor">Ln 1, Col 1</span>
+        <span class="sb-item" id="sb-sel" style="opacity:0.7"></span>
+        <span id="sb-right">
+          <span class="sb-item" id="sb-lang">—</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="resizer" id="res-right"></div>
+
+    <!-- Snippet Panel -->
+    <div id="snippet-panel">
+      <div class="panel-head">
+        Snippets <span id="snip-count" style="color:var(--accent);font-size:10px;margin-left:4px;font-family:var(--font-mono)"></span>
+        <button class="btn xs primary" id="btn-add-snip">+ Add</button>
+      </div>
+      <div id="snippet-list">
+        <div class="snippet-empty">Select lines in the editor and click <strong style="color:var(--text1)">+ Add</strong>.<br><br>Snippets define your presentation order — drag to reorder.</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- Presentation Bar -->
+  <div id="pres-bar" class="hidden">
+    <button class="pres-nav" id="pres-prev">◀</button>
+    <div class="pres-info">
+      <div class="pres-counter" id="pres-counter">— / —</div>
+      <div class="pres-title" id="pres-title">—</div>
+      <div class="pres-loc" id="pres-loc"></div>
+    </div>
+    <button class="pres-nav" id="pres-next">▶</button>
+    <div class="pres-hint">← → navigate<br>Esc to exit</div>
+    <button class="btn xs" id="pres-exit" style="margin-left:4px">✕ Exit</button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Hidden inputs -->
+<input type="file" id="fi-files" multiple style="display:none">
+<input type="file" id="fi-folder" multiple webkitdirectory style="display:none">
+<input type="file" id="fi-import" accept=".json" style="display:none">
+
+<!-- Modal -->
+<div id="modal-bg" class="hidden">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Add Snippet</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <input type="text" class="modal-input" id="modal-input" placeholder="Label for this snippet…">
+    <div class="modal-actions">
+      <button class="btn" id="modal-cancel">Cancel</button>
+      <button class="btn primary" id="modal-ok">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<script>
+// ════════════════════════════════════════
+//  CodeFlow — Core App Logic
+// ════════════════════════════════════════
+
+// ── IndexedDB ──────────────────────────
+const IDB = (() => {
+  let _db = null;
+
+  function open() {
+    return new Promise((res, rej) => {
+      if (_db) { res(_db); return; }
+      const req = indexedDB.open('codeflow_v1', 1);
+      req.onerror = () => rej(req.error);
+      req.onsuccess = () => { _db = req.result; res(_db); };
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains('files'))
+          d.createObjectStore('files', { keyPath: 'path' });
+      };
+    });
+  }
+
+  async function run(mode, fn) {
+    const d = await open();
+    return new Promise((res, rej) => {
+      const tx = d.transaction('files', mode);
+      const store = tx.objectStore('files');
+      const req = fn(store);
+      if (req) {
+        req.onsuccess = () => res(req.result);
+        req.onerror = () => rej(req.error);
+      } else {
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+      }
+    });
+  }
+
+  return {
+    save: (path, content) => run('readwrite', s => { s.put({ path, content }); return null; }),
+    get: (path) => run('readonly', s => s.get(path)).then(r => r?.content ?? null),
+    all: () => run('readonly', s => s.getAll()),
+    clear: () => run('readwrite', s => { s.clear(); return null; }),
+  };
+})();
+
+// ── State ──────────────────────────────
+const S = {
+  filePaths: new Set(),
+  openTabs: [],
+  activeTab: null,
+  snippets: [],
+  nextId: 1,
+  folderExpanded: {},
+  isPresenting: false,
+  presIndex: -1,
+};
+
+let _editor = null;        // Monaco editor instance
+let _decorations = [];     // current Monaco decoration IDs
+let _modalCallback = null; // pending modal confirm
+
+// ── Language Map ───────────────────────
+const LANG = {
+  js:'javascript', jsx:'javascript', mjs:'javascript', cjs:'javascript',
+  ts:'typescript', tsx:'typescript',
+  py:'python', pyw:'python',
+  java:'java', class:'java',
+  cpp:'cpp', cc:'cpp', cxx:'cpp', c:'c', h:'c', hpp:'cpp', hxx:'cpp',
+  cs:'csharp', fs:'fsharp',
+  go:'go', rs:'rust', rb:'ruby', php:'php',
+  swift:'swift', kt:'kotlin', kts:'kotlin',
+  css:'css', scss:'scss', sass:'scss', less:'less',
+  html:'html', htm:'html', xhtml:'html',
+  xml:'xml', svg:'xml',
+  json:'json', jsonc:'json', json5:'json',
+  yaml:'yaml', yml:'yaml', toml:'toml',
+  md:'markdown', mdx:'markdown',
+  sh:'shell', bash:'shell', zsh:'shell', fish:'shell',
+  ps1:'powershell', bat:'bat', cmd:'bat',
+  sql:'sql', r:'r', lua:'lua', dart:'dart',
+  ex:'elixir', exs:'elixir',
+  erl:'erlang', hrl:'erlang',
+  hs:'haskell', clj:'clojure',
+  dockerfile:'dockerfile', makefile:'makefile',
+  ini:'ini', cfg:'ini', conf:'ini', env:'ini',
+  proto:'proto',
+};
+
+function langOf(path) {
+  const name = (path || '').split('/').pop().toLowerCase();
+  if (name === 'dockerfile') return 'dockerfile';
+  if (name === 'makefile') return 'makefile';
+  return LANG[name.split('.').pop()] || 'plaintext';
+}
+
+function iconOf(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const m = {
+    js:'🟨',jsx:'🟨',mjs:'🟨',ts:'🔷',tsx:'🔷',
+    py:'🐍',java:'☕',cpp:'⚙️',c:'⚙️',h:'⚙️',
+    cs:'💜',go:'🔵',rs:'🦀',rb:'💎',php:'🐘',
+    swift:'🍎',kt:'🟣',
+    css:'🎨',scss:'🎨',sass:'🎨',
+    html:'🌐',htm:'🌐',
+    json:'📋',yaml:'📋',yml:'📋',toml:'📋',
+    md:'📝',mdx:'📝',
+    sh:'💻',bash:'💻',zsh:'💻',
+    sql:'🗃️',r:'📊',lua:'🌙',
+    svg:'🖼️',png:'🖼️',jpg:'🖼️',
+  };
+  return m[ext] || '📄';
+}
+
+// ── IndexedDB file processing ──────────
+async function processFileEntries(entries) {
+  let count = 0;
+  for (const { path, file } of entries) {
+    try {
+      const content = await readFileText(file);
+      await IDB.save(path, content);
+      S.filePaths.add(path);
+      count++;
+    } catch(e) { /* skip binary / unreadable */ }
+  }
+  saveLS();
+  renderTree();
+  if (count) toast(`✓ Loaded ${count} file${count !== 1 ? 's' : ''}`);
+  return count;
+}
+
+function readFileText(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsText(file);
+  });
+}
+
+function isIgnoredFile(name) {
+  return name.endsWith('.meta');
+}
+
+async function processFileList(fileList) {
+  const entries = Array.from(fileList)
+    .filter(f => !isIgnoredFile(f.name))
+    .map(f => ({
+      path: f.webkitRelativePath || f.name,
+      file: f,
+    }));
+  await processFileEntries(entries);
+}
+
+async function processDataTransfer(items) {
+  const entries = [];
+  const promises = [];
+  for (const item of items) {
+    if (item.kind !== 'file') continue;
+    const entry = item.webkitGetAsEntry?.();
+    if (entry) promises.push(walkEntry(entry, '', entries));
+    else {
+      const f = item.getAsFile();
+      if (f) entries.push({ path: f.name, file: f });
+    }
+  }
+  await Promise.all(promises);
+  await processFileEntries(entries);
+}
+
+function walkEntry(entry, parentPath, out) {
+  return new Promise(resolve => {
+    const myPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
+    if (entry.isFile) {
+      entry.file(f => { if (!isIgnoredFile(entry.name)) out.push({ path: myPath, file: f }); resolve(); });
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const readChunk = () => {
+        reader.readEntries(async entries => {
+          if (!entries.length) { resolve(); return; }
+          await Promise.all(entries.map(e => walkEntry(e, myPath, out)));
+          readChunk();
+        });
+      };
+      readChunk();
+    } else resolve();
+  });
+}
+
+// ── File Tree ──────────────────────────
+function buildTree(paths) {
+  const root = {};
+  for (const p of [...paths].sort()) {
+    const parts = p.split('/');
+    let n = root;
+    for (let i = 0; i < parts.length; i++) {
+      const k = parts[i];
+      if (!n[k]) n[k] = { __isDir: i < parts.length - 1 };
+      if (i < parts.length - 1) n[k].__isDir = true;
+      if (!n[k].__children) n[k].__children = {};
+      if (i === parts.length - 1) n[k].__filePath = p;
+      n = n[k].__children;
+    }
+  }
+  return root;
+}
+
+function renderTree() {
+  const c = document.getElementById('file-tree');
+  if (!S.filePaths.size) { c.innerHTML = ''; return; }
+  const tree = buildTree(S.filePaths);
+  c.innerHTML = '';
+  renderTreeNode(tree, c, 0, '');
+  updateProjectInfo();
+}
+
+function renderTreeNode(node, container, depth, pathPrefix) {
+  const entries = Object.entries(node).filter(([k]) => !k.startsWith('__'));
+  const dirs = entries.filter(([,v]) => v.__isDir).sort(([a],[b]) => a.localeCompare(b));
+  const files = entries.filter(([,v]) => !v.__isDir).sort(([a],[b]) => a.localeCompare(b));
+
+  for (const [name, child] of dirs) {
+    const fp = pathPrefix ? `${pathPrefix}/${name}` : name;
+    const open = S.folderExpanded[fp] !== false;
+    const el = document.createElement('div');
+    el.className = 'tree-dir';
+    el.style.paddingLeft = `${6 + depth * 14}px`;
+    el.innerHTML = `<span class="tree-arrow">${open ? '▾' : '▸'}</span><span class="tree-icon">📁</span><span class="tree-dirname">${esc(name)}</span>`;
+    el.addEventListener('click', e => { e.stopPropagation(); S.folderExpanded[fp] = !open; renderTree(); });
+    container.appendChild(el);
+    if (open) renderTreeNode(child.__children || {}, container, depth + 1, fp);
+  }
+  for (const [name, child] of files) {
+    const fp = child.__filePath;
+    const el = document.createElement('div');
+    el.className = 'tree-file' + (S.activeTab === fp ? ' active' : '');
+    el.style.paddingLeft = `${6 + depth * 14 + 12}px`;
+    el.innerHTML = `<span class="tree-icon">${iconOf(name)}</span><span class="tree-filename" title="${esc(fp)}">${esc(name)}</span>`;
+    el.addEventListener('click', e => { e.stopPropagation(); openFile(fp); });
+    container.appendChild(el);
+  }
+}
+
+// ── Tabs & Editor ──────────────────────
+async function openFile(path) {
+  if (!S.openTabs.includes(path)) S.openTabs.push(path);
+  S.activeTab = path;
+
+  const content = await IDB.get(path) ?? '';
+  if (_editor) {
+    const lang = langOf(path);
+    const old = _editor.getModel();
+    const model = monaco.editor.createModel(content, lang);
+    _editor.setModel(model);
+    if (old) old.dispose();
+    hideEmpty();
+    applyDecorations();
+  }
+
+  document.getElementById('sb-file').textContent = path.split('/').pop();
+  document.getElementById('sb-lang').textContent = langOf(path);
+
+  renderTabs();
+  renderTree();
+  saveLS();
+}
+
+function closeTab(path) {
+  S.openTabs = S.openTabs.filter(p => p !== path);
+  if (S.activeTab === path) {
+    S.activeTab = S.openTabs.at(-1) ?? null;
+    if (S.activeTab) openFile(S.activeTab);
+    else {
+      if (_editor) { _editor.setModel(monaco.editor.createModel('', 'plaintext')); }
+      showEmpty();
+      document.getElementById('sb-file').textContent = 'CodeFlow';
+      document.getElementById('sb-lang').textContent = '—';
+    }
+  }
+  renderTabs();
+  saveLS();
+}
+
+function renderTabs() {
+  const c = document.getElementById('editor-tabs');
+  c.innerHTML = '';
+  for (const p of S.openTabs) {
+    const name = p.split('/').pop();
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (p === S.activeTab ? ' active' : '');
+    tab.innerHTML = `<span class="tab-name" title="${esc(p)}">${esc(name)}</span><span class="tab-close" data-path="${esc(p)}">×</span>`;
+    tab.addEventListener('click', e => { if (!e.target.dataset.path) openFile(p); });
+    tab.querySelector('.tab-close').addEventListener('click', e => { e.stopPropagation(); closeTab(p); });
+    c.appendChild(tab);
+  }
+}
+
+function showEmpty() { document.getElementById('editor-empty').classList.remove('hidden'); }
+function hideEmpty() { document.getElementById('editor-empty').classList.add('hidden'); }
+
+// ── Snippets ───────────────────────────
+const SNIP_COLORS_HEX = ['#388bfd','#3fb950','#d29922','#a371f7','#f85149'];
+
+function addSnippetFromSelection() {
+  if (!_editor || !S.activeTab) { toast('Open a file first'); return; }
+  const sel = _editor.getSelection();
+  const startLine = sel?.startLineNumber ?? _editor.getVisibleRanges()[0]?.startLineNumber ?? 1;
+  const endLine   = sel?.endLineNumber   ?? startLine;
+  openSnippetModal(null, S.activeTab, startLine, endLine);
+}
+
+function openSnippetModal(existing, filePath, startLine, endLine) {
+  const isEdit = !!existing;
+  const fname = filePath.split('/').pop();
+  document.getElementById('modal-title').textContent = isEdit ? 'Edit Snippet' : 'Add Snippet';
+  document.getElementById('modal-sub').textContent = `${fname}  ·  Lines ${startLine}–${endLine}`;
+  const input = document.getElementById('modal-input');
+  input.value = existing?.label ?? `${fname} · L${startLine}–${endLine}`;
+  document.getElementById('modal-bg').classList.remove('hidden');
+  requestAnimationFrame(() => { input.focus(); input.select(); });
+
+  _modalCallback = () => {
+    const label = input.value.trim() || `${fname} · L${startLine}–${endLine}`;
+    if (isEdit) {
+      existing.label = label;
+    } else {
+      S.snippets.push({ id: S.nextId++, filePath, startLine, endLine, label, color: S.snippets.length % 5 });
+    }
+    closeModal();
+    renderSnippets();
+    applyDecorations();
+    saveLS();
+    toast(isEdit ? '✓ Snippet updated' : '✓ Snippet added');
+  };
+}
+
+function closeModal() {
+  document.getElementById('modal-bg').classList.add('hidden');
+  _modalCallback = null;
+}
+
+function deleteSnippet(id) {
+  const idx = S.snippets.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  S.snippets.splice(idx, 1);
+  if (S.isPresenting) {
+    S.presIndex = Math.max(0, Math.min(S.presIndex, S.snippets.length - 1));
+    if (!S.snippets.length) exitPresentation();
+    else updatePresBar();
+  }
+  renderSnippets();
+  applyDecorations();
+  saveLS();
+}
+
+function renderSnippets() {
+  const c = document.getElementById('snippet-list');
+  const countEl = document.getElementById('snip-count');
+  countEl.textContent = S.snippets.length ? `(${S.snippets.length})` : '';
+
+  if (!S.snippets.length) {
+    c.innerHTML = `<div class="snippet-empty">Select lines in the editor and click <strong style="color:var(--text1)">+ Add</strong>.<br><br>Snippets define your presentation order — drag to reorder.</div>`;
+    return;
+  }
+
+  c.innerHTML = '';
+  S.snippets.forEach((snip, i) => {
+    const card = document.createElement('div');
+    card.className = `snip-card snip-color-${snip.color % 5}`;
+    if (S.isPresenting && S.presIndex === i) card.classList.add('snip-active');
+    card.draggable = true;
+    card.dataset.i = i;
+    const fname = snip.filePath.split('/').pop();
+    card.innerHTML = `
+      <div class="snip-num">#${i+1}</div>
+      <div class="snip-label">${esc(snip.label)}</div>
+      <div class="snip-location">${esc(fname)} · L${snip.startLine}–${snip.endLine}</div>
+      <div class="snip-btns">
+        <button class="btn xs" data-a="go">Go to</button>
+        <button class="btn xs" data-a="edit">Edit</button>
+        <button class="btn xs danger" data-a="del">Delete</button>
+      </div>`;
+
+    card.addEventListener('click', e => { if (!e.target.dataset.a) goToSnippet(i); });
+    card.querySelector('[data-a=go]').addEventListener('click', () => goToSnippet(i));
+    card.querySelector('[data-a=edit]').addEventListener('click', () => openSnippetModal(snip, snip.filePath, snip.startLine, snip.endLine));
+    card.querySelector('[data-a=del]').addEventListener('click', () => deleteSnippet(snip.id));
+
+    // Drag-to-reorder
+    let _dragging = null;
+    card.addEventListener('dragstart', e => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(i));
+      card.classList.add('dragging');
+      _dragging = card;
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      c.querySelectorAll('.snip-card').forEach(x => x.classList.remove('drop-above','drop-below'));
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault();
+      const from = parseInt(e.dataTransfer.getData('text/plain') || '');
+      if (isNaN(from) || from === i) return;
+      const r = card.getBoundingClientRect();
+      c.querySelectorAll('.snip-card').forEach(x => x.classList.remove('drop-above','drop-below'));
+      card.classList.add(e.clientY < r.top + r.height / 2 ? 'drop-above' : 'drop-below');
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('drop-above','drop-below'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      const from = parseInt(e.dataTransfer.getData('text/plain'));
+      if (isNaN(from) || from === i) return;
+      const r = card.getBoundingClientRect();
+      let to = e.clientY < r.top + r.height / 2 ? i : i + 1;
+      if (from < to) to--;
+      const [moved] = S.snippets.splice(from, 1);
+      S.snippets.splice(to, 0, moved);
+      // Adjust presIndex
+      if (S.isPresenting) {
+        if (S.presIndex === from) S.presIndex = to;
+        else if (from < S.presIndex && to >= S.presIndex) S.presIndex--;
+        else if (from > S.presIndex && to <= S.presIndex) S.presIndex++;
+      }
+      renderSnippets();
+      applyDecorations();
+      saveLS();
+    });
+
+    c.appendChild(card);
+  });
+}
+
+// ── Decorations ────────────────────────
+function applyDecorations() {
+  if (!_editor || !S.activeTab) return;
+  const decors = [];
+  S.snippets.forEach((snip, i) => {
+    if (snip.filePath !== S.activeTab) return;
+    const isActive = S.isPresenting && S.presIndex === i;
+    const cls = isActive ? 'snip-hl-active' : `snip-hl-${snip.color % 5}`;
+    for (let ln = snip.startLine; ln <= snip.endLine; ln++) {
+      decors.push({
+        range: new monaco.Range(ln, 1, ln, 1),
+        options: {
+          isWholeLine: true,
+          className: cls,
+          overviewRuler: { color: SNIP_COLORS_HEX[snip.color % 5], position: monaco.editor.OverviewRulerLane.Right }
+        }
+      });
+    }
+  });
+  _decorations = _editor.deltaDecorations(_decorations, decors);
+}
+
+// ── Presentation ───────────────────────
+function startPresentation() {
+  if (!S.snippets.length) { toast('Add snippets first'); return; }
+  S.isPresenting = true;
+  S.presIndex = 0;
+  document.getElementById('pres-bar').classList.remove('hidden');
+  document.getElementById('btn-present').textContent = '■ Stop';
+  goToSnippet(0);
+}
+
+function exitPresentation() {
+  S.isPresenting = false;
+  S.presIndex = -1;
+  document.getElementById('pres-bar').classList.add('hidden');
+  document.getElementById('btn-present').textContent = '▶ Present';
+  applyDecorations();
+  renderSnippets();
+}
+
+async function goToSnippet(i) {
+  if (i < 0 || i >= S.snippets.length) return;
+  S.presIndex = i;
+  const snip = S.snippets[i];
+
+  if (S.activeTab !== snip.filePath) await openFile(snip.filePath);
+  applyDecorations();
+  _editor?.revealLinesInCenter(snip.startLine, snip.endLine, monaco.editor.ScrollType.Smooth);
+
+  if (S.isPresenting) updatePresBar();
+  renderSnippets();
+}
+
+function updatePresBar() {
+  const i = S.presIndex;
+  const n = S.snippets.length;
+  const snip = S.snippets[i];
+  document.getElementById('pres-counter').textContent = `Snippet ${i+1} of ${n}`;
+  document.getElementById('pres-title').textContent = snip.label;
+  document.getElementById('pres-loc').textContent = `${snip.filePath.split('/').pop()} · Lines ${snip.startLine}–${snip.endLine}`;
+  document.getElementById('pres-prev').disabled = i === 0;
+  document.getElementById('pres-next').disabled = i === n - 1;
+}
+
+// ── Persistence ─────────────────────────
+function saveLS() {
+  try {
+    localStorage.setItem('cf_snippets', JSON.stringify(S.snippets));
+    localStorage.setItem('cf_nextId', String(S.nextId));
+    localStorage.setItem('cf_tabs', JSON.stringify(S.openTabs));
+    localStorage.setItem('cf_active', S.activeTab ?? '');
+    localStorage.setItem('cf_paths', JSON.stringify([...S.filePaths]));
+    localStorage.setItem('cf_folders', JSON.stringify(S.folderExpanded));
+  } catch(e) { /* quota */ }
+}
+
+async function loadLS() {
+  try {
+    const snips = localStorage.getItem('cf_snippets');
+    if (snips) S.snippets = JSON.parse(snips);
+    const nid = localStorage.getItem('cf_nextId');
+    if (nid) S.nextId = +nid;
+    const tabs = localStorage.getItem('cf_tabs');
+    if (tabs) S.openTabs = JSON.parse(tabs);
+    const active = localStorage.getItem('cf_active');
+    if (active) S.activeTab = active;
+    const paths = localStorage.getItem('cf_paths');
+    if (paths) S.filePaths = new Set(JSON.parse(paths));
+    const folders = localStorage.getItem('cf_folders');
+    if (folders) S.folderExpanded = JSON.parse(folders);
+
+    renderTree();
+    renderSnippets();
+
+    // Reopen last tab
+    if (S.activeTab && S.filePaths.has(S.activeTab)) {
+      await openFile(S.activeTab);
+    }
+  } catch(e) { console.warn('State restore failed', e); }
+}
+
+async function exportProject() {
+  try {
+    // Export paths only (no file content) so the JSON is small and portable.
+    // On import the user re-uploads the same folder and files are matched by path.
+    const paths = [...S.filePaths];
+    const data = {
+      version: 3, app: 'codeflow',
+      exported: new Date().toISOString(),
+      paths,
+      snippets: S.snippets,
+      nextId: S.nextId,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `codeflow-${Date.now()}.json`; a.click();
+    URL.revokeObjectURL(url);
+    toast('\u2713 Exported \u2014 re-upload the same folder on import');
+  } catch(e) { toast('Export failed'); }
+}
+
+// Strip the leading folder-name segment so paths match across machines
+// even if the root folder was renamed (e.g. "myproject/" vs "myproject-v2/").
+function stripRoot(p) {
+  const i = p.indexOf('/');
+  return i === -1 ? p : p.slice(i + 1);
+}
+
+async function importProject(jsonFile) {
+  try {
+    const text = await readFileText(jsonFile);
+    const data = JSON.parse(text);
+
+    // ── Legacy v1/v2: JSON contained full file content ──
+    if ((data.version ?? 1) < 3 && Array.isArray(data.files)) {
+      await IDB.clear();
+      S.filePaths.clear(); S.openTabs = []; S.activeTab = null; S.snippets = [];
+      exitPresentation();
+      for (const { path, content } of data.files) {
+        await IDB.save(path, content);
+        S.filePaths.add(path);
+      }
+      S.snippets = data.snippets ?? [];
+      S.nextId = data.nextId ?? S.snippets.length + 1;
+      saveLS(); renderTree(); renderSnippets();
+      if (_editor) { _editor.setModel(monaco.editor.createModel('', 'plaintext')); showEmpty(); }
+      toast(`\u2713 Imported: ${S.filePaths.size} files, ${S.snippets.length} snippets`);
+      return;
+    }
+
+    // ── v3: paths only \u2014 ask user to upload the matching folder ──
+    const savedPaths = data.paths ?? [];
+    if (!savedPaths.length) { toast('No paths found in export file'); return; }
+
+    const folderInput = document.createElement('input');
+    folderInput.type = 'file';
+    folderInput.multiple = true;
+    folderInput.webkitdirectory = true;
+
+    folderInput.onchange = async () => {
+      const uploadedFiles = Array.from(folderInput.files).filter(f => !isIgnoredFile(f.name));
+      if (!uploadedFiles.length) { toast('No files found in folder'); return; }
+
+      // Index uploaded files by both their full relative path and stripped-root path
+      const uploadedMap = new Map();
+      for (const f of uploadedFiles) {
+        const rel = f.webkitRelativePath || f.name;
+        uploadedMap.set(rel, { path: rel, file: f });
+        uploadedMap.set(stripRoot(rel), { path: rel, file: f });
+      }
+
+      await IDB.clear();
+      S.filePaths.clear(); S.openTabs = []; S.activeTab = null; S.snippets = [];
+      exitPresentation();
+
+      let matched = 0, missing = 0;
+      for (const savedPath of savedPaths) {
+        const hit = uploadedMap.get(savedPath) || uploadedMap.get(stripRoot(savedPath));
+        if (hit) {
+          try {
+            const content = await readFileText(hit.file);
+            await IDB.save(hit.path, content);
+            S.filePaths.add(hit.path);
+            matched++;
+          } catch(e) { missing++; }
+        } else {
+          missing++;
+        }
+      }
+
+      // Remap snippet file references to match the newly uploaded folder's paths
+      S.snippets = (data.snippets ?? []).map(snip => {
+        if (!snip.file) return snip;
+        const hit = uploadedMap.get(snip.file) || uploadedMap.get(stripRoot(snip.file));
+        return hit ? { ...snip, file: hit.path } : snip;
+      });
+      S.nextId = data.nextId ?? S.snippets.length + 1;
+
+      saveLS(); renderTree(); renderSnippets();
+      if (_editor) { _editor.setModel(monaco.editor.createModel('', 'plaintext')); showEmpty(); }
+      const msg = missing
+        ? `\u2713 Imported ${matched} files (${missing} not matched in folder)`
+        : `\u2713 Imported ${matched} files, ${S.snippets.length} snippets`;
+      toast(msg);
+    };
+
+    folderInput.click();
+  } catch(e) { toast('Import failed \u2014 invalid file'); console.error(e); }
+}
+
+// ── Project Info ───────────────────────
+function updateProjectInfo() {
+  const n = S.filePaths.size;
+  if (!n) { document.getElementById('project-info').textContent = 'no project · drop files to begin'; return; }
+  // Find common prefix (project name)
+  const paths = [...S.filePaths];
+  const firstParts = paths[0].split('/');
+  let prefix = firstParts.length > 1 ? firstParts[0] : '';
+  for (const p of paths) if (!p.startsWith(prefix + '/')) { prefix = ''; break; }
+  document.getElementById('project-info').textContent =
+    `${prefix || 'project'}  ·  ${n} file${n !== 1 ? 's' : ''}  ·  ${S.snippets.length} snippet${S.snippets.length !== 1 ? 's' : ''}`;
+}
+
+// ── Resizable Panels ───────────────────
+function makeResizer(resId, panelId, side) {
+  const res = document.getElementById(resId);
+  const panel = document.getElementById(panelId);
+  if (!res || !panel) return;
+  res.addEventListener('mousedown', e => {
+    e.preventDefault();
+    res.classList.add('dragging');
+    const startX = e.clientX;
+    const startW = panel.offsetWidth;
+    const onMove = e => {
+      const dx = e.clientX - startX;
+      const newW = Math.max(140, Math.min(startW + (side === 'left' ? dx : -dx), 600));
+      panel.style.width = newW + 'px';
+      _editor?.layout();
+    };
+    const onUp = () => {
+      res.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+// ── Drag and Drop (files) ──────────────
+function initDnD() {
+  const app = document.getElementById('app');
+  const dz = document.getElementById('drop-zone');
+  let dragDepth = 0;
+
+  app.addEventListener('dragenter', e => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    dragDepth++;
+    dz.classList.add('dragover');
+  });
+  app.addEventListener('dragleave', e => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    dragDepth--;
+    if (dragDepth <= 0) { dragDepth = 0; dz.classList.remove('dragover'); }
+  });
+  app.addEventListener('dragover', e => {
+    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+  });
+  app.addEventListener('drop', async e => {
+    dragDepth = 0;
+    dz.classList.remove('dragover');
+    if (!e.dataTransfer.types.includes('Files')) return;
+    e.preventDefault();
+    const items = [...(e.dataTransfer.items || [])];
+    if (items.length && items[0].webkitGetAsEntry) await processDataTransfer(items);
+    else await processFileList(e.dataTransfer.files);
+  });
+  dz.addEventListener('click', () => document.getElementById('fi-files').click());
+}
+
+// ── Utilities ──────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let _toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── Empty state decoration ─────────────
+function fillEmptyGrid() {
+  const grid = document.getElementById('empty-grid');
+  if (!grid) return;
+  const lines = [
+    'function render() {','  return <App />','}','','const state = {','  files: [],','  snippets: [],',
+    '  presenting: false','};','','// Navigate code','// like slides ▶','','import React from','\'react\';','',
+    'export default','function App() {','  // ...','  return null;','}','','const go = (i) =>','  scroll(i);',
+  ];
+  grid.innerHTML = lines.map(l => `<span>${esc(l)}</span>`).join('');
+}
+
+// ── Monaco Init ────────────────────────
+function initMonaco() {
+  require.config({
+    paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }
+  });
+  require(['vs/editor/editor.main'], async () => {
+    // Inject highlight styles
+    const style = document.createElement('style');
+    style.textContent = `
+      .snip-hl-0 { background: rgba(56,139,253,0.2) !important; border-left: 3px solid #388bfd !important; }
+      .snip-hl-1 { background: rgba(63,185,80,0.2) !important; border-left: 3px solid #3fb950 !important; }
+      .snip-hl-2 { background: rgba(210,153,34,0.2) !important; border-left: 3px solid #d29922 !important; }
+      .snip-hl-3 { background: rgba(163,113,247,0.2) !important; border-left: 3px solid #a371f7 !important; }
+      .snip-hl-4 { background: rgba(248,81,73,0.2) !important; border-left: 3px solid #f85149 !important; }
+      .snip-hl-active { background: rgba(56,139,253,0.32) !important; border-left: 3px solid #58a6ff !important; box-shadow: inset 0 0 0 1px rgba(56,139,253,0.2); }
+    `;
+    document.head.appendChild(style);
+
+    _editor = monaco.editor.create(document.getElementById('monaco-container'), {
+      value: '',
+      language: 'plaintext',
+      theme: 'vs-dark',
+      fontSize: 14,
+      fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
+      fontLigatures: true,
+      minimap: { enabled: true, renderCharacters: false, scale: 1 },
+      scrollBeyondLastLine: false,
+      lineNumbers: 'on',
+      glyphMargin: false,
+      folding: true,
+      wordWrap: 'off',
+      automaticLayout: true,
+      contextmenu: true,
+      readOnly: false,
+      renderLineHighlight: 'line',
+      smoothScrolling: true,
+      cursorBlinking: 'smooth',
+      cursorSmoothCaretAnimation: 'on',
+      padding: { top: 8, bottom: 8 },
+      overviewRulerBorder: false,
+      renderWhitespace: 'none',
+      guides: { indentation: true, bracketPairs: true },
+    });
+
+    _editor.onDidChangeCursorPosition(e => {
+      document.getElementById('sb-cursor').textContent = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+    });
+    _editor.onDidChangeCursorSelection(e => {
+      const sel = e.selection;
+      if (sel.isEmpty()) { document.getElementById('sb-sel').textContent = ''; return; }
+      const lines = sel.endLineNumber - sel.startLineNumber + 1;
+      document.getElementById('sb-sel').textContent = `${lines} line${lines > 1 ? 's' : ''} (L${sel.startLineNumber}–${sel.endLineNumber})`;
+    });
+
+    // Restore state
+    await IDB.open ? undefined : undefined; // ensure init
+    await loadLS();
+    updateProjectInfo();
+    toast('CodeFlow ready ✓');
+  });
+}
+
+// ── Events ─────────────────────────────
+function bindEvents() {
+  // File inputs
+  document.getElementById('fi-files').onchange = async e => { await processFileList(e.target.files); e.target.value = ''; };
+  document.getElementById('fi-folder').onchange = async e => { await processFileList(e.target.files); e.target.value = ''; };
+  document.getElementById('fi-import').onchange = async e => { if (e.target.files[0]) await importProject(e.target.files[0]); e.target.value = ''; };
+
+  document.getElementById('btn-files').onclick = () => document.getElementById('fi-files').click();
+  document.getElementById('btn-folder').onclick = () => document.getElementById('fi-folder').click();
+  document.getElementById('btn-files-2').onclick = () => document.getElementById('fi-files').click();
+  document.getElementById('btn-folder-2').onclick = () => document.getElementById('fi-folder').click();
+
+  document.getElementById('btn-clear').onclick = async () => {
+    if (!confirm('Clear all files? Snippets will be kept.')) return;
+    await IDB.clear();
+    S.filePaths.clear(); S.openTabs = []; S.activeTab = null;
+    exitPresentation();
+    if (_editor) { _editor.setModel(monaco.editor.createModel('', 'plaintext')); showEmpty(); }
+    renderTree(); renderTabs();
+    document.getElementById('sb-file').textContent = 'CodeFlow';
+    document.getElementById('sb-lang').textContent = '—';
+    saveLS(); toast('Files cleared');
+  };
+
+  // Snippets
+  document.getElementById('btn-add-snip').onclick = addSnippetFromSelection;
+  document.getElementById('modal-ok').onclick = () => _modalCallback?.();
+  document.getElementById('modal-cancel').onclick = closeModal;
+  document.getElementById('modal-input').onkeydown = e => {
+    if (e.key === 'Enter') _modalCallback?.();
+    if (e.key === 'Escape') closeModal();
+  };
+  document.getElementById('modal-bg').onclick = e => { if (e.target === document.getElementById('modal-bg')) closeModal(); };
+
+  // Presentation
+  document.getElementById('btn-present').onclick = () => S.isPresenting ? exitPresentation() : startPresentation();
+  document.getElementById('pres-prev').onclick = () => goToSnippet(S.presIndex - 1);
+  document.getElementById('pres-next').onclick = () => goToSnippet(S.presIndex + 1);
+  document.getElementById('pres-exit').onclick = exitPresentation;
+
+  // Export/import
+  document.getElementById('btn-export').onclick = exportProject;
+  document.getElementById('btn-import').onclick = () => document.getElementById('fi-import').click();
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    // Check if focus is inside Monaco
+    const monacoEl = document.getElementById('monaco-container');
+    if (monacoEl?.contains(document.activeElement) && document.activeElement !== document.body) {
+      // Only intercept if presenting and not typing
+      if (!S.isPresenting) return;
+    }
+    if (S.isPresenting) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); goToSnippet(S.presIndex + 1); }
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'   || e.key === 'PageUp')   { e.preventDefault(); goToSnippet(S.presIndex - 1); }
+      if (e.key === 'Escape') exitPresentation();
+    }
+  });
+}
+
+// ── Boot ───────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  fillEmptyGrid();
+  bindEvents();
+  initDnD();
+  makeResizer('res-left', 'explorer', 'left');
+  makeResizer('res-right', 'snippet-panel', 'right');
+  initMonaco();
+});
+</script>
+</body>
+</html>
