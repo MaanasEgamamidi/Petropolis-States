@@ -966,7 +966,7 @@ body {
       <div class="pres-loc" id="pres-loc"></div>
     </div>
     <button class="pres-nav" id="pres-next">▶</button>
-    <div class="pres-hint">← → navigate<br>Esc to exit</div>
+    <div class="pres-hint">← → or scroll on arrows<br>Esc to exit</div>
     <button class="btn xs" id="pres-exit" style="margin-left:4px">✕ Exit</button>
   </div>
 
@@ -1864,6 +1864,44 @@ function bindEvents() {
   document.getElementById('pres-prev').onclick = () => goToSnippet(S.presIndex - 1);
   document.getElementById('pres-next').onclick = () => goToSnippet(S.presIndex + 1);
   document.getElementById('pres-exit').onclick = exitPresentation;
+
+  // Scroll-on-hover for arrow buttons
+  (function() {
+    let _overArrow = false;
+    let _scrollCooldown = false;
+
+    function onArrowScroll(e) {
+      if (!_overArrow || !S.isPresenting) return;
+      e.preventDefault();
+      if (_scrollCooldown) return;
+      _scrollCooldown = true;
+      setTimeout(() => { _scrollCooldown = false; }, 300);
+      // Scroll direction always determines navigation, regardless of which button
+      if (e.deltaY > 0 || e.deltaX > 0) {
+        goToSnippet(S.presIndex + 1);
+      } else {
+        goToSnippet(S.presIndex - 1);
+      }
+    }
+
+    const prevBtn = document.getElementById('pres-prev');
+    const nextBtn = document.getElementById('pres-next');
+
+    // Use the parent pres-bar so disabled buttons don't break mouseenter/leave
+    const presBar = document.getElementById('pres-bar');
+    presBar.addEventListener('mouseenter', e => {
+      if (e.target === prevBtn || e.target === nextBtn) _overArrow = true;
+    }, true);
+    presBar.addEventListener('mouseover', e => {
+      if (e.target === prevBtn || e.target === nextBtn) _overArrow = true;
+      else if (!prevBtn.matches(':hover') && !nextBtn.matches(':hover')) _overArrow = false;
+    });
+    presBar.addEventListener('mouseleave', () => { _overArrow = false; });
+    prevBtn.addEventListener('mouseleave', () => { if (!nextBtn.matches(':hover')) _overArrow = false; });
+    nextBtn.addEventListener('mouseleave', () => { if (!prevBtn.matches(':hover')) _overArrow = false; });
+
+    window.addEventListener('wheel', onArrowScroll, { passive: false });
+  })();
 
   // Export/import
   document.getElementById('btn-export').onclick = exportProject;
