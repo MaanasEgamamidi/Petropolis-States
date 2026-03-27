@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CodeFlow — Code Presentation Tool</title>
+<script>
+try {
+  var _tf = ['paper','midnight','ember','dusk','forest'];
+  var _t = localStorage.getItem('cf_theme');
+  if (_t && _tf.indexOf(_t) !== -1) document.documentElement.setAttribute('data-theme', _t);
+} catch (e) {}
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
 
@@ -30,9 +37,168 @@
   --red: #f85149;
   --pink: #ff7b72;
   --snip-colors: #388bfd, #3fb950, #d29922, #a371f7, #f85149;
+  --accent-hover: #58a6ff;
+  --tree-active-bg: rgba(56,139,253,0.15);
+  --snip-active-bg: rgba(56,139,253,0.1);
+  --hover-overlay: rgba(255,255,255,0.04);
+  --danger-hover-bg: rgba(248,81,73,0.08);
+  --modal-backdrop: rgba(0,0,0,0.7);
+  --modal-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  --statusbar-fg: rgba(255,255,255,0.9);
   --radius: 6px;
   --font-ui: 'Inter', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+[data-theme="paper"] {
+  --bg0: #f8f9fc;
+  --bg1: #eef1f6;
+  --bg2: #e2e6ed;
+  --bg3: #cfd6e1;
+  --bg4: #b8c0d0;
+  --border: #d0d7e3;
+  --border-muted: #e2e6ed;
+  --text0: #1a1e26;
+  --text1: #3d4454;
+  --text2: #6b7280;
+  --text3: #9ca3af;
+  --accent: #2563eb;
+  --accent-dim: rgba(37,99,235,0.12);
+  --accent-border: rgba(37,99,235,0.35);
+  --accent-hover: #3b82f6;
+  --green: #059669;
+  --orange: #d97706;
+  --purple: #7c3aed;
+  --red: #dc2626;
+  --pink: #e11d48;
+  --snip-colors: #2563eb, #059669, #d97706, #7c3aed, #dc2626;
+  --tree-active-bg: rgba(37,99,235,0.12);
+  --snip-active-bg: rgba(37,99,235,0.08);
+  --hover-overlay: rgba(0,0,0,0.04);
+  --danger-hover-bg: rgba(220,38,38,0.08);
+  --modal-backdrop: rgba(15,23,42,0.45);
+  --modal-shadow: 0 20px 50px rgba(15,23,42,0.2);
+  --statusbar-fg: rgba(255,255,255,0.95);
+}
+
+[data-theme="midnight"] {
+  --bg0: #0a0e14;
+  --bg1: #0f1419;
+  --bg2: #151b24;
+  --bg3: #1e2632;
+  --bg4: #2a3444;
+  --border: #1e2a3a;
+  --border-muted: #151d28;
+  --text0: #e7ecf3;
+  --text1: #b8c5d6;
+  --text2: #73849a;
+  --text3: #4a5a6e;
+  --accent: #39bae6;
+  --accent-dim: rgba(57,186,230,0.15);
+  --accent-border: rgba(57,186,230,0.4);
+  --accent-hover: #5fcff7;
+  --green: #56d364;
+  --orange: #e6c06d;
+  --purple: #c792ea;
+  --red: #f07178;
+  --pink: #f28779;
+  --snip-colors: #39bae6, #56d364, #e6c06d, #c792ea, #f07178;
+  --tree-active-bg: rgba(57,186,230,0.16);
+  --snip-active-bg: rgba(57,186,230,0.1);
+  --hover-overlay: rgba(255,255,255,0.04);
+  --danger-hover-bg: rgba(240,113,120,0.1);
+  --modal-backdrop: rgba(0,0,0,0.75);
+  --modal-shadow: 0 20px 60px rgba(0,0,0,0.65);
+}
+
+[data-theme="ember"] {
+  --bg0: #12100e;
+  --bg1: #1a1714;
+  --bg2: #242019;
+  --bg3: #322d26;
+  --bg4: #403931;
+  --border: #3d342b;
+  --border-muted: #2a241e;
+  --text0: #f0ebe4;
+  --text1: #d4cbc0;
+  --text2: #9a8f82;
+  --text3: #6b6158;
+  --accent: #e8944a;
+  --accent-dim: rgba(232,148,74,0.15);
+  --accent-border: rgba(232,148,74,0.4);
+  --accent-hover: #f0a860;
+  --green: #7ec85c;
+  --orange: #e7a23d;
+  --purple: #b88ae8;
+  --red: #e86b6b;
+  --pink: #f0a0a0;
+  --snip-colors: #e8944a, #7ec85c, #e7a23d, #b88ae8, #e86b6b;
+  --tree-active-bg: rgba(232,148,74,0.14);
+  --snip-active-bg: rgba(232,148,74,0.09);
+  --hover-overlay: rgba(255,255,255,0.04);
+  --danger-hover-bg: rgba(232,107,107,0.1);
+  --modal-backdrop: rgba(0,0,0,0.72);
+  --modal-shadow: 0 20px 60px rgba(0,0,0,0.55);
+}
+
+[data-theme="dusk"] {
+  --bg0: #13121a;
+  --bg1: #1b1a24;
+  --bg2: #252333;
+  --bg3: #322f42;
+  --bg4: #3f3b52;
+  --border: #2d2940;
+  --border-muted: #201e2c;
+  --text0: #eceaf4;
+  --text1: #c7c3d6;
+  --text2: #8d87a3;
+  --text3: #5c5670;
+  --accent: #a78bfa;
+  --accent-dim: rgba(167,139,250,0.15);
+  --accent-border: rgba(167,139,250,0.4);
+  --accent-hover: #c4b5fd;
+  --green: #6ee7b7;
+  --orange: #fbbf24;
+  --purple: #c084fc;
+  --red: #fb7185;
+  --pink: #fda4af;
+  --snip-colors: #a78bfa, #6ee7b7, #fbbf24, #c084fc, #fb7185;
+  --tree-active-bg: rgba(167,139,250,0.14);
+  --snip-active-bg: rgba(167,139,250,0.09);
+  --hover-overlay: rgba(255,255,255,0.04);
+  --danger-hover-bg: rgba(251,113,133,0.1);
+  --modal-backdrop: rgba(0,0,0,0.72);
+  --modal-shadow: 0 20px 60px rgba(0,0,0,0.58);
+}
+
+[data-theme="forest"] {
+  --bg0: #0d1210;
+  --bg1: #131a17;
+  --bg2: #1a2420;
+  --bg3: #24302a;
+  --bg4: #2f3f36;
+  --border: #27332e;
+  --border-muted: #1a231f;
+  --text0: #e8f0ec;
+  --text1: #b8ccc0;
+  --text2: #769384;
+  --text3: #4f665c;
+  --accent: #4ade80;
+  --accent-dim: rgba(74,222,128,0.15);
+  --accent-border: rgba(74,222,128,0.4);
+  --accent-hover: #86efac;
+  --green: #22c55e;
+  --orange: #fbbf24;
+  --purple: #a78bfa;
+  --red: #f87171;
+  --pink: #fca5a5;
+  --snip-colors: #4ade80, #22c55e, #fbbf24, #a78bfa, #f87171;
+  --tree-active-bg: rgba(74,222,128,0.14);
+  --snip-active-bg: rgba(74,222,128,0.09);
+  --hover-overlay: rgba(255,255,255,0.04);
+  --danger-hover-bg: rgba(248,113,113,0.1);
+  --modal-backdrop: rgba(0,0,0,0.72);
+  --modal-shadow: 0 20px 60px rgba(0,0,0,0.55);
 }
 
 html, body { height: 100%; overflow: hidden; }
@@ -107,6 +273,49 @@ body {
   flex-shrink: 0;
 }
 
+.theme-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.theme-select-wrap label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text3);
+  white-space: nowrap;
+}
+#theme-select {
+  appearance: none;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text1);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 22px 4px 8px;
+  cursor: pointer;
+  max-width: 130px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+}
+[data-theme="paper"] #theme-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E");
+}
+#theme-select:hover {
+  background-color: var(--bg3);
+  border-color: var(--bg4);
+  color: var(--text0);
+}
+#theme-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
 /* ─── BUTTONS ─── */
 .btn {
   display: inline-flex;
@@ -126,10 +335,10 @@ body {
 }
 .btn:hover { background: var(--bg3); border-color: var(--bg4); color: var(--text0); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:hover { background: #58a6ff; border-color: #58a6ff; }
+.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--text2); padding: 4px 6px; }
 .btn.ghost:hover { background: var(--bg2); color: var(--text0); border-color: transparent; }
-.btn.danger:hover { border-color: var(--red); color: var(--red); background: rgba(248,81,73,0.08); }
+.btn.danger:hover { border-color: var(--red); color: var(--red); background: var(--danger-hover-bg); }
 .btn.xs { padding: 3px 7px; font-size: 11px; }
 .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
 
@@ -208,8 +417,8 @@ body {
   border-radius: 0;
   transition: background 0.08s;
 }
-.tree-dir:hover, .tree-file:hover { background: rgba(255,255,255,0.04); }
-.tree-file.active { background: rgba(56,139,253,0.15); color: var(--text0); }
+.tree-dir:hover, .tree-file:hover { background: var(--hover-overlay); }
+.tree-file.active { background: var(--tree-active-bg); color: var(--text0); }
 .tree-file.active .tree-filename { color: var(--text0); }
 
 .tree-arrow {
@@ -220,6 +429,13 @@ body {
   color: var(--text3);
 }
 .tree-icon { flex-shrink: 0; width: 17px; text-align: center; font-size: 12px; }
+.tree-icon.tree-icon-csharp {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--purple);
+  line-height: 1;
+}
 .tree-filename, .tree-dirname {
   font-size: 12px;
   font-family: var(--font-mono);
@@ -382,7 +598,7 @@ body {
 #statusbar {
   height: 22px;
   background: var(--accent);
-  color: rgba(255,255,255,0.9);
+  color: var(--statusbar-fg);
   display: flex;
   align-items: center;
   padding: 0 12px;
@@ -437,7 +653,7 @@ body {
 }
 .snip-card:hover { background: var(--bg3); border-color: var(--bg4); border-left-color: inherit; }
 .snip-card.snip-active {
-  background: rgba(56,139,253,0.1);
+  background: var(--snip-active-bg);
   border-color: var(--accent-border);
   border-left-color: var(--accent) !important;
   box-shadow: 0 0 0 1px var(--accent-border);
@@ -492,7 +708,7 @@ body {
 
 /* ─── PRESENTATION BAR ─── */
 #pres-bar {
-  background: #0d1117;
+  background: var(--bg0);
   border-top: 1px solid var(--border);
   padding: 10px 16px;
   display: flex;
@@ -564,7 +780,7 @@ body {
 #modal-bg {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: var(--modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -578,7 +794,7 @@ body {
   border-radius: 10px;
   padding: 22px 24px 20px;
   width: 380px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  box-shadow: var(--modal-shadow);
 }
 .modal-title {
   font-size: 14px;
@@ -638,18 +854,18 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--bg4); }
 
 /* ─── SNIPPET HIGHLIGHT CLASSES (injected into Monaco) ─── */
-.snip-hl-0 { background: rgba(56,139,253,0.18) !important; border-left: 2px solid rgba(56,139,253,0.7) !important; }
-.snip-hl-1 { background: rgba(63,185,80,0.18) !important; border-left: 2px solid rgba(63,185,80,0.7) !important; }
-.snip-hl-2 { background: rgba(210,153,34,0.18) !important; border-left: 2px solid rgba(210,153,34,0.7) !important; }
-.snip-hl-3 { background: rgba(163,113,247,0.18) !important; border-left: 2px solid rgba(163,113,247,0.7) !important; }
-.snip-hl-4 { background: rgba(248,81,73,0.18) !important; border-left: 2px solid rgba(248,81,73,0.7) !important; }
-.snip-hl-active { background: rgba(56,139,253,0.30) !important; border-left: 3px solid #388bfd !important; }
+.snip-hl-0 { background: color-mix(in srgb, var(--accent) 20%, transparent) !important; border-left: 2px solid var(--accent) !important; }
+.snip-hl-1 { background: color-mix(in srgb, var(--green) 20%, transparent) !important; border-left: 2px solid var(--green) !important; }
+.snip-hl-2 { background: color-mix(in srgb, var(--orange) 20%, transparent) !important; border-left: 2px solid var(--orange) !important; }
+.snip-hl-3 { background: color-mix(in srgb, var(--purple) 20%, transparent) !important; border-left: 2px solid var(--purple) !important; }
+.snip-hl-4 { background: color-mix(in srgb, var(--red) 20%, transparent) !important; border-left: 2px solid var(--red) !important; }
+.snip-hl-active { background: color-mix(in srgb, var(--accent) 34%, transparent) !important; border-left: 3px solid var(--accent-hover) !important; }
 
-.snip-color-0 { border-left-color: #388bfd !important; }
-.snip-color-1 { border-left-color: #3fb950 !important; }
-.snip-color-2 { border-left-color: #d29922 !important; }
-.snip-color-3 { border-left-color: #a371f7 !important; }
-.snip-color-4 { border-left-color: #f85149 !important; }
+.snip-color-0 { border-left-color: var(--accent) !important; }
+.snip-color-1 { border-left-color: var(--green) !important; }
+.snip-color-2 { border-left-color: var(--orange) !important; }
+.snip-color-3 { border-left-color: var(--purple) !important; }
+.snip-color-4 { border-left-color: var(--red) !important; }
 </style>
 </head>
 <body>
@@ -663,6 +879,17 @@ body {
     </div>
     <div id="project-info">no project · drop files to begin</div>
     <div class="title-actions">
+      <div class="theme-select-wrap" title="UI color theme">
+        <label for="theme-select">Theme</label>
+        <select id="theme-select" aria-label="Color theme">
+          <option value="github">GitHub Dark</option>
+          <option value="paper">Paper (light)</option>
+          <option value="midnight">Midnight</option>
+          <option value="ember">Ember</option>
+          <option value="dusk">Dusk</option>
+          <option value="forest">Forest</option>
+        </select>
+      </div>
       <button class="btn xs" id="btn-import">⤵ Import</button>
       <button class="btn xs" id="btn-export">⤴ Export</button>
       <button class="btn xs primary" id="btn-present">▶ Present</button>
@@ -829,6 +1056,41 @@ let _editor = null;        // Monaco editor instance
 let _decorations = [];     // current Monaco decoration IDs
 let _modalCallback = null; // pending modal confirm
 
+const THEME_MONACO = {
+  github: 'vs-dark',
+  paper: 'vs',
+  midnight: 'vs-dark',
+  ember: 'vs-dark',
+  dusk: 'vs-dark',
+  forest: 'vs-dark',
+};
+
+function getCurrentThemeId() {
+  return document.documentElement.getAttribute('data-theme') || 'github';
+}
+
+function applyTheme(id) {
+  if (!THEME_MONACO[id]) id = 'github';
+  if (id === 'github') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', id);
+  try { localStorage.setItem('cf_theme', id); } catch (e) {}
+  const sel = document.getElementById('theme-select');
+  if (sel) sel.value = id;
+  if (typeof monaco !== 'undefined' && _editor) {
+    monaco.editor.setTheme(THEME_MONACO[id]);
+  }
+}
+
+function snippetRulerColors() {
+  const cs = getComputedStyle(document.documentElement);
+  const keys = ['accent', 'green', 'orange', 'purple', 'red'];
+  const fallback = ['#388bfd', '#3fb950', '#d29922', '#a371f7', '#f85149'];
+  return keys.map((k, i) => {
+    const v = cs.getPropertyValue('--' + k).trim();
+    return v || fallback[i];
+  });
+}
+
 // ── Language Map ───────────────────────
 const LANG = {
   js:'javascript', jsx:'javascript', mjs:'javascript', cjs:'javascript',
@@ -868,7 +1130,7 @@ function iconOf(name) {
   const m = {
     js:'🟨',jsx:'🟨',mjs:'🟨',ts:'🔷',tsx:'🔷',
     py:'🐍',java:'☕',cpp:'⚙️',c:'⚙️',h:'⚙️',
-    cs:'💜',go:'🔵',rs:'🦀',rb:'💎',php:'🐘',
+    go:'🔵',rs:'🦀',rb:'💎',php:'🐘',
     swift:'🍎',kt:'🟣',
     css:'🎨',scss:'🎨',sass:'🎨',
     html:'🌐',htm:'🌐',
@@ -879,6 +1141,12 @@ function iconOf(name) {
     svg:'🖼️',png:'🖼️',jpg:'🖼️',
   };
   return m[ext] || '📄';
+}
+
+function treeFileIconHtml(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  if (ext === 'cs') return '<span class="tree-icon tree-icon-csharp">#</span>';
+  return `<span class="tree-icon">${iconOf(name)}</span>`;
 }
 
 // ── IndexedDB file processing ──────────
@@ -1004,7 +1272,7 @@ function renderTreeNode(node, container, depth, pathPrefix) {
     const el = document.createElement('div');
     el.className = 'tree-file' + (S.activeTab === fp ? ' active' : '');
     el.style.paddingLeft = `${6 + depth * 14 + 12}px`;
-    el.innerHTML = `<span class="tree-icon">${iconOf(name)}</span><span class="tree-filename" title="${esc(fp)}">${esc(name)}</span>`;
+    el.innerHTML = `${treeFileIconHtml(name)}<span class="tree-filename" title="${esc(fp)}">${esc(name)}</span>`;
     el.addEventListener('click', e => { e.stopPropagation(); openFile(fp); });
     container.appendChild(el);
   }
@@ -1068,8 +1336,6 @@ function showEmpty() { document.getElementById('editor-empty').classList.remove(
 function hideEmpty() { document.getElementById('editor-empty').classList.add('hidden'); }
 
 // ── Snippets ───────────────────────────
-const SNIP_COLORS_HEX = ['#388bfd','#3fb950','#d29922','#a371f7','#f85149'];
-
 function addSnippetFromSelection() {
   if (!_editor || !S.activeTab) { toast('Open a file first'); return; }
   const sel = _editor.getSelection();
@@ -1214,7 +1480,7 @@ function applyDecorations() {
         options: {
           isWholeLine: true,
           className: cls,
-          overviewRuler: { color: SNIP_COLORS_HEX[snip.color % 5], position: monaco.editor.OverviewRulerLane.Right }
+          overviewRuler: { color: snippetRulerColors()[snip.color % 5], position: monaco.editor.OverviewRulerLane.Right }
         }
       });
     }
@@ -1514,22 +1780,11 @@ function initMonaco() {
     paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }
   });
   require(['vs/editor/editor.main'], async () => {
-    // Inject highlight styles
-    const style = document.createElement('style');
-    style.textContent = `
-      .snip-hl-0 { background: rgba(56,139,253,0.2) !important; border-left: 3px solid #388bfd !important; }
-      .snip-hl-1 { background: rgba(63,185,80,0.2) !important; border-left: 3px solid #3fb950 !important; }
-      .snip-hl-2 { background: rgba(210,153,34,0.2) !important; border-left: 3px solid #d29922 !important; }
-      .snip-hl-3 { background: rgba(163,113,247,0.2) !important; border-left: 3px solid #a371f7 !important; }
-      .snip-hl-4 { background: rgba(248,81,73,0.2) !important; border-left: 3px solid #f85149 !important; }
-      .snip-hl-active { background: rgba(56,139,253,0.32) !important; border-left: 3px solid #58a6ff !important; box-shadow: inset 0 0 0 1px rgba(56,139,253,0.2); }
-    `;
-    document.head.appendChild(style);
-
+    const uiTheme = getCurrentThemeId();
     _editor = monaco.editor.create(document.getElementById('monaco-container'), {
       value: '',
       language: 'plaintext',
-      theme: 'vs-dark',
+      theme: THEME_MONACO[uiTheme] || 'vs-dark',
       fontSize: 14,
       fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
       fontLigatures: true,
@@ -1614,6 +1869,11 @@ function bindEvents() {
   document.getElementById('btn-export').onclick = exportProject;
   document.getElementById('btn-import').onclick = () => document.getElementById('fi-import').click();
 
+  document.getElementById('theme-select').onchange = e => {
+    applyTheme(e.target.value);
+    applyDecorations();
+  };
+
   // Keyboard
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -1633,6 +1893,12 @@ function bindEvents() {
 
 // ── Boot ───────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  const ts = document.getElementById('theme-select');
+  if (ts) {
+    let id = getCurrentThemeId();
+    if (!THEME_MONACO[id]) id = 'github';
+    ts.value = id;
+  }
   fillEmptyGrid();
   bindEvents();
   initDnD();
