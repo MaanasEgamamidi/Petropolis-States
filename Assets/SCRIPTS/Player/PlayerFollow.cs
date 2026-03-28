@@ -48,6 +48,15 @@ public class PlayerFollow : MonoBehaviour
     float _playerMoveSpeed = 3.5f;
     float _playerSprintSpeed = 8f;
 
+    [Tooltip("If farther than this from the follow slot (horizontal), snap beside the player (e.g. after PetChoose).")]
+    [SerializeField] float snapIfBeyondHorizontal = 12f;
+
+    [Tooltip("While idle, still walk toward the slot at least this planar speed if outside catchUpDistance.")]
+    [SerializeField] float idleCatchUpSpeed = 3.5f;
+
+    [Tooltip("Planar distance under which idle catch-up stops (meters).")]
+    [SerializeField] float catchUpDistance = 2.5f;
+
     void Awake()
     {
         _animator = GetComponent<Animator>();
@@ -96,6 +105,7 @@ public class PlayerFollow : MonoBehaviour
         if (dogMeshVisual != null)
             dogMeshVisual.SetActive(true);
         ApplySkinFromGlobalData();
+        SnapBesidePlayerIfNeeded(force: true);
     }
 
     void Update()
@@ -106,6 +116,10 @@ public class PlayerFollow : MonoBehaviour
             if (followTarget == null) return;
         }
 
+        if (GlobalData.StoredPetSkin <= 0) return;
+
+        SnapBesidePlayerIfNeeded(force: false);
+
         float playerSpeed = GetPlayerHorizontalSpeed();
         bool playerSprinting = _playerInputs != null && _playerInputs.sprint;
         float targetSpeed = ComputeDogSpeed(playerSpeed, playerSprinting);
@@ -113,20 +127,25 @@ public class PlayerFollow : MonoBehaviour
         if (_animator != null)
             _animator.SetFloat(SpeedParam, targetSpeed);
 
-        Vector3 targetPos = followTarget.position + followTarget.TransformDirection(followOffset);
-        targetPos.y = GetGroundHeightAt(targetPos) + groundHeightOffset;
+        Vector3 targetPos = GetFollowSlotWorldPosition();
         float moveSpeed = targetSpeed > 0.1f ? followSpeed * Mathf.Clamp01(targetSpeed / _playerSprintSpeed) : 0f;
 
-        if (moveSpeed > 0.01f)
+        Vector3 planarToSlot = targetPos - transform.position;
+        planarToSlot.y = 0f;
+        float planarDist = planarToSlot.magnitude;
+        bool needIdleCatchUp = moveSpeed <= 0.01f && planarDist > catchUpDistance;
+
+        if (moveSpeed > 0.01f || needIdleCatchUp)
         {
+            float effectiveSpeed = moveSpeed > 0.01f ? moveSpeed : idleCatchUpSpeed;
             Vector3 toTarget = targetPos - transform.position;
             toTarget.y = 0f;
 
-            if (toTarget.sqrMagnitude > 0.01f)
+            if (toTarget.sqrMagnitude > 0.0001f)
             {
-                float step = moveSpeed * Time.deltaTime;
+                float step = effectiveSpeed * Time.deltaTime;
                 Vector3 newPos = Vector3.MoveTowards(transform.position, targetPos, step);
-                newPos.y = GetGroundHeightAt(newPos) + groundHeightOffset;
+                newPos.y = GetGroundHeightAt(newPos.x, newPos.z) + groundHeightOffset;
                 transform.position = newPos;
                 transform.rotation = Quaternion.Slerp(transform.rotation,
                     Quaternion.LookRotation(toTarget.normalized),
@@ -135,8 +154,7 @@ public class PlayerFollow : MonoBehaviour
         }
         else
         {
-            // Even when idle, keep dog on the surface beneath it (e.g. if player moved away)
-            float groundY = GetGroundHeightAt(transform.position) + groundHeightOffset;
+            float groundY = GetGroundHeightAt(transform.position.x, transform.position.z) + groundHeightOffset;
             if (Mathf.Abs(transform.position.y - groundY) > 0.01f)
             {
                 Vector3 pos = transform.position;
@@ -179,6 +197,29 @@ public class PlayerFollow : MonoBehaviour
         }
     }
 
+    Vector3 GetFollowSlotWorldPosition()
+    {
+        Vector3 slot = followTarget.position + followTarget.TransformDirection(followOffset);
+        slot.y = GetGroundHeightAt(slot.x, slot.z) + groundHeightOffset;
+        return slot;
+    }
+
+    void SnapBesidePlayerIfNeeded(bool force)
+    {
+        if (followTarget == null) return;
+        Vector3 slot = followTarget.position + followTarget.TransformDirection(followOffset);
+        Vector3 planar = transform.position - slot;
+        planar.y = 0f;
+        if (!force && planar.sqrMagnitude < snapIfBeyondHorizontal * snapIfBeyondHorizontal) return;
+
+        slot.y = GetGroundHeightAt(slot.x, slot.z) + groundHeightOffset;
+        transform.position = slot;
+        Vector3 look = followTarget.position - transform.position;
+        look.y = 0f;
+        if (look.sqrMagnitude > 0.0001f)
+            transform.rotation = Quaternion.LookRotation(look.normalized);
+    }
+
     float GetPlayerHorizontalSpeed()
     {
         if (_playerController == null) return 0f;
@@ -197,15 +238,25 @@ public class PlayerFollow : MonoBehaviour
     }
 
     /// <summary>
-    /// Raycasts downward from the given position to find ground (roads, sidewalks, etc.).
-    /// Returns the hit point Y, or the input Y if no ground is found (fallback).
+    /// Raycasts downward at (x, z) to find ground. Uses the player's foot height as the ray origin
+    /// so we detect the same floor the player is on instead of snapping to a roof or stray collider
+    /// when the pet was left at a wrong world position.
     /// </summary>
-    float GetGroundHeightAt(Vector3 position)
+    float GetGroundHeightAt(float x, float z)
     {
-        Vector3 origin = position + Vector3.up * (groundRaycastDistance * 0.5f);
-        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, groundRaycastDistance, groundLayers, QueryTriggerInteraction.Ignore))
+        float probeY = GetPlayerFeetReferenceY() + 0.25f;
+        Vector3 origin = new Vector3(x, probeY, z);
+        float maxDist = Mathf.Max(groundRaycastDistance, 16f);
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, maxDist, groundLayers, QueryTriggerInteraction.Ignore))
             return hit.point.y;
-        return position.y;
+        return GetPlayerFeetReferenceY();
+    }
+
+    float GetPlayerFeetReferenceY()
+    {
+        if (_playerController != null)
+            return _playerController.transform.position.y + _playerController.center.y - _playerController.height * 0.5f;
+        return followTarget != null ? followTarget.position.y : transform.position.y;
     }
 
     void ApplySkinFromGlobalData()

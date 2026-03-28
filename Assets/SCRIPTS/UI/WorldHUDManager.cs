@@ -3,9 +3,6 @@ using UnityEngine.UI;
 
 public class WorldHUDManager : MonoBehaviour
 {
-    [Header("Money UI")]
-    public Text moneyText;
-
     [Header("Pet Stats UI")]
     public Text petNameText;
     public Text hungerText;
@@ -16,13 +13,6 @@ public class WorldHUDManager : MonoBehaviour
 
     private void Start()
     {
-        // Auto-find components if not set
-        if (moneyText == null)
-        {
-            GameObject mc = GameObject.Find("Money Counter");
-            if (mc != null) moneyText = mc.GetComponent<Text>();
-        }
-
         if (petNameText == null)
         {
             GameObject pnl = GameObject.Find("Pet Name Label");
@@ -67,11 +57,6 @@ public class WorldHUDManager : MonoBehaviour
 
     private void UpdateHUD()
     {
-        if (moneyText != null)
-        {
-            moneyText.text = $"${GlobalData.PlayerMoney:0.00}";
-        }
-
         if (petNameText != null)
         {
             petNameText.text = $"{GlobalData.PetName} (Dog)";

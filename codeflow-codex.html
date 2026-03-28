@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeFlow - Code Presentation Tool</title>
+<script>
+try {
+  const t = localStorage.getItem('cf_theme');
+  if (t && t !== 'github') document.documentElement.dataset.theme = t;
+} catch (e) {}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  --bg0: #0d1117;
+  --bg1: #161b22;
+  --bg2: #21262d;
+  --bg3: #30363d;
+  --border: #30363d;
+  --text0: #e6edf3;
+  --text1: #c9d1d9;
+  --text2: #8b949e;
+  --text3: #5a6470;
+  --accent: #388bfd;
+  --accent2: #58a6ff;
+  --accent_dim: rgba(56, 139, 253, 0.14);
+  --green: #3fb950;
+  --orange: #d29922;
+  --purple: #a371f7;
+  --red: #f85149;
+  --radius: 10px;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  font: 13px/1.5 'Inter', sans-serif;
+  color: var(--text1);
+  background: radial-gradient(circle at top, rgba(56, 139, 253, 0.14), transparent 38%), var(--bg0);
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+[data-theme="paper"] body,
+[data-theme="paper"] {
+  --bg0: #f8f9fc;
+  --bg1: #eef1f6;
+  --bg2: #e2e6ed;
+  --bg3: #cfd6e1;
+  --border: #d0d7e3;
+  --text0: #1a1e26;
+  --text1: #334155;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --accent: #2563eb;
+  --accent2: #3b82f6;
+  --accent_dim: rgba(37, 99, 235, 0.12);
+  --green: #059669;
+  --orange: #d97706;
+  --purple: #7c3aed;
+  --red: #dc2626;
+}
+[data-theme="midnight"] {
+  --bg0: #0a0e14;
+  --bg1: #0f1419;
+  --bg2: #151b24;
+  --bg3: #1e2632;
+  --border: #1e2a3a;
+  --text0: #e7ecf3;
+  --text1: #b8c5d6;
+  --text2: #73849a;
+  --text3: #4a5a6e;
+  --accent: #39bae6;
+  --accent2: #5fcff7;
+}
+[data-theme="ember"] {
+  --bg0: #12100e;
+  --bg1: #1a1714;
+  --bg2: #242019;
+  --bg3: #322d26;
+  --border: #3d342b;
+  --text0: #f0ebe4;
+  --text1: #d4cbc0;
+  --text2: #9a8f82;
+  --text3: #6b6158;
+  --accent: #e8944a;
+  --accent2: #f0a860;
+}
+[data-theme="dusk"] {
+  --bg0: #13121a;
+  --bg1: #1b1a24;
+  --bg2: #252333;
+  --bg3: #322f42;
+  --border: #2d2940;
+  --text0: #eceaf4;
+  --text1: #c7c3d6;
+  --text2: #8d87a3;
+  --text3: #5c5670;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+}
+[data-theme="forest"] {
+  --bg0: #0d1210;
+  --bg1: #131a17;
+  --bg2: #1a2420;
+  --bg3: #24302a;
+  --border: #27332e;
+  --text0: #e8f0ec;
+  --text1: #b8ccc0;
+  --text2: #769384;
+  --text3: #4f665c;
+  --accent: #4ade80;
+  --accent2: #86efac;
+}
+button, input, select, textarea { font: inherit; }
+button { border: 0; }
+.hidden { display: none !important; }
+.match { background: var(--accent_dim); color: var(--text0); border-radius: 4px; padding: 0 2px; }
+#app { display: flex; flex-direction: column; height: 100vh; }
+#top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent), var(--bg1);
+  border-bottom: 1px solid var(--border);
+  z-index: 3;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: #fff;
+  font: 700 14px 'JetBrains Mono', monospace;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+.brand h1 { font: 600 14px 'JetBrains Mono', monospace; color: var(--text0); }
+.brand p { font-size: 11px; color: var(--text2); }
+.center { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.project { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.project-copy { min-width: 0; }
+#project-name { color: var(--text0); font-weight: 600; }
+#project-info {
+  color: var(--text2);
+  font: 11px 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.chip {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text2);
+  font-size: 11px;
+}
+.chip strong { color: var(--text0); }
+.search-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.searchbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
+.searchbox span {
+  color: var(--text2);
+  font: 10px 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#global-search {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text0);
+  outline: 0;
+}
+#global-search::placeholder { color: var(--text3); }
+#clear-search {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+}
+#clear-search:hover { background: rgba(255, 255, 255, 0.05); color: var(--text0); }
+#search-summary {
+  min-width: 180px;
+  text-align: right;
+  color: var(--text3);
+  font: 10px 'JetBrains Mono', monospace;
+}
+.actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text1);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.12s;
+}
+.btn:hover { transform: translateY(-1px); background: var(--bg3); color: var(--text0); }
+.btn.primary {
+  background: linear-gradient(180deg, var(--accent2), var(--accent));
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+}
+.btn.ghost { background: transparent; border-color: transparent; color: var(--text2); }
+.btn.danger:hover { color: var(--red); border-color: var(--red); background: rgba(248, 81, 73, 0.08); }
+.btn.xs { padding: 5px 9px; font-size: 11px; }
+.kbd {
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  font: 10px 'JetBrains Mono', monospace;
+}
+#theme {
+  appearance: none;
+  padding: 6px 28px 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text1);
+  outline: 0;
+}
+#main { display: flex; flex: 1; min-height: 0; gap: 10px; padding: 12px; }
+.panel, #editor {
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent), var(--bg1);
+  box-shadow: var(--shadow);
+}
+.panel { border-radius: 16px; overflow: hidden; }
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title { display: flex; flex-direction: column; gap: 2px; }
+.panel-title b {
+  color: var(--text2);
+  font: 700 10px 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.panel-title small { color: var(--text3); font: 11px 'JetBrains Mono', monospace; }
+.panel-actions { display: flex; gap: 4px; }
+#explorer { width: 260px; min-width: 180px; max-width: 520px; display: flex; flex-direction: column; }
+#snippets { width: 300px; min-width: 190px; max-width: 440px; display: flex; flex-direction: column; }
+#editor { flex: 1; min-width: 260px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+#drop {
+  margin: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 16px 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+  cursor: pointer;
+  line-height: 1.6;
+}
+#drop strong { display: block; color: var(--text0); font-size: 12px; }
+#drop span { display: block; color: var(--text3); font-size: 11px; }
+#drop.drag { border-color: var(--accent); background: linear-gradient(180deg, var(--accent_dim), transparent); }
+#tree, #snippet-list { flex: 1; overflow: auto; padding: 8px; }
+.empty {
+  margin: 8px 4px;
+  padding: 18px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 11px;
+  line-height: 1.8;
+}
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+.tree-row:hover { background: rgba(255, 255, 255, 0.04); transform: translateX(1px); }
+.tree-file.active { background: linear-gradient(90deg, var(--accent_dim), transparent 94%); }
+.tree-arrow { width: 14px; text-align: center; color: var(--text3); font-size: 9px; }
+.tree-badge { width: 22px; font-size: 10px; text-transform: uppercase; color: var(--text2); }
+.tree-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.resizer { width: 8px; position: relative; flex-shrink: 0; cursor: col-resize; }
+.resizer::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  bottom: 20px;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: var(--border);
+}
+.resizer:hover::before, .resizer.dragging::before {
+  background: var(--accent);
+  box-shadow: 0 0 0 5px var(--accent_dim);
+}
+#tabs {
+  display: flex;
+  height: 40px;
+  overflow: auto;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+}
+#tabs::-webkit-scrollbar { display: none; }
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 90px;
+  max-width: 220px;
+  padding: 0 14px;
+  border-right: 1px solid var(--border);
+  color: var(--text2);
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  position: relative;
+}
+.tab:hover { background: var(--bg2); color: var(--text1); }
+.tab.active { color: var(--text0); background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent); }
+.tab.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.tab-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tab-close {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  opacity: 0;
+}
+.tab:hover .tab-close { opacity: 0.75; }
+.tab-close:hover { background: var(--bg3); opacity: 1 !important; }
+#monaco-wrap { position: relative; flex: 1; background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent), var(--bg0); }
+#monaco { position: absolute; inset: 0; }
+#empty-editor {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: radial-gradient(circle at center, var(--accent_dim), transparent 44%), var(--bg0);
+  z-index: 4;
+}
+#empty-editor.hidden { display: none; }
+.empty-badge {
+  width: 74px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: #fff;
+  font: 700 18px 'JetBrains Mono', monospace;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+}
+#empty-editor h2 { color: var(--text0); font: 600 24px 'JetBrains Mono', monospace; }
+#empty-editor p { max-width: 420px; text-align: center; color: var(--text2); line-height: 1.8; }
+.empty-actions { display: flex; gap: 10px; }
+.empty-tip { color: var(--text3); font: 11px 'JetBrains Mono', monospace; }
+#status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  min-height: 28px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 65%, var(--green) 35%));
+  color: #fff;
+  font: 11px 'JetBrains Mono', monospace;
+}
+.status-right { margin-left: auto; }
+.dot { opacity: 0.4; }
+.snip {
+  position: relative;
+  margin-bottom: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--text3);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), var(--bg2);
+  cursor: pointer;
+  transition: 0.14s;
+}
+.snip:hover { transform: translateY(-1px); background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent), var(--bg3); }
+.snip.active {
+  background: linear-gradient(180deg, var(--accent_dim), transparent), var(--bg2);
+  border-color: rgba(56, 139, 253, 0.4);
+  box-shadow: 0 0 0 1px rgba(56, 139, 253, 0.3);
+}
+.snip.dragging { opacity: 0.4; transform: scale(0.98); }
+.snip.drop-above::before, .snip.drop-below::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.snip.drop-above::before { top: -4px; }
+.snip.drop-below::after { bottom: -4px; }
+.snip-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.snip-num { color: var(--text3); font: 10px 'JetBrains Mono', monospace; }
+.snip-note {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent_dim);
+  color: var(--accent);
+  font: 600 10px 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+}
+.snip-label { color: var(--text0); font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.snip-loc { color: var(--text2); font: 10px 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.snip-actions { display: flex; gap: 6px; margin-top: 10px; opacity: 0; }
+.snip:hover .snip-actions, .snip.active .snip-actions { opacity: 1; }
+.snip-color-0 { border-left-color: var(--accent) !important; }
+.snip-color-1 { border-left-color: var(--green) !important; }
+.snip-color-2 { border-left-color: var(--orange) !important; }
+.snip-color-3 { border-left-color: var(--purple) !important; }
+.snip-color-4 { border-left-color: var(--red) !important; }
+#pres {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 12px 12px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), var(--bg1);
+  box-shadow: var(--shadow);
+}
+#pres::before {
+  content: '';
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--purple), var(--green));
+}
+.pres-main { display: flex; align-items: center; gap: 12px; }
+.pres-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text1);
+  cursor: pointer;
+}
+.pres-btn:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pres-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.pres-info { flex: 1; min-width: 0; }
+.pres-counter { color: var(--accent); font: 600 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+.pres-title { color: var(--text0); font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pres-loc { color: var(--text2); font: 10px 'JetBrains Mono', monospace; }
+.pres-progress { height: 6px; margin-top: 4px; border-radius: 999px; background: var(--bg2); overflow: hidden; }
+.pres-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width 0.18s; }
+.pres-side { display: flex; align-items: center; gap: 10px; }
+.pres-hint { color: var(--text3); font: 10px 'JetBrains Mono', monospace; text-align: right; }
+.pres-note {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+}
+.pres-note b { color: var(--text3); font: 600 10px 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+.pres-note div { color: var(--text1); font-size: 12px; line-height: 1.7; white-space: pre-wrap; }
+#modal-bg, #cmdk-bg {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+  z-index: 50;
+}
+#cmdk-bg { z-index: 60; }
+.modal, .cmdk {
+  width: min(640px, 100%);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), var(--bg1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+.modal { width: min(460px, 100%); padding: 22px 24px 20px; }
+.modal h3, .cmdk h3 { color: var(--text0); font-size: 15px; }
+.modal-sub, .cmdk-sub { color: var(--text3); font: 10px 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+.modal-sub { margin-bottom: 16px; font-size: 11px; letter-spacing: normal; text-transform: none; }
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text3);
+  font: 700 10px 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.input, .textarea, #cmdk-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg0);
+  color: var(--text0);
+  outline: 0;
+}
+.textarea { min-height: 92px; resize: vertical; line-height: 1.6; }
+.input:focus, .textarea:focus, #cmdk-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent_dim); }
+.help { margin-top: 6px; color: var(--text3); font: 10px 'JetBrains Mono', monospace; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.cmdk { padding: 16px; }
+.cmdk-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
+.cmdk-list { display: flex; flex-direction: column; gap: 6px; max-height: min(420px, 60vh); overflow: auto; margin-top: 12px; }
+.cmdk-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: var(--bg2);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.cmdk-item:hover, .cmdk-item.active { background: var(--bg3); border-color: rgba(56, 139, 253, 0.35); }
+.cmdk-type { display: inline-flex; margin-bottom: 4px; color: var(--accent); font: 600 10px 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em; }
+.cmdk-label { color: var(--text0); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmdk-desc { color: var(--text2); font: 11px 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmdk-key { color: var(--text3); font: 10px 'JetBrains Mono', monospace; }
+.cmdk-empty { padding: 24px 14px; border: 1px dashed var(--border); border-radius: 16px; text-align: center; color: var(--text3); }
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(12px);
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text1);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.22s;
+  z-index: 80;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.snip-hl-0 { background: color-mix(in srgb, var(--accent) 18%, transparent) !important; border-left: 2px solid var(--accent) !important; }
+.snip-hl-1 { background: color-mix(in srgb, var(--green) 18%, transparent) !important; border-left: 2px solid var(--green) !important; }
+.snip-hl-2 { background: color-mix(in srgb, var(--orange) 18%, transparent) !important; border-left: 2px solid var(--orange) !important; }
+.snip-hl-3 { background: color-mix(in srgb, var(--purple) 18%, transparent) !important; border-left: 2px solid var(--purple) !important; }
+.snip-hl-4 { background: color-mix(in srgb, var(--red) 18%, transparent) !important; border-left: 2px solid var(--red) !important; }
+.snip-hl-active { background: color-mix(in srgb, var(--accent) 26%, transparent) !important; border-left: 3px solid var(--accent2) !important; box-shadow: inset 0 0 0 1px rgba(56, 139, 253, 0.35); }
+.snip-hl-muted { background: color-mix(in srgb, var(--bg0) 36%, transparent) !important; opacity: 0.52 !important; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 999px; }
+::-webkit-scrollbar-track { background: transparent; }
+@media (max-width: 1260px) {
+  #top { grid-template-columns: 1fr; }
+  .project { flex-wrap: wrap; }
+  .chips { margin-left: 0; }
+  #search-summary { text-align: left; min-width: 0; }
+}
+@media (max-width: 980px) {
+  #main { padding: 10px; gap: 8px; }
+  #explorer { width: 220px; }
+  #snippets { width: 260px; }
+  .search-row { flex-direction: column; align-items: stretch; }
+}
+@media (max-width: 780px) {
+  .pres-main { flex-wrap: wrap; }
+  .pres-side { width: 100%; justify-content: space-between; }
+  .pres-hint { text-align: left; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <div class="brand"><div class="logo">CF</div><div><h1>CodeFlow</h1><p>Presentable code walkthroughs for live demos and review sessions</p></div></div>
+    <div class="center">
+      <div class="project"><div class="project-copy"><div id="project-name">No project loaded</div><div id="project-info">Drop files or a folder to start a clean walkthrough.</div></div><div class="chips"><div class="chip" id="chip-files"><strong>0</strong> files</div><div class="chip" id="chip-snips"><strong>0</strong> snippets</div><div class="chip" id="chip-mode"><strong>Editing</strong> mode</div></div></div>
+      <div class="search-row"><div class="searchbox"><span>Find</span><input id="global-search" type="text" placeholder="Filter files and snippets"><button id="clear-search" aria-label="Clear">x</button></div><div id="search-summary">Filter files and snippets, or press Ctrl/Cmd+K for quick jump.</div></div>
+    </div>
+    <div class="actions"><button class="btn xs" id="btn-jump">Quick Jump <span class="kbd">Ctrl+K</span></button><select id="theme"><option value="github">GitHub Dark</option><option value="paper">Paper</option><option value="midnight">Midnight</option><option value="ember">Ember</option><option value="dusk">Dusk</option><option value="forest">Forest</option></select><button class="btn xs" id="btn-import">Import</button><button class="btn xs" id="btn-export">Export</button><button class="btn xs primary" id="btn-present">Present</button></div>
+  </div>
+  <div id="main">
+    <div class="panel" id="explorer"><div class="panel-head"><div class="panel-title"><b>Explorer</b><small id="explorer-meta">No files loaded</small></div><div class="panel-actions"><button class="btn ghost xs" id="btn-files">Files</button><button class="btn ghost xs" id="btn-folder">Folder</button><button class="btn ghost xs" id="btn-clear-files" style="color:var(--red)">Clear</button></div></div><div id="drop"><strong>Drop files or a folder</strong><span>Build a quick walkthrough from real source files, then jump through the story with snippets.</span></div><div id="tree"></div></div>
+    <div class="resizer" id="res-left"></div>
+    <div id="editor"><div id="tabs"></div><div id="monaco-wrap"><div id="monaco"></div><div id="empty-editor"><div class="empty-badge">CF</div><h2>CodeFlow</h2><p>Load your codebase, mark a few key snippets, and step through the story like a polished editor-native presentation.</p><div class="empty-actions"><button class="btn" id="btn-files-2">Upload Files</button><button class="btn" id="btn-folder-2">Upload Folder</button></div><div class="empty-tip">Tip: use Ctrl/Cmd+K later for quick jump across files, snippets, and actions.</div></div></div><div id="status"><span id="sb-file">CodeFlow</span><span class="dot">.</span><span id="sb-cursor">Ln 1, Col 1</span><span id="sb-sel"></span><span class="status-right" id="sb-lang">-</span></div></div>
+    <div class="resizer" id="res-right"></div>
+    <div class="panel" id="snippets"><div class="panel-head"><div class="panel-title"><b>Snippets</b><small id="snip-meta">Capture ranges to shape the walkthrough</small></div><div class="panel-actions"><button class="btn xs primary" id="btn-add-snip">Add</button></div></div><div id="snippet-list"><div class="empty">Select lines in the editor and click <strong>Add</strong>.<br><br>Snippets define your walkthrough order. Drag them to reorder.</div></div></div>
+  </div>
+  <div id="pres" class="hidden"><div class="pres-main"><button class="pres-btn" id="pres-prev">&lt;</button><div class="pres-info"><div class="pres-counter" id="pres-counter">Snippet 0 of 0</div><div class="pres-title" id="pres-title">-</div><div class="pres-loc" id="pres-loc"></div><div class="pres-progress"><div class="pres-fill" id="pres-fill"></div></div></div><button class="pres-btn" id="pres-next">&gt;</button><div class="pres-side"><div class="pres-hint">Arrow keys to navigate<br>Esc to exit</div><button class="btn xs" id="pres-exit">Exit</button></div></div><div class="pres-note hidden" id="pres-note-wrap"><b>Presenter note</b><div id="pres-note"></div></div></div>
+</div>
+<input type="file" id="fi-files" multiple hidden>
+<input type="file" id="fi-folder" multiple webkitdirectory hidden>
+<input type="file" id="fi-import" accept=".json" hidden>
+<div id="modal-bg" class="hidden"><div class="modal"><h3 id="modal-title">Add Snippet</h3><div class="modal-sub" id="modal-sub"></div><div class="field"><label for="modal-label">Snippet label</label><input class="input" id="modal-label" type="text" placeholder="Label for this snippet"></div><div class="field"><label for="modal-note">Presenter note</label><textarea class="textarea" id="modal-note" placeholder="Optional speaking note for presentation mode"></textarea><div class="help">Notes stay hidden while editing and only appear during presentation mode.</div></div><div class="modal-actions"><button class="btn" id="modal-cancel">Cancel</button><button class="btn primary" id="modal-save">Save</button></div></div></div>
+<div id="cmdk-bg" class="hidden"><div class="cmdk"><div class="cmdk-head"><div><h3>Quick Jump</h3><div class="cmdk-sub">Files, snippets, and useful actions in one place</div></div><div class="cmdk-sub">Enter to open</div></div><input id="cmdk-input" type="text" placeholder="Jump to a file, snippet, or action"><div class="cmdk-list" id="cmdk-list"></div></div></div>
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<script>
+const IDB=(()=>{let d=null;function open(){return new Promise((res,rej)=>{if(d)return res(d);const r=indexedDB.open('codeflow_v1',1);r.onerror=()=>rej(r.error);r.onsuccess=()=>{d=r.result;res(d)};r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'path'})}})}async function run(mode,fn){const db=await open();return new Promise((res,rej)=>{const tx=db.transaction('files',mode),s=tx.objectStore('files'),r=fn(s);if(r){r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}else{tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)}})}return{save:(p,c)=>run('readwrite',s=>{s.put({path:p,content:c});return null}),get:p=>run('readonly',s=>s.get(p)).then(r=>r&&r.content||null),clear:()=>run('readwrite',s=>{s.clear();return null})}})();
+const S={paths:new Set(),tabs:[],active:null,snips:[],nextId:1,folders:{},presenting:false,presIndex:-1,search:'',cmdkOpen:false,cmdkQuery:'',cmdkIndex:0,cmdkItems:[]};let editor=null,decs=[],modalCb=null,toastTimer=null;
+const MONACO={github:'vs-dark',paper:'vs',midnight:'vs-dark',ember:'vs-dark',dusk:'vs-dark',forest:'vs-dark'};
+const LANG={js:'javascript',jsx:'javascript',mjs:'javascript',cjs:'javascript',ts:'typescript',tsx:'typescript',py:'python',java:'java',cpp:'cpp',cc:'cpp',cxx:'cpp',c:'c',h:'c',hpp:'cpp',cs:'csharp',go:'go',rs:'rust',rb:'ruby',php:'php',css:'css',scss:'scss',sass:'scss',less:'less',html:'html',htm:'html',json:'json',jsonc:'json',yaml:'yaml',yml:'yaml',toml:'toml',md:'markdown',xml:'xml',svg:'xml',sh:'shell',ps1:'powershell',bat:'bat',cmd:'bat',sql:'sql'};
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
+const query=()=>S.search.trim().toLowerCase();
+const langOf=p=>{const n=(p||'').split('/').pop().toLowerCase();if(n==='dockerfile')return'dockerfile';if(n==='makefile')return'makefile';return LANG[n.split('.').pop()]||'plaintext'};
+const badge=n=>{const e=n.toLowerCase().split('.').pop();if(['js','jsx','ts','tsx'].includes(e))return'js';if(['html','htm','css','scss'].includes(e))return'ui';if(['json','yaml','yml','toml'].includes(e))return'cfg';if(['py','rb','php','go','rs','java','cs'].includes(e))return'src';return'file'};
+function applyTheme(id){if(!MONACO[id])id='github';if(id==='github')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=id;try{localStorage.setItem('cf_theme',id)}catch(e){};document.getElementById('theme').value=id;if(window.monaco&&editor)monaco.editor.setTheme(MONACO[id])}
+function normalizeSnip(s,i){const filePath=s.filePath||s.file||'',start=Math.max(1,Number(s.startLine||1)||1),end=Math.max(start,Number(s.endLine||start)||start);return{id:Number(s.id)||Date.now()+i,filePath,startLine:start,endLine:end,label:s.label||`${(filePath.split('/').pop()||'Snippet')} - L${start}-${end}`,color:Number.isFinite(Number(s.color))?Number(s.color):i%5,note:String(s.note||s.notes||'')}}
+function projectName(){const ps=[...S.paths];if(!ps.length)return'';const first=ps[0].split('/');let prefix=first.length>1?first[0]:'';for(const p of ps)if(!p.startsWith(prefix+'/')){prefix='';break}return prefix||'Project'}
+function match(text,q){const raw=String(text??''),qq=(q||'').trim().toLowerCase();if(!qq)return esc(raw);const i=raw.toLowerCase().indexOf(qq);if(i===-1)return esc(raw);return `${esc(raw.slice(0,i))}<span class=\"match\">${esc(raw.slice(i,i+qq.length))}</span>${esc(raw.slice(i+qq.length))}`}
+function snipMatches(s,q){if(!q)return true;return [s.label,s.filePath,`${s.startLine}-${s.endLine}`,s.note].join(' ').toLowerCase().includes(q)}
+function rulerColors(){const cs=getComputedStyle(document.documentElement),ns=['accent','green','orange','purple','red'],fb=['#388bfd','#3fb950','#d29922','#a371f7','#f85149'];return ns.map((n,i)=>cs.getPropertyValue('--'+n).trim()||fb[i])}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2500)}
+function updateHeader(){document.getElementById('chip-files').innerHTML=`<strong>${S.paths.size}</strong> file${S.paths.size===1?'':'s'}`;document.getElementById('chip-snips').innerHTML=`<strong>${S.snips.length}</strong> snippet${S.snips.length===1?'':'s'}`;document.getElementById('chip-mode').innerHTML=`<strong>${S.presenting?'Presenting':'Editing'}</strong> mode`;if(!S.paths.size){document.getElementById('project-name').textContent='No project loaded';document.getElementById('project-info').textContent='Drop files or a folder to start a clean walkthrough.'}else{document.getElementById('project-name').textContent=projectName();document.getElementById('project-info').textContent=`${S.paths.size} file${S.paths.size===1?'':'s'} ready for guided walkthroughs across ${S.snips.length} snippet${S.snips.length===1?'':'s'}.`}const q=query();document.getElementById('search-summary').textContent=!q?'Filter files and snippets, or press Ctrl/Cmd+K for quick jump.':`${[...S.paths].filter(p=>p.toLowerCase().includes(q)).length} files and ${S.snips.filter(s=>snipMatches(s,q)).length} snippets match \"${S.search.trim()}\".`}
+function setSearch(v){S.search=v||'';const inp=document.getElementById('global-search');if(inp.value!==S.search)inp.value=S.search;document.getElementById('clear-search').style.visibility=S.search.trim()?'visible':'hidden';renderTree();renderSnips();updateHeader()}
+function buildTree(paths){const root={};for(const p of [...paths].sort()){const parts=p.split('/');let n=root;for(let i=0;i<parts.length;i++){const k=parts[i];if(!n[k])n[k]={dir:i<parts.length-1};if(i<parts.length-1)n[k].dir=true;if(!n[k].children)n[k].children={};if(i===parts.length-1)n[k].filePath=p;n=n[k].children}}return root}
+function renderTreeNode(node,container,depth,prefix,forceOpen){const q=query(),entries=Object.entries(node),dirs=entries.filter(([,v])=>v.dir).sort(([a],[b])=>a.localeCompare(b)),files=entries.filter(([,v])=>!v.dir).sort(([a],[b])=>a.localeCompare(b));for(const [name,child] of dirs){const p=prefix?`${prefix}/${name}`:name,open=forceOpen||S.folders[p]!==false,row=document.createElement('div');row.className='tree-row tree-dir';row.style.paddingLeft=`${6+depth*14}px`;row.innerHTML=`<span class=\"tree-arrow\">${open?'v':'>'}</span><span class=\"tree-badge\">dir</span><span class=\"tree-name\">${match(name,q)}</span>`;row.onclick=e=>{e.stopPropagation();S.folders[p]=!open;renderTree()};container.appendChild(row);if(open)renderTreeNode(child.children||{},container,depth+1,p,forceOpen)}for(const [name,child] of files){const row=document.createElement('div');row.className='tree-row tree-file'+(S.active===child.filePath?' active':'');row.style.paddingLeft=`${6+depth*14+12}px`;row.innerHTML=`<span class=\"tree-badge\">${esc(badge(name))}</span><span class=\"tree-name\" title=\"${esc(child.filePath)}\">${match(name,q)}</span>`;row.onclick=e=>{e.stopPropagation();openFile(child.filePath)};container.appendChild(row)}}
+function renderTree(){const box=document.getElementById('tree'),meta=document.getElementById('explorer-meta'),all=[...S.paths],q=query(),visible=q?all.filter(p=>p.toLowerCase().includes(q)):all;if(!all.length){box.innerHTML='<div class=\"empty\">Drop files or a folder to populate the explorer.</div>';meta.textContent='No files loaded';return}meta.textContent=q?`${visible.length}/${all.length} files shown`:`${all.length} file${all.length===1?'':'s'} loaded`;box.innerHTML='';if(!visible.length){box.innerHTML='<div class=\"empty\">No files match the current filter.</div>';return}renderTreeNode(buildTree(visible),box,0,'',!!q)}
+async function openFile(path){if(!S.tabs.includes(path))S.tabs.push(path);S.active=path;const content=await IDB.get(path)||'';if(editor){const old=editor.getModel(),model=monaco.editor.createModel(content,langOf(path));editor.setModel(model);if(old)old.dispose();document.getElementById('empty-editor').classList.add('hidden');applyDecorations()}document.getElementById('sb-file').textContent=path.split('/').pop();document.getElementById('sb-lang').textContent=langOf(path);renderTabs();renderTree();saveState()}
+function closeTab(path){S.tabs=S.tabs.filter(p=>p!==path);if(S.active===path){S.active=S.tabs.at(-1)||null;if(S.active)openFile(S.active);else if(editor){const old=editor.getModel(),model=monaco.editor.createModel('', 'plaintext');editor.setModel(model);if(old)old.dispose();decs=editor.deltaDecorations(decs,[]);document.getElementById('empty-editor').classList.remove('hidden');document.getElementById('sb-file').textContent='CodeFlow';document.getElementById('sb-lang').textContent='-'}}renderTabs();saveState()}
+function renderTabs(){const box=document.getElementById('tabs');box.innerHTML='';S.tabs.forEach(p=>{const t=document.createElement('div');t.className='tab'+(p===S.active?' active':'');t.innerHTML=`<span class=\"tab-name\" title=\"${esc(p)}\">${esc(p.split('/').pop())}</span><span class=\"tab-close\" data-path=\"${esc(p)}\">x</span>`;t.onclick=e=>{if(!e.target.dataset.path)openFile(p)};t.querySelector('.tab-close').onclick=e=>{e.stopPropagation();closeTab(p)};box.appendChild(t)})}
+function openModal(existing,filePath,start,end){const name=filePath.split('/').pop();document.getElementById('modal-title').textContent=existing?'Edit Snippet':'Add Snippet';document.getElementById('modal-sub').textContent=`${name} - Lines ${start}-${end}`;document.getElementById('modal-label').value=existing?existing.label:`${name} - L${start}-${end}`;document.getElementById('modal-note').value=existing?existing.note:'';document.getElementById('modal-bg').classList.remove('hidden');requestAnimationFrame(()=>{const i=document.getElementById('modal-label');i.focus();i.select()});modalCb=()=>{const label=document.getElementById('modal-label').value.trim()||`${name} - L${start}-${end}`,note=document.getElementById('modal-note').value.trim();if(existing){existing.label=label;existing.note=note}else S.snips.push({id:S.nextId++,filePath,startLine:start,endLine:end,label,color:S.snips.length%5,note});closeModal();renderSnips();applyDecorations();updateHeader();saveState();toast(existing?'Snippet updated':'Snippet added')}}
+function closeModal(){document.getElementById('modal-bg').classList.add('hidden');document.getElementById('modal-note').value='';modalCb=null}
+function addSnippet(){if(!editor||!S.active)return toast('Open a file first');const sel=editor.getSelection(),start=sel?sel.startLineNumber:1,end=sel?sel.endLineNumber:start;openModal(null,S.active,start,end)}
+function deleteSnip(id){const i=S.snips.findIndex(s=>s.id===id);if(i===-1)return;S.snips.splice(i,1);if(S.presenting){if(!S.snips.length)exitPresent();else S.presIndex=Math.max(0,Math.min(S.presIndex,S.snips.length-1))}renderSnips();applyDecorations();updateHeader();saveState()}
+function renderSnips(){const box=document.getElementById('snippet-list'),meta=document.getElementById('snip-meta'),q=query(),visible=S.snips.map((s,i)=>({s,i})).filter(({s})=>snipMatches(s,q));meta.textContent=q?`${visible.length}/${S.snips.length} snippets shown`:`${S.snips.length} snippet${S.snips.length===1?'':'s'} ready`;if(!S.snips.length){box.innerHTML='<div class=\"empty\">Select lines in the editor and click <strong>Add</strong>.<br><br>Snippets define your walkthrough order. Drag them to reorder.</div>';return}if(!visible.length){box.innerHTML='<div class=\"empty\">No snippets match the current filter.<br><br>Try a different search term or clear the filter.</div>';return}const filtered=!!q;box.innerHTML='';visible.forEach(({s,i})=>{const card=document.createElement('div');card.className='snip snip-color-'+(s.color%5)+(S.presenting&&S.presIndex===i?' active':'');card.draggable=!filtered;card.dataset.i=i;const file=s.filePath.split('/').pop();card.innerHTML=`<div class=\"snip-top\"><div class=\"snip-num\">#${i+1}</div>${s.note?'<div class=\"snip-note\">Note</div>':''}</div><div class=\"snip-label\">${match(s.label,q)}</div><div class=\"snip-loc\">${match(file,q)} - L${s.startLine}-${s.endLine}</div><div class=\"snip-actions\"><button class=\"btn xs\" data-a=\"go\">Go to</button><button class=\"btn xs\" data-a=\"edit\">Edit</button><button class=\"btn xs danger\" data-a=\"del\">Delete</button></div>`;card.onclick=e=>{if(!e.target.dataset.a)goToSnip(i)};card.querySelector('[data-a=go]').onclick=()=>goToSnip(i);card.querySelector('[data-a=edit]').onclick=()=>openModal(s,s.filePath,s.startLine,s.endLine);card.querySelector('[data-a=del]').onclick=()=>deleteSnip(s.id);if(!filtered){card.ondragstart=e=>{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(i));card.classList.add('dragging')};card.ondragend=()=>{card.classList.remove('dragging');box.querySelectorAll('.snip').forEach(n=>n.classList.remove('drop-above','drop-below'))};card.ondragover=e=>{e.preventDefault();const from=parseInt(e.dataTransfer.getData('text/plain'),10);if(isNaN(from)||from===i)return;const r=card.getBoundingClientRect();box.querySelectorAll('.snip').forEach(n=>n.classList.remove('drop-above','drop-below'));card.classList.add(e.clientY<r.top+r.height/2?'drop-above':'drop-below')};card.ondragleave=()=>card.classList.remove('drop-above','drop-below');card.ondrop=e=>{e.preventDefault();const from=parseInt(e.dataTransfer.getData('text/plain'),10);if(isNaN(from)||from===i)return;const r=card.getBoundingClientRect();let to=e.clientY<r.top+r.height/2?i:i+1;if(from<to)to--;const [m]=S.snips.splice(from,1);S.snips.splice(to,0,m);if(S.presenting){if(S.presIndex===from)S.presIndex=to;else if(from<S.presIndex&&to>=S.presIndex)S.presIndex--;else if(from>S.presIndex&&to<=S.presIndex)S.presIndex++}renderSnips();applyDecorations();saveState()}}box.appendChild(card)})}
+function applyDecorations(){if(!editor)return;const model=editor.getModel();if(!model||!S.active){decs=editor.deltaDecorations(decs,[]);return}const next=[];S.snips.forEach((s,i)=>{if(s.filePath!==S.active)return;next.push({range:new monaco.Range(s.startLine,1,s.endLine,1),options:{isWholeLine:true,className:S.presenting&&S.presIndex===i?'snip-hl-active':`snip-hl-${s.color%5}`,overviewRuler:{color:rulerColors()[s.color%5],position:monaco.editor.OverviewRulerLane.Right}}})});if(S.presenting){const a=S.snips[S.presIndex];if(a&&a.filePath===S.active){if(a.startLine>1)next.push({range:new monaco.Range(1,1,a.startLine-1,1),options:{isWholeLine:true,className:'snip-hl-muted'}});if(a.endLine<model.getLineCount())next.push({range:new monaco.Range(a.endLine+1,1,model.getLineCount(),1),options:{isWholeLine:true,className:'snip-hl-muted'}})}}decs=editor.deltaDecorations(decs,next)}
+function startPresent(){if(!S.snips.length)return toast('Add snippets first');S.presenting=true;S.presIndex=0;document.getElementById('pres').classList.remove('hidden');document.getElementById('btn-present').textContent='Stop';updateHeader();goToSnip(0)}
+function exitPresent(){S.presenting=false;S.presIndex=-1;document.getElementById('pres').classList.add('hidden');document.getElementById('btn-present').textContent='Present';updateHeader();applyDecorations();renderSnips()}
+async function goToSnip(i){if(i<0||i>=S.snips.length)return;S.presIndex=i;const s=S.snips[i];if(S.active!==s.filePath)await openFile(s.filePath);applyDecorations();if(editor){editor.setSelection(new monaco.Range(s.startLine,1,s.endLine,1));editor.revealLinesInCenter(s.startLine,s.endLine,monaco.editor.ScrollType.Smooth)}if(S.presenting)updatePres();renderSnips()}
+function updatePres(){const s=S.snips[S.presIndex];if(!s)return;document.getElementById('pres-counter').textContent=`Snippet ${S.presIndex+1} of ${S.snips.length}`;document.getElementById('pres-title').textContent=s.label;document.getElementById('pres-loc').textContent=`${s.filePath.split('/').pop()} - Lines ${s.startLine}-${s.endLine}`;document.getElementById('pres-fill').style.width=`${((S.presIndex+1)/S.snips.length)*100}%`;document.getElementById('pres-prev').disabled=S.presIndex===0;document.getElementById('pres-next').disabled=S.presIndex===S.snips.length-1;const wrap=document.getElementById('pres-note-wrap'),note=document.getElementById('pres-note');if(s.note){note.textContent=s.note;wrap.classList.remove('hidden')}else{note.textContent='';wrap.classList.add('hidden')}}
+function saveState(){try{localStorage.setItem('cf_snips',JSON.stringify(S.snips));localStorage.setItem('cf_nextId',String(S.nextId));localStorage.setItem('cf_tabs',JSON.stringify(S.tabs));localStorage.setItem('cf_active',S.active||'');localStorage.setItem('cf_paths',JSON.stringify([...S.paths]));localStorage.setItem('cf_folders',JSON.stringify(S.folders))}catch(e){}}
+async function loadState(){try{const sn=localStorage.getItem('cf_snips');if(sn)S.snips=JSON.parse(sn).map((s,i)=>normalizeSnip(s,i));const nid=localStorage.getItem('cf_nextId');if(nid)S.nextId=+nid||1;const tabs=localStorage.getItem('cf_tabs');if(tabs)S.tabs=JSON.parse(tabs);const active=localStorage.getItem('cf_active');if(active)S.active=active;const paths=localStorage.getItem('cf_paths');if(paths)S.paths=new Set(JSON.parse(paths));const folders=localStorage.getItem('cf_folders');if(folders)S.folders=JSON.parse(folders)}catch(e){console.warn('State restore failed',e)}const maxId=Math.max(0,...S.snips.map(s=>+s.id||0));S.nextId=Math.max(S.nextId,maxId+1);renderTree();renderSnips();updateHeader();if(S.active&&S.paths.has(S.active))await openFile(S.active)}
+const stripRoot=p=>{const i=p.indexOf('/');return i===-1?p:p.slice(i+1)};
+function readFileText(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(file)})}
+const ignore=name=>name.endsWith('.meta');
+async function processEntries(entries){let count=0;for(const e of entries)try{const content=await readFileText(e.file);await IDB.save(e.path,content);S.paths.add(e.path);count++}catch(err){}renderTree();updateHeader();saveState();if(count)toast(`Loaded ${count} file${count===1?'':'s'}`);return count}
+async function processFiles(list){await processEntries(Array.from(list).filter(f=>!ignore(f.name)).map(f=>({path:f.webkitRelativePath||f.name,file:f})))}
+async function exportProject(){try{const data={version:4,app:'codeflow',exported:new Date().toISOString(),paths:[...S.paths],snippets:S.snips,nextId:S.nextId},blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`codeflow-${Date.now()}.json`;a.click();URL.revokeObjectURL(url);toast('Exported. Re-upload the same folder on import.')}catch(e){toast('Export failed')}}
+async function importProject(file){try{const data=JSON.parse(await readFileText(file));if((data.version||1)<3&&Array.isArray(data.files)){await IDB.clear();S.paths.clear();S.tabs=[];S.active=null;S.snips=[];exitPresent();setSearch('');for(const row of data.files){await IDB.save(row.path,row.content);S.paths.add(row.path)}S.snips=(data.snippets||[]).map((s,i)=>normalizeSnip(s,i));S.nextId=data.nextId||S.snips.length+1;saveState();renderTree();renderSnips();updateHeader();if(editor){const old=editor.getModel(),model=monaco.editor.createModel('', 'plaintext');editor.setModel(model);if(old)old.dispose();document.getElementById('empty-editor').classList.remove('hidden')}toast(`Imported ${S.paths.size} files and ${S.snips.length} snippets`);return}const saved=data.paths||[];if(!saved.length)return toast('No paths found in export file');const inp=document.createElement('input');inp.type='file';inp.multiple=true;inp.webkitdirectory=true;inp.onchange=async()=>{const files=[...inp.files].filter(f=>!ignore(f.name));if(!files.length)return toast('No files found in folder');const map=new Map();for(const f of files){const rel=f.webkitRelativePath||f.name;map.set(rel,{path:rel,file:f});map.set(stripRoot(rel),{path:rel,file:f})}await IDB.clear();S.paths.clear();S.tabs=[];S.active=null;S.snips=[];exitPresent();setSearch('');let matched=0,missing=0;for(const sp of saved){const hit=map.get(sp)||map.get(stripRoot(sp));if(!hit){missing++;continue}try{await IDB.save(hit.path,await readFileText(hit.file));S.paths.add(hit.path);matched++}catch(e){missing++}}S.snips=(data.snippets||[]).map((s,i)=>{const n=normalizeSnip(s,i),hit=map.get(n.filePath)||map.get(stripRoot(n.filePath));return hit?{...n,filePath:hit.path}:n});S.nextId=data.nextId||S.snips.length+1;saveState();renderTree();renderSnips();updateHeader();if(editor){const old=editor.getModel(),model=monaco.editor.createModel('', 'plaintext');editor.setModel(model);if(old)old.dispose();document.getElementById('empty-editor').classList.remove('hidden')}toast(missing?`Imported ${matched} files (${missing} missing)`:`Imported ${matched} files and ${S.snips.length} snippets`)};inp.click()}catch(e){console.error(e);toast('Import failed')}}
+function cmdItems(q){const qq=(q||'').trim().toLowerCase(),items=[];items.push({kind:'Action',label:S.presenting?'Stop presentation':'Start presentation',desc:S.presenting?'Leave walkthrough mode':'Step through snippets in order',key:'',run:()=>S.presenting?exitPresent():startPresent()});if(S.active)items.push({kind:'Action',label:'Add snippet from selection',desc:`Capture a snippet from ${S.active.split('/').pop()}`,key:'',run:addSnippet});if(S.search.trim())items.push({kind:'Action',label:'Clear active filter',desc:'Show all files and snippets again',key:'',run:()=>setSearch('')});[...S.paths].sort().forEach(p=>items.push({kind:'File',label:p.split('/').pop(),desc:p,key:'Open',run:()=>openFile(p)}));S.snips.forEach((s,i)=>items.push({kind:'Snippet',label:s.label,desc:`${s.filePath.split('/').pop()} - Lines ${s.startLine}-${s.endLine}`,key:`#${i+1}`,run:()=>goToSnip(i)}));return items.filter(it=>!qq||`${it.kind} ${it.label} ${it.desc}`.toLowerCase().includes(qq)).slice(0,50)}
+function renderCmdk(){const list=document.getElementById('cmdk-list');S.cmdkItems=cmdItems(S.cmdkQuery);if(!S.cmdkItems.length){S.cmdkIndex=0;list.innerHTML='<div class=\"cmdk-empty\">No files, snippets, or actions match.</div>';return}if(S.cmdkIndex>=S.cmdkItems.length)S.cmdkIndex=0;list.innerHTML='';S.cmdkItems.forEach((it,i)=>{const b=document.createElement('button');b.type='button';b.className='cmdk-item'+(i===S.cmdkIndex?' active':'');b.innerHTML=`<div><div class=\"cmdk-type\">${esc(it.kind)}</div><div class=\"cmdk-label\">${match(it.label,S.cmdkQuery)}</div><div class=\"cmdk-desc\">${match(it.desc,S.cmdkQuery)}</div></div><div class=\"cmdk-key\">${esc(it.key||'')}</div>`;b.onmouseenter=()=>{S.cmdkIndex=i;renderCmdk()};b.onclick=()=>runCmdk(i);list.appendChild(b)})}
+function openCmdk(init=''){S.cmdkOpen=true;S.cmdkQuery=init;S.cmdkIndex=0;document.getElementById('cmdk-bg').classList.remove('hidden');document.getElementById('cmdk-input').value=init;renderCmdk();requestAnimationFrame(()=>document.getElementById('cmdk-input').focus())}
+function closeCmdk(){S.cmdkOpen=false;S.cmdkQuery='';S.cmdkIndex=0;S.cmdkItems=[];document.getElementById('cmdk-bg').classList.add('hidden')}
+function runCmdk(i){const item=S.cmdkItems[i];if(!item)return;closeCmdk();item.run()}
+function initDnD(){const app=document.getElementById('app'),drop=document.getElementById('drop');let depth=0;app.addEventListener('dragenter',e=>{if(!e.dataTransfer.types.includes('Files'))return;depth++;drop.classList.add('drag')});app.addEventListener('dragleave',e=>{if(!e.dataTransfer.types.includes('Files'))return;depth--;if(depth<=0){depth=0;drop.classList.remove('drag')}});app.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('Files'))e.preventDefault()});app.addEventListener('drop',async e=>{depth=0;drop.classList.remove('drag');if(!e.dataTransfer.types.includes('Files'))return;e.preventDefault();await processFiles(e.dataTransfer.files)});drop.onclick=()=>document.getElementById('fi-files').click()}
+function resizer(id,panelId,left){const r=document.getElementById(id),panel=document.getElementById(panelId);r.onmousedown=e=>{e.preventDefault();r.classList.add('dragging');const sx=e.clientX,sw=panel.offsetWidth;const move=ev=>{const dx=ev.clientX-sx,w=Math.max(160,Math.min(sw+(left?dx:-dx),600));panel.style.width=w+'px';editor&&editor.layout()};const up=()=>{r.classList.remove('dragging');document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up)};document.addEventListener('mousemove',move);document.addEventListener('mouseup',up)}}
+function bind(){document.getElementById('fi-files').onchange=async e=>{await processFiles(e.target.files);e.target.value=''};document.getElementById('fi-folder').onchange=async e=>{await processFiles(e.target.files);e.target.value=''};document.getElementById('fi-import').onchange=async e=>{if(e.target.files[0])await importProject(e.target.files[0]);e.target.value=''};document.getElementById('btn-files').onclick=()=>document.getElementById('fi-files').click();document.getElementById('btn-folder').onclick=()=>document.getElementById('fi-folder').click();document.getElementById('btn-files-2').onclick=()=>document.getElementById('fi-files').click();document.getElementById('btn-folder-2').onclick=()=>document.getElementById('fi-folder').click();document.getElementById('btn-import').onclick=()=>document.getElementById('fi-import').click();document.getElementById('btn-export').onclick=exportProject;document.getElementById('btn-jump').onclick=()=>openCmdk(document.getElementById('global-search').value.trim());document.getElementById('btn-add-snip').onclick=addSnippet;document.getElementById('btn-clear-files').onclick=async()=>{if(!confirm('Clear all files? Snippets will be kept.'))return;await IDB.clear();S.paths.clear();S.tabs=[];S.active=null;exitPresent();setSearch('');if(editor){const old=editor.getModel(),model=monaco.editor.createModel('', 'plaintext');editor.setModel(model);if(old)old.dispose();decs=editor.deltaDecorations(decs,[]);document.getElementById('empty-editor').classList.remove('hidden')}renderTree();renderTabs();updateHeader();document.getElementById('sb-file').textContent='CodeFlow';document.getElementById('sb-lang').textContent='-';saveState();toast('Files cleared')};document.getElementById('global-search').oninput=e=>setSearch(e.target.value);document.getElementById('global-search').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();openCmdk(e.currentTarget.value.trim())}if(e.key==='Escape'){e.preventDefault();setSearch('')}};document.getElementById('clear-search').onclick=()=>{setSearch('');document.getElementById('global-search').focus()};document.getElementById('modal-save').onclick=()=>modalCb&&modalCb();document.getElementById('modal-cancel').onclick=closeModal;document.getElementById('modal-label').onkeydown=e=>{if(e.key==='Enter')modalCb&&modalCb();if(e.key==='Escape')closeModal()};document.getElementById('modal-note').onkeydown=e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key==='Enter')modalCb&&modalCb()};document.getElementById('modal-bg').onclick=e=>{if(e.target===document.getElementById('modal-bg'))closeModal()};document.getElementById('cmdk-input').oninput=e=>{S.cmdkQuery=e.target.value;S.cmdkIndex=0;renderCmdk()};document.getElementById('cmdk-input').onkeydown=e=>{if(e.key==='ArrowDown'){e.preventDefault();if(S.cmdkItems.length){S.cmdkIndex=(S.cmdkIndex+1)%S.cmdkItems.length;renderCmdk()}}if(e.key==='ArrowUp'){e.preventDefault();if(S.cmdkItems.length){S.cmdkIndex=(S.cmdkIndex-1+S.cmdkItems.length)%S.cmdkItems.length;renderCmdk()}}if(e.key==='Enter'){e.preventDefault();runCmdk(S.cmdkIndex)}if(e.key==='Escape'){e.preventDefault();closeCmdk()}};document.getElementById('cmdk-bg').onclick=e=>{if(e.target===document.getElementById('cmdk-bg'))closeCmdk()};document.getElementById('btn-present').onclick=()=>S.presenting?exitPresent():startPresent();document.getElementById('pres-prev').onclick=()=>goToSnip(S.presIndex-1);document.getElementById('pres-next').onclick=()=>goToSnip(S.presIndex+1);document.getElementById('pres-exit').onclick=exitPresent;document.getElementById('theme').onchange=e=>{applyTheme(e.target.value);applyDecorations()};document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCmdk(document.getElementById('global-search').value.trim());return}if(S.cmdkOpen&&e.key==='Escape'){e.preventDefault();closeCmdk();return}if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;const monacoEl=document.getElementById('monaco');if(monacoEl.contains(document.activeElement)&&document.activeElement!==document.body&&!S.presenting)return;if(S.presenting){if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){e.preventDefault();goToSnip(S.presIndex+1)}if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();goToSnip(S.presIndex-1)}if(e.key==='Escape')exitPresent()}})}
+function initMonaco(){require.config({paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs'}});require(['vs/editor/editor.main'],async()=>{editor=monaco.editor.create(document.getElementById('monaco'),{value:'',language:'plaintext',theme:MONACO[document.documentElement.dataset.theme||'github']||'vs-dark',fontSize:14,fontFamily:"JetBrains Mono, Consolas, monospace",fontLigatures:true,minimap:{enabled:true,renderCharacters:false,scale:1},scrollBeyondLastLine:false,lineNumbers:'on',folding:true,wordWrap:'off',automaticLayout:true,renderLineHighlight:'line',smoothScrolling:true,cursorBlinking:'smooth',cursorSmoothCaretAnimation:'on',padding:{top:8,bottom:8},overviewRulerBorder:false,renderWhitespace:'none',guides:{indentation:true,bracketPairs:true}});editor.onDidChangeCursorPosition(e=>document.getElementById('sb-cursor').textContent=`Ln ${e.position.lineNumber}, Col ${e.position.column}`);editor.onDidChangeCursorSelection(e=>{const s=e.selection;if(s.isEmpty())document.getElementById('sb-sel').textContent='';else{const lines=s.endLineNumber-s.startLineNumber+1;document.getElementById('sb-sel').textContent=`${lines} line${lines===1?'':'s'} selected`}});await loadState();toast('CodeFlow ready')})}
+document.addEventListener('DOMContentLoaded',()=>{let t=document.documentElement.dataset.theme||'github';if(!MONACO[t])t='github';document.getElementById('theme').value=t;bind();initDnD();resizer('res-left','explorer',true);resizer('res-right','snippets',false);setSearch('');updateHeader();initMonaco()});
+</script>
+</body>
+</html>

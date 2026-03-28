@@ -5,8 +5,9 @@ using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
-/// Attach to a trigger collider (e.g. TriggerZone1). When the player enters the zone and presses the interact key,
-/// loads the target scene.
+/// Attach to a trigger collider (e.g. Pet Shop zone in World). When the player enters the zone and presses the interact key,
+/// loads the target scene. Leave <see cref="targetSceneName"/> empty until a shop/interior scene is in Build Settings.
+/// World → PetChoose additive loading only runs when <c>targetSceneName</c> is <c>PetChoose</c> (not used for the pet shop zone).
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class SceneTriggerZone : MonoBehaviour
@@ -112,7 +113,8 @@ public class SceneTriggerZone : MonoBehaviour
 
             if (string.IsNullOrEmpty(targetSceneName))
             {
-                Debug.LogWarning("[SceneTriggerZone] Target scene name is empty.");
+                if (debugLogs)
+                    Debug.LogWarning($"[SceneTriggerZone] No target scene on '{gameObject.name}'. Assign Target Scene Name when the interior (e.g. pet shop) scene is ready.");
                 return;
             }
             if (debugLogs) Debug.Log($"[SceneTriggerZone] Loading scene: {targetSceneName}");
@@ -125,6 +127,7 @@ public class SceneTriggerZone : MonoBehaviour
             if (isWorldToPetChoose)
             {
                 GlobalData.PetChooseOpenedFromWorld = true;
+                GlobalData.MarkPetChooseFlowStartedFromWorld();
                 AdditiveSceneHelper.FreezeWorldBeforePetChooseLoad(); // Freeze before load to avoid "only one EventSystem" warning
                 var panel = fadeToBlackPanel;
                 if (panel != null && panel.GetComponent<CanvasGroup>() != null)

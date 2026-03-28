@@ -1,13 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
 /// <summary>
 /// Sends a chat history to the OpenAI Chat Completions API and returns Bernie's reply.
-/// Reads the API key and model name from Resources/api-keys.txt (line 1 = key, line 2 = model).
+/// Credentials (first match wins): environment variables OPENAI_API_KEY / OPENAI_MODEL,
+/// then a ".env" file at the project root (or next to the player data folder in builds).
 /// </summary>
 public class OpenAIService : MonoBehaviour
 {
@@ -60,22 +62,63 @@ public class OpenAIService : MonoBehaviour
 
     void LoadCredentials()
     {
-        TextAsset asset = Resources.Load<TextAsset>("api-keys");
-        if (asset == null)
+        _apiKey = TrimOrNull(Environment.GetEnvironmentVariable("OPENAI_API_KEY"));
+        _model  = TrimOrNull(Environment.GetEnvironmentVariable("OPENAI_MODEL"));
+
+        string envPath = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? "", ".env");
+        if (File.Exists(envPath))
         {
-            Debug.LogError("[OpenAIService] Resources/api-keys.txt not found. Create it with your API key on line 1 and model on line 2.");
-            return;
+            try
+            {
+                foreach (var pair in ParseEnvFile(envPath))
+                {
+                    if (string.IsNullOrEmpty(_apiKey) && pair.Key.Equals("OPENAI_API_KEY", StringComparison.OrdinalIgnoreCase))
+                        _apiKey = pair.Value;
+                    if (string.IsNullOrEmpty(_model) && pair.Key.Equals("OPENAI_MODEL", StringComparison.OrdinalIgnoreCase))
+                        _model = pair.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[OpenAIService] Could not read .env: {ex.Message}");
+            }
         }
 
-        string[] lines = asset.text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 1 || string.IsNullOrWhiteSpace(lines[0]) || lines[0].StartsWith("PASTE_"))
-        {
-            Debug.LogError("[OpenAIService] api-keys.txt is missing a valid API key on line 1.");
-            return;
-        }
+        if (string.IsNullOrEmpty(_model))
+            _model = "gpt-4o";
 
-        _apiKey = lines[0].Trim();
-        _model  = lines.Length >= 2 ? lines[1].Trim() : "gpt-4o";
+        if (string.IsNullOrEmpty(_apiKey))
+            Debug.LogError("[OpenAIService] No API key. Set OPENAI_API_KEY in the environment or in a .env file at the project root (see .env.example).");
+        else if (_apiKey.StartsWith("PASTE_", StringComparison.OrdinalIgnoreCase))
+        {
+            Debug.LogError("[OpenAIService] Replace the placeholder OPENAI_API_KEY in .env with your real key.");
+            _apiKey = null;
+        }
+    }
+
+    static string TrimOrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+    static IEnumerable<KeyValuePair<string, string>> ParseEnvFile(string path)
+    {
+        foreach (string rawLine in File.ReadAllLines(path))
+        {
+            string line = rawLine.Trim();
+            if (line.Length == 0 || line[0] == '#')
+                continue;
+
+            int eq = line.IndexOf('=');
+            if (eq <= 0)
+                continue;
+
+            string key = line.Substring(0, eq).Trim();
+            string val = line.Substring(eq + 1).Trim();
+            if (val.Length >= 2 &&
+                ((val[0] == '"' && val[^1] == '"') || (val[0] == '\'' && val[^1] == '\'')))
+                val = val.Substring(1, val.Length - 2);
+
+            if (key.Length > 0)
+                yield return new KeyValuePair<string, string>(key, val);
+        }
     }
 
     /// <summary>

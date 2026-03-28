@@ -1,6 +1,8 @@
+using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>Static audio volumes persisted via PlayerPrefs. Music/SFX sliders control these. Uses dB conversion for natural perceived volume.</summary>
 public static class AudioSettings
@@ -272,6 +274,12 @@ public class MainMenu : MonoBehaviour
     [SerializeField] Slider musicSlider;
     [Tooltip("SFX slider. Found by name 'SFXSlider' if not assigned.")]
     [SerializeField] Slider sfxSlider;
+    [Tooltip("Gameplay minimap mode (Circle / Square / None). Found under Canvas if not assigned.")]
+    [SerializeField] TMP_Dropdown minimapModeDropdown;
+    [Tooltip("Pet info panel (Always on / Toggle Q / Hold Q). Found under Canvas if not assigned.")]
+    [SerializeField] TMP_Dropdown petInfoModeDropdown;
+    [Tooltip("Length of one full in-game day in real minutes (digits only). Found by name LengthOfDayInput if not assigned.")]
+    [SerializeField] TMP_InputField lengthOfDayInput;
     [Tooltip("Background music clip (e.g. Assets/AUDIO/background_music.mp3).")]
     [SerializeField] AudioClip backgroundMusicClip;
 
@@ -288,6 +296,145 @@ public class MainMenu : MonoBehaviour
         }
 
         SetupAudio();
+        SetupMinimapDropdown();
+        SetupPetInfoDropdown();
+        SetupLengthOfDayInput();
+    }
+
+    void SetupMinimapDropdown()
+    {
+        if (minimapModeDropdown == null && canvas != null)
+        {
+            foreach (var dd in canvas.GetComponentsInChildren<TMP_Dropdown>(true))
+            {
+                if (dd.gameObject.name == "MinimapDropdown" || dd.gameObject.name == "Dropdown")
+                {
+                    minimapModeDropdown = dd;
+                    break;
+                }
+            }
+        }
+
+        if (minimapModeDropdown == null)
+            return;
+
+        // No saved choice yet: show "Circle" in the UI but gameplay default stays None (minimap off) until they pick an option.
+        int displayIndex = MinimapSettings.HasModePreferenceBeenSaved
+            ? Mathf.Clamp((int)MinimapSettings.Mode, 0, minimapModeDropdown.options.Count - 1)
+            : 0;
+        minimapModeDropdown.SetValueWithoutNotify(displayIndex);
+        minimapModeDropdown.onValueChanged.RemoveListener(OnMinimapModeDropdownChanged);
+        minimapModeDropdown.onValueChanged.AddListener(OnMinimapModeDropdownChanged);
+    }
+
+    void OnMinimapModeDropdownChanged(int index)
+    {
+        MinimapSettings.Mode = (MinimapMode)Mathf.Clamp(index, 0, 2);
+    }
+
+    void SetupPetInfoDropdown()
+    {
+        if (petInfoModeDropdown == null && canvas != null)
+        {
+            foreach (var dd in canvas.GetComponentsInChildren<TMP_Dropdown>(true))
+            {
+                if (dd.gameObject.name == "PetInfoDropdown")
+                {
+                    petInfoModeDropdown = dd;
+                    break;
+                }
+            }
+        }
+
+        if (petInfoModeDropdown == null)
+            return;
+
+        int saved = (int)PetInfoSettings.Mode;
+        petInfoModeDropdown.SetValueWithoutNotify(Mathf.Clamp(saved, 0, petInfoModeDropdown.options.Count - 1));
+        petInfoModeDropdown.onValueChanged.RemoveListener(OnPetInfoModeDropdownChanged);
+        petInfoModeDropdown.onValueChanged.AddListener(OnPetInfoModeDropdownChanged);
+    }
+
+    void OnPetInfoModeDropdownChanged(int index)
+    {
+        PetInfoSettings.Mode = (PetInfoDisplayMode)Mathf.Clamp(index, 0, 2);
+    }
+
+    void SetupLengthOfDayInput()
+    {
+        if (lengthOfDayInput == null && canvas != null)
+        {
+            foreach (var field in canvas.GetComponentsInChildren<TMP_InputField>(true))
+            {
+                if (field.gameObject.name == "LengthOfDayInput")
+                {
+                    lengthOfDayInput = field;
+                    break;
+                }
+            }
+        }
+
+        if (lengthOfDayInput == null)
+            return;
+
+        lengthOfDayInput.contentType = TMP_InputField.ContentType.IntegerNumber;
+        lengthOfDayInput.characterValidation = TMP_InputField.CharacterValidation.Digit;
+        lengthOfDayInput.characterLimit = 3;
+        lengthOfDayInput.onValidateInput = OnLengthOfDayValidateChar;
+        lengthOfDayInput.onValueChanged.RemoveListener(OnLengthOfDayValueChanged);
+        lengthOfDayInput.onValueChanged.AddListener(OnLengthOfDayValueChanged);
+        lengthOfDayInput.onEndEdit.RemoveListener(OnLengthOfDayEndEdit);
+        lengthOfDayInput.onEndEdit.AddListener(OnLengthOfDayEndEdit);
+
+        lengthOfDayInput.SetTextWithoutNotify(DayNightSettings.GetMenuDisplayMinutes());
+    }
+
+    static char OnLengthOfDayValidateChar(string text, int charIndex, char addedChar)
+    {
+        return char.IsDigit(addedChar) ? addedChar : '\0';
+    }
+
+    void OnLengthOfDayValueChanged(string text)
+    {
+        if (lengthOfDayInput == null || string.IsNullOrEmpty(text))
+            return;
+
+        var sb = new StringBuilder(text.Length);
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (char.IsDigit(text[i]))
+                sb.Append(text[i]);
+        }
+
+        string filtered = sb.ToString();
+        if (filtered == text)
+            return;
+
+        int caret = lengthOfDayInput.caretPosition;
+        lengthOfDayInput.SetTextWithoutNotify(filtered);
+        lengthOfDayInput.caretPosition = Mathf.Min(caret, filtered.Length);
+    }
+
+    void OnLengthOfDayEndEdit(string text)
+    {
+        if (lengthOfDayInput == null)
+            return;
+
+        if (string.IsNullOrEmpty(text?.Trim()))
+        {
+            lengthOfDayInput.SetTextWithoutNotify(DayNightSettings.GetMenuDisplayMinutes());
+            return;
+        }
+
+        if (!int.TryParse(text.Trim(), out int minutes) || minutes < (int)DayNightSettings.MinMinutes)
+        {
+            lengthOfDayInput.SetTextWithoutNotify(DayNightSettings.GetMenuDisplayMinutes());
+            return;
+        }
+
+        minutes = Mathf.Clamp(minutes, (int)DayNightSettings.MinMinutes, (int)DayNightSettings.MaxMinutes);
+        DayNightSettings.SetFullCycleMinutes(minutes);
+        lengthOfDayInput.SetTextWithoutNotify(minutes.ToString());
     }
 
     void SetupAudio()

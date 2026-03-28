@@ -24,8 +24,12 @@ public class DayNightController : MonoBehaviour
     [Header("Day/Night Balance")]
     [Tooltip("Time of day when the game starts (24h format, e.g. 7 = 7 AM).")]
     [SerializeField] float startTimeOfDay = 7f;
-    [Tooltip("Real-time duration of one full 24h cycle in minutes. Day is 80% of this, night 20%.")]
-    [SerializeField] float fullCycleMinutes = 15f;
+    [Tooltip("Real-time duration of one full 24h cycle in minutes. Day is 80% of this, night 20%. Overridden by main-menu save when set.")]
+    [SerializeField] float fullCycleMinutes = DayNightSettings.DefaultMinutes;
+
+    [Header("Economy")]
+    [Tooltip("Added to PlayerMoney when a new in-game day begins at 6:00 AM (DayNightCycle OnDayStarted). Not paid on session start if you already begin during daytime.")]
+    [SerializeField] float dailyMorningAllowance = 50f;
     float baseDaySpeed;
     int _lastHourSent = -1;
 
@@ -49,7 +53,9 @@ public class DayNightController : MonoBehaviour
         if (dayNightCycle != null)
             dayNightCycle.startTimeOfDay = startTimeOfDay;
 
-        // Full cycle = 15 min. With 80/20 split: day 12h takes 12 min, night 12h takes 3 min.
+        fullCycleMinutes = DayNightSettings.GetFullCycleMinutes(fullCycleMinutes);
+
+        // Full cycle (default 15 min). With 80/20 split: day 12h uses 80% of real time, night 12h uses 20% (4× faster in-game speed).
         if (dayNightCycle != null && fullCycleMinutes > 0f)
         {
             float dayRealSeconds = fullCycleMinutes * 60f * 0.8f;  // 80% of cycle
@@ -61,17 +67,28 @@ public class DayNightController : MonoBehaviour
         // Clear any placeholder text; Update() will set the real time immediately
         if (timeDisplayText != null) timeDisplayText.text = string.Empty;
 
-        if (simpleLightController != null && dayNightCycle != null)
+        if (dayNightCycle != null)
         {
-            dayNightCycle.OnDayStarted.AddListener(simpleLightController.TurnLightsOff);
-            dayNightCycle.OnNightStarted.AddListener(simpleLightController.TurnLightsOn);
-            // Set initial state based on current time
-            bool isNight = dayNightCycle.TimeOfDay < 6f || dayNightCycle.TimeOfDay >= 18f;
-            if (isNight)
-                simpleLightController.TurnLightsOn();
-            else
-                simpleLightController.TurnLightsOff();
+            dayNightCycle.OnDayStarted.AddListener(GrantDailyMorningAllowance);
+
+            if (simpleLightController != null)
+            {
+                dayNightCycle.OnDayStarted.AddListener(simpleLightController.TurnLightsOff);
+                dayNightCycle.OnNightStarted.AddListener(simpleLightController.TurnLightsOn);
+                bool isNight = dayNightCycle.TimeOfDay < 6f || dayNightCycle.TimeOfDay >= 18f;
+                if (isNight)
+                    simpleLightController.TurnLightsOn();
+                else
+                    simpleLightController.TurnLightsOff();
+            }
         }
+    }
+
+    void GrantDailyMorningAllowance()
+    {
+        if (dailyMorningAllowance <= 0f)
+            return;
+        GlobalData.PlayerMoney += dailyMorningAllowance;
     }
 
     private void Update()

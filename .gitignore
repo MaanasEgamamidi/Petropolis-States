@@ -98,6 +98,6 @@ InitTestScene*.unity*
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
-# API keys — never commit
-Assets/Resources/api-keys.txt
-Assets/Resources/api-keys.txt.meta
+# Secrets — never commit
+.env
+.env.local
