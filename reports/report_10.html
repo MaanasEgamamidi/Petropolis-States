@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Session Report — March 29, 2026, 3:46:32 PM</title>
+<title>Session Report — March 29, 2026, 3:47:54 PM</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -54,7 +54,7 @@
     color: #555;
   }
   .net {
-    color: #444;
+    color: #2a7d2a;
     font-weight: 600;
   }
   .chart-wrap {
@@ -69,21 +69,21 @@
 <body>
 
 <h1>Session Report</h1>
-<p class="report-ts">March 29, 2026, 3:46:32 PM</p>
+<p class="report-ts">March 29, 2026, 3:47:54 PM</p>
 
 <h2>Player Info</h2>
 <table>
-  <tr><th>Player Name</th><td>Player</td></tr>
+  <tr><th>Player Name</th><td>Ujoie</td></tr>
   <tr><th>Pet Name</th><td>Max</td></tr>
-  <tr><th>Session Length</th><td>7 in-game hours</td></tr>
+  <tr><th>Session Length</th><td>2.9 in-game days</td></tr>
 </table>
 
 <h2>Money Summary</h2>
 <table>
   <tr><th>Starting Amount</th><td>$150.00</td></tr>
-  <tr><th>Ending Amount</th><td>$150.00</td></tr>
-  <tr><th>Net Change</th><td class="net">+$0.00</td></tr>
-  <tr><th>Highest Reached</th><td>$150.00</td></tr>
+  <tr><th>Ending Amount</th><td>$250.00</td></tr>
+  <tr><th>Net Change</th><td class="net">+$100.00</td></tr>
+  <tr><th>Highest Reached</th><td>$250.00</td></tr>
   <tr><th>Lowest Reached</th><td>$150.00</td></tr>
 </table>
 
@@ -96,8 +96,8 @@
 <script>
 (function() {
   var startHour = 0;
-  var showDays = false;
-  var data = [{x:0,y:150.00},{x:7,y:150.00},{x:7,y:150.00}];
+  var showDays = true;
+  var data = [{x:0,y:150.00},{x:7,y:150.00},{x:8,y:150.00},{x:9,y:150.00},{x:10,y:150.00},{x:11,y:150.00},{x:12,y:150.00},{x:13,y:150.00},{x:14,y:150.00},{x:15,y:150.00},{x:16,y:150.00},{x:17,y:150.00},{x:18,y:150.00},{x:19,y:150.00},{x:20,y:150.00},{x:21,y:150.00},{x:22,y:150.00},{x:23,y:150.00},{x:24,y:150.00},{x:25,y:150.00},{x:26,y:150.00},{x:27,y:150.00},{x:28,y:150.00},{x:29,y:150.00},{x:30,y:200.00},{x:31,y:200.00},{x:32,y:200.00},{x:33,y:200.00},{x:34,y:200.00},{x:35,y:200.00},{x:36,y:200.00},{x:37,y:200.00},{x:38,y:200.00},{x:39,y:200.00},{x:40,y:200.00},{x:41,y:200.00},{x:42,y:200.00},{x:43,y:200.00},{x:44,y:200.00},{x:45,y:200.00},{x:46,y:200.00},{x:47,y:200.00},{x:48,y:200.00},{x:49,y:200.00},{x:50,y:200.00},{x:51,y:200.00},{x:52,y:200.00},{x:53,y:200.00},{x:54,y:250.00},{x:55,y:250.00},{x:56,y:250.00},{x:57,y:250.00},{x:58,y:250.00},{x:59,y:250.00},{x:60,y:250.00},{x:61,y:250.00},{x:62,y:250.00},{x:63,y:250.00},{x:64,y:250.00},{x:65,y:250.00},{x:66,y:250.00},{x:67,y:250.00},{x:68,y:250.00},{x:69,y:250.00},{x:69,y:250.00}];
 
   function fmtHour(cumH) {
     var hod = ((startHour + cumH) % 24 + 24) % 24;
