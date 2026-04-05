@@ -24,7 +24,7 @@ public static class MinimapSettings
         get
         {
             if (_cached < 0)
-                _cached = PlayerPrefs.GetInt(PrefsKey, (int)MinimapMode.None);
+                _cached = PlayerPrefs.GetInt(PrefsKey, (int)MinimapMode.Circle);
             _cached = Mathf.Clamp(_cached, 0, 2);
             return (MinimapMode)_cached;
         }
