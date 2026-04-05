@@ -16,6 +16,9 @@ public class PetStatisticsPanelController : MonoBehaviour
     [Tooltip("Fades the drag-handle bar and \"Pet Statistics\" label with the panel: full when collapsed (left), invisible when open (right). Auto-added under Left Box / Drag Handle if unset.")]
     [SerializeField] CanvasGroup dragHandleChrome;
 
+    [Tooltip("Inverse of drag handle: invisible when collapsed (left), full opacity when open (right). Auto-added under Left Box / Stats if unset.")]
+    [SerializeField] CanvasGroup statsChrome;
+
     [Tooltip("Anchored X when closed (toggle off / not holding). Match Left Box X in the scene so edit mode and play mode look the same.")]
     [SerializeField] float closedAnchoredX = 0f;
 
@@ -46,25 +49,48 @@ public class PetStatisticsPanelController : MonoBehaviour
 
     void EnsureDragHandleChrome()
     {
-        if (dragHandleChrome != null || leftBox == null)
+        if (leftBox == null)
             return;
-        Transform handle = leftBox.Find("Drag Handle");
-        if (handle == null)
-            return;
-        dragHandleChrome = handle.GetComponent<CanvasGroup>();
+
         if (dragHandleChrome == null)
-            dragHandleChrome = handle.gameObject.AddComponent<CanvasGroup>();
-        dragHandleChrome.blocksRaycasts = true;
-        dragHandleChrome.interactable = true;
+        {
+            Transform handle = leftBox.Find("Drag Handle");
+            if (handle != null)
+            {
+                dragHandleChrome = handle.GetComponent<CanvasGroup>();
+                if (dragHandleChrome == null)
+                    dragHandleChrome = handle.gameObject.AddComponent<CanvasGroup>();
+                dragHandleChrome.blocksRaycasts = true;
+                dragHandleChrome.interactable = true;
+            }
+        }
+
+        if (statsChrome == null)
+        {
+            Transform stats = leftBox.Find("Stats");
+            if (stats != null)
+            {
+                statsChrome = stats.GetComponent<CanvasGroup>();
+                if (statsChrome == null)
+                    statsChrome = stats.gameObject.AddComponent<CanvasGroup>();
+                statsChrome.blocksRaycasts = true;
+                statsChrome.interactable = true;
+            }
+        }
     }
 
     void ApplyDragHandleFade()
     {
-        if (dragHandleChrome == null || leftBox == null)
+        if (leftBox == null)
             return;
         float x = leftBox.anchoredPosition.x;
         float t = Mathf.InverseLerp(closedAnchoredX, openAnchoredX, x);
-        dragHandleChrome.alpha = 1f - Mathf.Clamp01(t);
+
+        if (dragHandleChrome != null)
+            dragHandleChrome.alpha = 1f - Mathf.Clamp01(t);
+
+        if (statsChrome != null)
+            statsChrome.alpha = Mathf.Clamp01(t);
     }
 
     void OnEnable()
