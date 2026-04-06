@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace StarterAssets
 {
+	[DefaultExecutionOrder(-100)]
 	public class StarterAssetsInputs : MonoBehaviour
 	{
 		[Header("Character Input Values")]
@@ -19,6 +20,18 @@ namespace StarterAssets
 		[Header("Mouse Cursor Settings")]
 		public bool cursorLocked = true;
 		public bool cursorInputForLook = true;
+
+		bool _uiMenuOpen;
+
+		/// <summary>Pause / fullscreen UI: keep cursor visible and ignore FPS lock-on-focus behavior.</summary>
+		public void SetUiMenuOpen(bool open)
+		{
+			_uiMenuOpen = open;
+			if (open)
+				SetCursorState(false);
+			else
+				SetCursorState(cursorLocked);
+		}
 
 #if ENABLE_INPUT_SYSTEM
 		public void OnMove(InputValue value)
@@ -66,6 +79,16 @@ namespace StarterAssets
 			sprint = newSprintState;
 		}
 
+		void Update()
+		{
+			if (!WorldPauseController.IsPaused)
+				return;
+			look = Vector2.zero;
+			move = Vector2.zero;
+			jump = false;
+			sprint = false;
+		}
+
 		private void Start()
 		{
 			SetCursorState(cursorLocked);
@@ -73,6 +96,11 @@ namespace StarterAssets
 
 		private void OnApplicationFocus(bool hasFocus)
 		{
+			if (_uiMenuOpen || WorldPauseController.IsPaused)
+			{
+				SetCursorState(false);
+				return;
+			}
 			// When game loses focus, unlock and show cursor so user can interact with other windows.
 			// When game gains focus, lock and hide cursor if cursorLocked is set.
 			SetCursorState(hasFocus && cursorLocked);
@@ -80,6 +108,12 @@ namespace StarterAssets
 
 		private void SetCursorState(bool newState)
 		{
+			if (_uiMenuOpen || WorldPauseController.IsPaused)
+			{
+				Cursor.lockState = CursorLockMode.None;
+				Cursor.visible = true;
+				return;
+			}
 			Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
 			Cursor.visible = !newState;
 		}

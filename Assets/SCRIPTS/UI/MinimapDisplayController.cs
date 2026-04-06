@@ -50,6 +50,7 @@ public class MinimapDisplayController : MonoBehaviour
     Material _materialInstance;
     CanvasGroup _canvasGroup;
     float _presentationAlpha;
+    MinimapMode _lastAppliedMode = (MinimapMode)(-999);
 
     void Awake()
     {
@@ -63,15 +64,36 @@ public class MinimapDisplayController : MonoBehaviour
     {
         if (!Application.isPlaying) return;
         ApplyFromPlayerSettings();
+        _lastAppliedMode = MinimapSettings.Mode;
     }
 
     void Update()
     {
-        if (!Application.isPlaying || MinimapSettings.Mode == MinimapMode.None)
+        if (!Application.isPlaying)
             return;
 
         if (minimapRawImage == null)
             minimapRawImage = GetComponentInChildren<RawImage>(true);
+
+        if (MinimapSettings.Mode != _lastAppliedMode)
+        {
+            _lastAppliedMode = MinimapSettings.Mode;
+            if (MinimapSettings.Mode == MinimapMode.None)
+                ApplyNoneModeRuntime();
+            else
+                ApplyFromPlayerSettings();
+        }
+
+        // Mode None: re-apply every frame so other systems (e.g. pause HUD fade) cannot
+        // drive this CanvasGroup back to alpha 1 — that would show the player dot with no map.
+        if (MinimapSettings.Mode == MinimapMode.None)
+        {
+            ApplyNoneModeRuntime();
+            return;
+        }
+
+        if (minimapRawImage != null && !minimapRawImage.enabled)
+            minimapRawImage.enabled = true;
 
         if (minimapRawImage == null)
             return;
@@ -83,6 +105,36 @@ public class MinimapDisplayController : MonoBehaviour
         cg.alpha = _presentationAlpha;
         cg.blocksRaycasts = _presentationAlpha > 0.01f;
         MinimapSettings.PresentationAlpha = _presentationAlpha;
+    }
+
+    void ApplyNoneModeRuntime()
+    {
+        _presentationAlpha = 0f;
+        MinimapSettings.PresentationAlpha = 0f;
+        CanvasGroup cg = EnsureCanvasGroup();
+        cg.alpha = 0f;
+        cg.blocksRaycasts = false;
+        if (minimapRawImage == null)
+            minimapRawImage = GetComponentInChildren<RawImage>(true);
+        if (minimapRawImage != null)
+            minimapRawImage.enabled = false;
+        SetAuxiliaryMinimapGraphicsEnabled(false);
+    }
+
+    /// <summary>
+    /// Player marker dot and any other UI graphics under this root (siblings of the map RawImage).
+    /// </summary>
+    void SetAuxiliaryMinimapGraphicsEnabled(bool enabled)
+    {
+        if (minimapRawImage == null)
+            minimapRawImage = GetComponentInChildren<RawImage>(true);
+        foreach (Transform t in transform)
+        {
+            var g = t.GetComponent<Graphic>();
+            if (g == null || g == minimapRawImage)
+                continue;
+            g.enabled = enabled;
+        }
     }
 
     void OnEnable()
@@ -113,8 +165,8 @@ public class MinimapDisplayController : MonoBehaviour
         switch (MinimapSettings.Mode)
         {
             case MinimapMode.None:
-                MinimapSettings.PresentationAlpha = 0f;
-                gameObject.SetActive(false);
+                ApplyNoneModeRuntime();
+                // Keep this GameObject active so Update can show the minimap again when mode changes at runtime.
                 return;
             case MinimapMode.Circle:
                 displayShape = MinimapDisplayShape.Circle;
@@ -129,6 +181,7 @@ public class MinimapDisplayController : MonoBehaviour
             minimapRawImage = GetComponentInChildren<RawImage>(true);
         if (minimapRawImage != null)
             minimapRawImage.gameObject.SetActive(true);
+        SetAuxiliaryMinimapGraphicsEnabled(true);
 
         _presentationAlpha = 0f;
         MinimapSettings.PresentationAlpha = 0f;

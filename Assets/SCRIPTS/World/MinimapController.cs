@@ -33,8 +33,10 @@ public class MinimapController : MonoBehaviour
 
 #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null && Keyboard.current[Key.M].wasPressedThisFrame)
-#else
+#elif ENABLE_LEGACY_INPUT_MANAGER
         if (Input.GetKeyDown(KeyCode.M))
+#else
+        if (false)
 #endif
             MinimapSettings.RuntimeSuppressed = !MinimapSettings.RuntimeSuppressed;
     }

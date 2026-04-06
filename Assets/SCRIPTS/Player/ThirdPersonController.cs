@@ -152,6 +152,9 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Update()
     {
+        if (WorldPauseController.IsPaused)
+            return;
+
         _hasAnimator = TryGetComponent(out _animator);
 
         JumpAndGravity();
@@ -161,6 +164,9 @@ public class ThirdPersonController : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (WorldPauseController.IsPaused)
+            return;
+
         CameraRotation();
     }
 

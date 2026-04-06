@@ -491,6 +491,12 @@ public class MainMenu : MonoBehaviour
         if (_musicSource != null) _musicSource.volume = AudioSettings.MusicVolume;
     }
 
+    /// <summary>Called when sliders change music volume outside this component (e.g. pause menu).</summary>
+    public static void RefreshMusicVolumeFromSettings()
+    {
+        if (_musicSource != null) _musicSource.volume = AudioSettings.MusicVolume;
+    }
+
     public void SetSFXVolume(float value)
     {
         AudioSettings.SFXVolumeRaw = value;
