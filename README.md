@@ -1,4 +1,4 @@
-# 🐾 Petropolis-States
+# 🐾 Petropolis
 
 > A life-simulation RPG built in Unity where you manage your finances, care for your dog, and navigate the responsibilities of everyday life.
 
