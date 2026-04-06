@@ -6,7 +6,7 @@
 
 ## Overview
 
-**Petropolis-States** is a third-person 3D life simulation game in which the player adopts a dog, holds a job, manages a bank account, and balances the real costs of pet ownership — all within a stylized low-poly city. The game uses an in-game economy, time system, and AI-driven NPC interactions to create a meaningful simulation of financial literacy and emotional care.
+**Petropolis** is a third-person 3D life simulation game in which the player adopts a dog, holds a job, manages a bank account, and balances the real costs of pet ownership — all within a stylized low-poly city. The game uses an in-game economy, time system, and AI-driven NPC interactions to create a meaningful simulation of financial literacy and emotional care.
 
 ---
 
@@ -118,4 +118,4 @@
 
 ## License
 
-Private project — all rights reserved.
+This project is licensed under the [MIT License](LICENSE).
