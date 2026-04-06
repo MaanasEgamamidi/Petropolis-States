@@ -31,6 +31,12 @@ public class PetStatisticsPanelController : MonoBehaviour
     [Tooltip("Hold-to-show only: brief automatic open after first pet choice this session.")]
     [SerializeField] [Min(0f)] float holdModeIntroPeekDuration = 2f;
 
+    [Tooltip("\"Pet Statistics\" / drag handle opacity = (1−t)^n where t is slide progress (0 = closed left, 1 = open right). n > 1: fades out quickly at first when opening, then slowly at the end; when closing (right→left) the opposite.")]
+    [SerializeField] [Min(1f)] float dragHandleFadeExponent = 3f;
+
+    [Tooltip("Health / happiness / energy / hunger chrome opacity = t^n. n > 1: stays faint for most of the slide when opening, then ramps up quickly at the end; when closing, fades most of the way early and eases out at the end.")]
+    [SerializeField] [Min(1f)] float statsFadeExponent = 3f;
+
     PetInfoDisplayMode _lastMode;
     bool _toggleExpanded;
     float _holdIntroPeekRemaining;
@@ -84,13 +90,13 @@ public class PetStatisticsPanelController : MonoBehaviour
         if (leftBox == null)
             return;
         float x = leftBox.anchoredPosition.x;
-        float t = Mathf.InverseLerp(closedAnchoredX, openAnchoredX, x);
+        float t = Mathf.Clamp01(Mathf.InverseLerp(closedAnchoredX, openAnchoredX, x));
 
         if (dragHandleChrome != null)
-            dragHandleChrome.alpha = 1f - Mathf.Clamp01(t);
+            dragHandleChrome.alpha = Mathf.Pow(1f - t, dragHandleFadeExponent);
 
         if (statsChrome != null)
-            statsChrome.alpha = Mathf.Clamp01(t);
+            statsChrome.alpha = Mathf.Pow(t, statsFadeExponent);
     }
 
     void OnEnable()
