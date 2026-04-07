@@ -443,10 +443,6 @@ PrefabInstance:
       propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3419338864768815679, guid: 935861680096a93479b620bef3762cca, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 4261254243153997872, guid: 935861680096a93479b620bef3762cca, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -481,5 +477,5 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1810778933}
-  - {fileID: 8129430764651552724}
   - {fileID: 1741308547}
+  - {fileID: 8129430764651552724}

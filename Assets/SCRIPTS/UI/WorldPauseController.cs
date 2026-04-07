@@ -82,6 +82,7 @@ public class WorldPauseController : MonoBehaviour
         {
             PauseMenuSettingsHelper.Bind(pauseMenuRoot.transform);
             WireBackToGameButton();
+            WireQuitButton();
             _settingsBound = true;
         }
     }
@@ -129,11 +130,34 @@ public class WorldPauseController : MonoBehaviour
         }
     }
 
+    void WireQuitButton()
+    {
+        foreach (var btn in pauseMenuRoot.GetComponentsInChildren<Button>(true))
+        {
+            if (btn.gameObject.name != "Quit")
+                continue;
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(QuitFromButton);
+            break;
+        }
+    }
+
     void ResumeFromButton()
     {
         if (_busy || !_paused)
             return;
         StartCoroutine(ClosePauseRoutine());
+    }
+
+    void QuitFromButton()
+    {
+        // Restore time scale before quitting so the engine shuts down cleanly.
+        Time.timeScale = 1f;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     void Update()
@@ -184,6 +208,7 @@ public class WorldPauseController : MonoBehaviour
         {
             PauseMenuSettingsHelper.Bind(pauseMenuRoot.transform);
             WireBackToGameButton();
+            WireQuitButton();
             _settingsBound = true;
         }
 
