@@ -47,7 +47,7 @@ public class GlobalData : MonoBehaviour
             if (delta != 0f) OnMoneyChanged?.Invoke(delta);
         }
     }
-    public static string PetName { get; set; } = "Max";
+    public static string PetName { get; set; } = "Dog";
     public static float PetHunger { get; set; } = 100f;
     public static float PetHealth { get; set; } = 100f;
     public static float PetHappiness { get; set; } = 100f;

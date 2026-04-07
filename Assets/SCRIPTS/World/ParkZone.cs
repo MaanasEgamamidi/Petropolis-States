@@ -3,8 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// Attach to the "Park Zone" trigger collider in the World scene.
-/// - Before the player first enters: silent.
-/// - While inside: logs "Inside of park with [pet name]" (pet) or "Inside of park without a pet" every second.
+/// - While inside (with a pet): applies continuous stat drift each frame (health/happiness up, energy/hunger down); bars follow <see cref="GlobalData"/>.
+/// - While inside: logs "Inside of park with [pet name]" (pet) or "Inside of park without a pet" every <see cref="logInterval"/>.
 /// - On exit: logs "Left park".
 /// </summary>
 [RequireComponent(typeof(Collider))]
@@ -15,6 +15,16 @@ public class ParkZone : MonoBehaviour
 
     [Tooltip("How often (in seconds) to print the 'Inside of park' message.")]
     public float logInterval = 1f;
+
+    [Header("Pet stats while in park (per real-time second, only if player has a pet)")]
+    [Tooltip("PetHealth change per second (positive = recover).")]
+    [SerializeField] float healthChangePerSecond = 1.5f;
+    [Tooltip("PetHappiness change per second (positive = gain).")]
+    [SerializeField] float happinessChangePerSecond = 4f;
+    [Tooltip("PetEnergy lost per second (positive value; subtracted from energy).")]
+    [SerializeField] [Min(0f)] float energyDrainPerSecond = 2.5f;
+    [Tooltip("PetHunger lost per second (positive value; subtracted from hunger / fullness).")]
+    [SerializeField] [Min(0f)] float hungerDrainPerSecond = 2.5f;
 
     bool _playerInZone;
     bool _hasEnteredOnce;
@@ -36,6 +46,18 @@ public class ParkZone : MonoBehaviour
         Collider col = GetComponent<Collider>();
         if (col != null && !col.isTrigger)
             Debug.LogWarning("[ParkZone] Collider is not set as a Trigger. Enable 'Is Trigger' on the collider.");
+    }
+
+    void Update()
+    {
+        if (!_playerInZone || GlobalData.StoredPetSkin <= 0)
+            return;
+
+        float dt = Time.deltaTime;
+        GlobalData.PetHealth    = Mathf.Clamp(GlobalData.PetHealth    + healthChangePerSecond    * dt, 0f, 100f);
+        GlobalData.PetHappiness = Mathf.Clamp(GlobalData.PetHappiness + happinessChangePerSecond * dt, 0f, 100f);
+        GlobalData.PetEnergy    = Mathf.Clamp(GlobalData.PetEnergy    - energyDrainPerSecond     * dt, 0f, 100f);
+        GlobalData.PetHunger    = Mathf.Clamp(GlobalData.PetHunger    - hungerDrainPerSecond    * dt, 0f, 100f);
     }
 
     bool IsPlayer(Collider other)

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// Controls the Back/Next buttons in PetChoose scene to cycle through dog materials (Dog_01–Dog_06).
@@ -18,6 +19,10 @@ public class PetChooseController : MonoBehaviour
     [SerializeField] Button nextButton;
     [SerializeField] Button confirmButton;
 
+    [Header("Pet name")]
+    [Tooltip("TMP field for the dog's name. Required when Edit > Mandatory Name Selection is on.")]
+    [SerializeField] TMP_InputField petNameInputField;
+
     [Header("Fade to World")]
     [Tooltip("The fade black panel (must have CanvasGroup). FadeCanvas or a child with CanvasGroup.")]
     [SerializeField] GameObject fadePanel;
@@ -27,6 +32,8 @@ public class PetChooseController : MonoBehaviour
     const int MIN_INDEX = 1;
     const int MAX_INDEX = 6;
     int _currentIndex = 1;
+
+    CanvasGroup _confirmDimGroup;
 
     void Awake()
     {
@@ -64,12 +71,29 @@ public class PetChooseController : MonoBehaviour
         if (nextButton != null)
             nextButton.onClick.AddListener(OnNextClicked);
         if (confirmButton != null)
+        {
+            _confirmDimGroup = ButtonStyleHelper.EnsureDimCanvasGroup(confirmButton);
             confirmButton.onClick.AddListener(OnConfirmClicked);
+        }
+        if (petNameInputField != null)
+            petNameInputField.onValueChanged.AddListener(OnPetNameFieldChanged);
     }
 
     void Start()
     {
         ApplyMaterial(_currentIndex);
+        RefreshConfirmInteractable();
+    }
+
+    void OnPetNameFieldChanged(string _) => RefreshConfirmInteractable();
+
+    void RefreshConfirmInteractable()
+    {
+        if (confirmButton == null)
+            return;
+        bool allow = !NameSelectionSettings.IsMandatory
+            || !string.IsNullOrWhiteSpace((petNameInputField != null) ? petNameInputField.text : "");
+        ButtonStyleHelper.ApplyInteractableWithDim(confirmButton, _confirmDimGroup, allow);
     }
 
     public void OnBackClicked()
@@ -86,6 +110,11 @@ public class PetChooseController : MonoBehaviour
 
     public void OnConfirmClicked()
     {
+        string petName = (petNameInputField != null) ? petNameInputField.text : "";
+        if (NameSelectionSettings.IsMandatory && string.IsNullOrWhiteSpace(petName))
+            return;
+
+        GlobalData.PetName = string.IsNullOrWhiteSpace(petName) ? "Dog" : petName.Trim();
         GlobalData.SavePetChoice(_currentIndex);
 
         if (GlobalData.PetChooseOpenedFromWorld)

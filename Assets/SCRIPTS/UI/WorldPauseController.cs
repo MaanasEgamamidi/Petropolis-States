@@ -31,6 +31,10 @@ public class WorldPauseController : MonoBehaviour
     [SerializeField] GameObject pauseMenuRoot;
     [SerializeField] int pauseCanvasSortOrder = 400;
 
+    [Header("Quit")]
+    [SerializeField] string closingSceneName = "ClosingScene";
+    [SerializeField] [Min(0.02f)] float quitFadeToClosingDuration = 0.85f;
+
     static readonly string[] HudChildNamesUnderUi = { "MinimapCircle", "DayNightUI", "MoneyCounter" };
     static readonly string[] HudRootNames = { "Pet Statistics", "Notifications" };
 
@@ -122,7 +126,8 @@ public class WorldPauseController : MonoBehaviour
     {
         foreach (var btn in pauseMenuRoot.GetComponentsInChildren<Button>(true))
         {
-            if (btn.gameObject.name != "BackToMenu")
+            string n = btn.gameObject.name;
+            if (n != "BackToGame" && n != "BackToMenu")
                 continue;
             btn.onClick.RemoveAllListeners();
             btn.onClick.AddListener(ResumeFromButton);
@@ -151,13 +156,27 @@ public class WorldPauseController : MonoBehaviour
 
     void QuitFromButton()
     {
-        // Restore time scale before quitting so the engine shuts down cleanly.
+        if (_busy || !_paused)
+            return;
+
+        _busy = true;
+        _paused = false;
+        IsPaused = false;
         Time.timeScale = 1f;
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+
+        if (_pauseGroup != null)
+        {
+            _pauseGroup.interactable = false;
+            _pauseGroup.blocksRaycasts = false;
+        }
+
+        if (pauseMenuRoot != null)
+            pauseMenuRoot.SetActive(false);
+
+        RestoreGameCursorAfterMenu();
+
+        var panel = FadeTransitionRunner.CreateFullScreenBlackFadePanel();
+        FadeTransitionRunner.RunFadeThenLoadScene(panel, quitFadeToClosingDuration, closingSceneName);
     }
 
     void Update()

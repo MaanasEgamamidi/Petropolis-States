@@ -6,12 +6,14 @@ using System.Text;
 using UnityEngine;
 
 /// <summary>
-/// Generates numbered HTML session report files in a <c>reports/</c> folder at the project root.
+/// Generates numbered HTML session report files in a <c>Session Reports/</c> folder at the project root.
 /// Uses Chart.js (CDN) with per-segment line coloring: green = gain, red = loss, gray = flat.
 /// X-axis uses cumulative hours with 3-hour aligned ticks and day boundary labels.
 /// </summary>
 public static class ReportWriter
 {
+    const string ReportFilePrefix = "SessionReport";
+
     public static void Generate(
         string playerName,
         string petName,
@@ -23,11 +25,11 @@ public static class ReportWriter
         float lowestMoney,
         List<SessionTracker.MoneySnapshot> snapshots)
     {
-        string reportsDir = Path.Combine(Application.dataPath, "..", "reports");
+        string reportsDir = Path.Combine(Application.dataPath, "..", "Session Reports");
         Directory.CreateDirectory(reportsDir);
 
         int reportNumber = NextReportNumber(reportsDir);
-        string filePath = Path.Combine(reportsDir, $"report_{reportNumber}.html");
+        string filePath = Path.Combine(reportsDir, $"{ReportFilePrefix}{reportNumber}.html");
 
         string sessionLength = FormatSessionLength(totalGameHours);
         float netChange = endingMoney - startingMoney;
@@ -50,10 +52,11 @@ public static class ReportWriter
         int max = 0;
         if (Directory.Exists(dir))
         {
-            foreach (string file in Directory.GetFiles(dir, "report_*.html"))
+            foreach (string file in Directory.GetFiles(dir, $"{ReportFilePrefix}*.html"))
             {
                 string name = Path.GetFileNameWithoutExtension(file);
-                if (name.StartsWith("report_") && int.TryParse(name.Substring(7), out int n))
+                if (name.StartsWith(ReportFilePrefix) &&
+                    int.TryParse(name.AsSpan(ReportFilePrefix.Length), out int n))
                 {
                     if (n > max) max = n;
                 }

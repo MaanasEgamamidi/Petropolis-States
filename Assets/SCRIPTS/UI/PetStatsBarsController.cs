@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Drives the four pet-stat bar fills from <see cref="GlobalData"/> values,
 /// applies passive decay each frame, and optionally lets number keys 1-4 boost stats.
+/// Bar widths can ease toward live stats (<see cref="smoothBarChanges"/>) so jumps from zones or keys animate smoothly.
 /// Each bar has a full-width background track (dark border, dimmed) and a fill Image whose
 /// border and right-edge curve follow the fill as it decays.
 /// Attach to the <c>Bars</c> GameObject under <c>Pet Statistics / Left Box / Stats</c>.
@@ -48,8 +49,8 @@ public class PetStatsBarsController : MonoBehaviour
     [Header("Border")]
     [Tooltip("Color of the border drawn around both the fill bar and the background track.")]
     [SerializeField] Color borderColor = new Color(0.10f, 0.10f, 0.10f, 1f);
-    [Tooltip("Border thickness in pixels of the generated texture (scales with bar height).")]
-    [SerializeField] [Range(1f, 6f)] float borderThicknessFraction = 0.08f;
+    [Tooltip("Border thickness as a fraction of bar height (e.g. 0.08 ≈ 8%). Values near 1 hide the colored fill.")]
+    [SerializeField] [Range(0.02f, 0.25f)] float borderThicknessFraction = 0.08f;
     [Tooltip("Alpha of the background track image (0 = invisible, 1 = opaque).")]
     [SerializeField] [Range(0f, 1f)] float trackAlpha = 0.35f;
 
@@ -62,6 +63,21 @@ public class PetStatsBarsController : MonoBehaviour
     [SerializeField] bool numberKeyBoostEnabled = true;
     [SerializeField] [Min(0f)] float boostAmount = 10f;
 
+    [Header("Bar animation")]
+    [Tooltip("When true, fill width eases toward GlobalData; when false, fills match stats every frame.")]
+    [SerializeField] bool smoothBarChanges = true;
+    [Tooltip("Approximate seconds for the bar to settle after a stat change. Smaller = snappier.")]
+    [SerializeField] [Min(0.02f)] float barSmoothTime = 0.35f;
+
+    float _displayHealth;
+    float _displayHappiness;
+    float _displayEnergy;
+    float _displayHunger;
+    float _velHealth;
+    float _velHappiness;
+    float _velEnergy;
+    float _velHunger;
+
     [Header("Bar shape")]
     [Tooltip("Corner roundness vs bar thickness. Only the flat middle stretches; 9-slice keeps corners from squashing.")]
     [SerializeField] [Range(0.06f, 0.24f)] float cornerRadiusFractionOfHeight = 0.125f;
@@ -69,6 +85,16 @@ public class PetStatsBarsController : MonoBehaviour
     void Awake()
     {
         ResolveBarReferences();
+        ResetDisplayedStatsToGlobal();
+    }
+
+    void ResetDisplayedStatsToGlobal()
+    {
+        _displayHealth    = GlobalData.PetHealth;
+        _displayHappiness = GlobalData.PetHappiness;
+        _displayEnergy    = GlobalData.PetEnergy;
+        _displayHunger    = GlobalData.PetHunger;
+        _velHealth = _velHappiness = _velEnergy = _velHunger = 0f;
     }
 
     IEnumerator Start()
@@ -140,6 +166,9 @@ public class PetStatsBarsController : MonoBehaviour
         int border = Mathf.Clamp(Mathf.RoundToInt(radius), 4, texH / 2 - 2);
         int texW   = Mathf.Max(BarTexWidth, border * 2 + 24);
         int bThick = Mathf.Max(1, Mathf.RoundToInt(borderThicknessFraction * texH));
+        int bThickMax = Mathf.Max(2, texH / 4);
+        if (bThick > bThickMax)
+            bThick = bThickMax;
 
         if (s_SharedFillSprite == null)
         {
@@ -357,10 +386,31 @@ public class PetStatsBarsController : MonoBehaviour
 
     void SyncFills()
     {
-        SetBarFillWidth(healthBar,    GlobalData.PetHealth    / 100f);
-        SetBarFillWidth(happinessBar, GlobalData.PetHappiness / 100f);
-        SetBarFillWidth(energyBar,    GlobalData.PetEnergy    / 100f);
-        SetBarFillWidth(hungerBar,    GlobalData.PetHunger    / 100f);
+        float dt = Time.deltaTime;
+        float th = GlobalData.PetHealth;
+        float tp = GlobalData.PetHappiness;
+        float te = GlobalData.PetEnergy;
+        float tn = GlobalData.PetHunger;
+
+        if (smoothBarChanges && _barFullWidth > 0.01f && dt > 0f)
+        {
+            _displayHealth    = Mathf.SmoothDamp(_displayHealth,    th, ref _velHealth,    barSmoothTime, Mathf.Infinity, dt);
+            _displayHappiness = Mathf.SmoothDamp(_displayHappiness, tp, ref _velHappiness, barSmoothTime, Mathf.Infinity, dt);
+            _displayEnergy    = Mathf.SmoothDamp(_displayEnergy,    te, ref _velEnergy,    barSmoothTime, Mathf.Infinity, dt);
+            _displayHunger    = Mathf.SmoothDamp(_displayHunger,    tn, ref _velHunger,    barSmoothTime, Mathf.Infinity, dt);
+        }
+        else
+        {
+            _displayHealth    = th;
+            _displayHappiness = tp;
+            _displayEnergy    = te;
+            _displayHunger    = tn;
+        }
+
+        SetBarFillWidth(healthBar,    _displayHealth    / 100f);
+        SetBarFillWidth(happinessBar, _displayHappiness / 100f);
+        SetBarFillWidth(energyBar,    _displayEnergy    / 100f);
+        SetBarFillWidth(hungerBar,    _displayHunger    / 100f);
     }
 
     void SetBarFillWidth(Image img, float normalizedFill)

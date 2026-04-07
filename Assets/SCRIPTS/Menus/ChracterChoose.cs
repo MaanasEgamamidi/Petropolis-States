@@ -69,6 +69,8 @@ public class ChracterChoose : MonoBehaviour
     /// <summary>0-based head index (0–4).</summary>
     public int selectedHead = 0;
 
+    CanvasGroup _confirmDimGroup;
+
     // ─────────────────────────────────────────────────────────────────────────
 
     void Awake()
@@ -101,13 +103,30 @@ public class ChracterChoose : MonoBehaviour
 
         // Confirm button
         if (confirmButton != null)
+        {
+            _confirmDimGroup = ButtonStyleHelper.EnsureDimCanvasGroup(confirmButton);
             confirmButton.onClick.AddListener(OnConfirm);
+        }
+        if (nameInputField != null)
+            nameInputField.onValueChanged.AddListener(OnNameFieldChanged);
     }
 
     void Start()
     {
         // Apply the default selections on scene load
         RefreshAll();
+        RefreshConfirmInteractable();
+    }
+
+    void OnNameFieldChanged(string _) => RefreshConfirmInteractable();
+
+    void RefreshConfirmInteractable()
+    {
+        if (confirmButton == null)
+            return;
+        bool allow = !NameSelectionSettings.IsMandatory
+            || !string.IsNullOrWhiteSpace((nameInputField != null) ? nameInputField.text : "");
+        ButtonStyleHelper.ApplyInteractableWithDim(confirmButton, _confirmDimGroup, allow);
     }
 
     // ─── Gender ───────────────────────────────────────────────────────────────
@@ -149,6 +168,8 @@ public class ChracterChoose : MonoBehaviour
         int bodyOneBased = selectedBody + 1; // GlobalData uses 1-5
         int headOneBased = selectedHead + 1;
         string playerName = (nameInputField != null) ? nameInputField.text : "";
+        if (NameSelectionSettings.IsMandatory && string.IsNullOrWhiteSpace(playerName))
+            return;
 
         GlobalData.SaveChoice(genderStr, bodyOneBased, headOneBased, playerName);
 

@@ -2,7 +2,7 @@ using UnityEditor;
 
 /// <summary>
 /// Toggle for session report generation. When enabled, an HTML report is written
-/// to the reports/ folder every time you stop playing. Toggle via Edit > Generate Session Reports.
+/// to the Session Reports/ folder every time you stop playing. Toggle via Edit > Generate Session Reports.
 /// </summary>
 [InitializeOnLoad]
 internal static class GenerateSessionReports

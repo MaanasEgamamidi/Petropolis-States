@@ -42,6 +42,25 @@ public static class AudioSettings
 /// <summary>Persistent runner for scene transitions. Survives scene loads so fade-out can complete.</summary>
 public class FadeTransitionRunner : MonoBehaviour
 {
+    /// <summary>Full-screen black image with CanvasGroup; use with <see cref="RunFadeThenLoadScene"/> / <see cref="RunFadeThenQuit"/> when no prefab exists in the scene.</summary>
+    public static GameObject CreateFullScreenBlackFadePanel()
+    {
+        var go = new GameObject("FadePanel");
+        var rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.sizeDelta = Vector2.zero;
+        rt.anchoredPosition = Vector2.zero;
+        var img = go.AddComponent<Image>();
+        img.color = Color.black;
+        img.raycastTarget = false;
+        var cg = go.AddComponent<CanvasGroup>();
+        cg.alpha = 0f;
+        cg.interactable = false;
+        cg.blocksRaycasts = false;
+        return go;
+    }
+
     public static void RunFadeThenLoadScene(GameObject fadePanel, float fadeDuration, string sceneName)
     {
         CanvasGroup cg = fadePanel != null ? fadePanel.GetComponent<CanvasGroup>() : null;
