@@ -15,7 +15,7 @@ public class NPCProximity : MonoBehaviour
             _player = playerObj.transform;
 
         if (npcAnimators == null || npcAnimators.Length == 0)
-            npcAnimators = GetComponentsInChildren<Animator>(true);
+            npcAnimators = GetComponentsInChildren<Animator>(false);
     }
 
     private void Update()
@@ -25,7 +25,8 @@ public class NPCProximity : MonoBehaviour
 
         foreach (Animator anim in npcAnimators)
         {
-            if (anim == null) continue;
+            if (anim == null || !anim.isActiveAndEnabled || anim.runtimeAnimatorController == null)
+                continue;
 
             float dist = Vector3.Distance(_player.position, anim.transform.position);
             anim.SetBool(PlayerNearby, dist <= detectionRange);
