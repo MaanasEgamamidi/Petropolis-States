@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Auto-initialising singleton that records session economy data and writes an HTML report on quit.
-/// Tracks hourly money snapshots, high/low watermarks, and total session length.
+/// Singleton created when the player confirms a pet (<see cref="GlobalData.OnPetConfirmed"/>).
+/// Records session economy data and writes an HTML report on quit: hourly money and pet-stat snapshots,
+/// money high/low watermarks, and total session length from that point forward.
 /// </summary>
 public class SessionTracker : MonoBehaviour
 {
@@ -11,6 +12,10 @@ public class SessionTracker : MonoBehaviour
     {
         public float GameHour;
         public float Money;
+        public float PetHealth;
+        public float PetHappiness;
+        public float PetEnergy;
+        public float PetHunger;
     }
 
     public static SessionTracker Instance { get; private set; }
@@ -25,8 +30,13 @@ public class SessionTracker : MonoBehaviour
 
     readonly List<MoneySnapshot> _snapshots = new List<MoneySnapshot>();
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void AutoInit()
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void SubscribeCreateOnPetConfirmed()
+    {
+        GlobalData.OnPetConfirmed += CreateTrackerIfNeeded;
+    }
+
+    static void CreateTrackerIfNeeded()
     {
         if (Instance != null) return;
 
@@ -92,11 +102,33 @@ public class SessionTracker : MonoBehaviour
 
     void RecordSnapshot(float gameHour)
     {
-        _snapshots.Add(new MoneySnapshot
+        var snap = new MoneySnapshot
         {
             GameHour = gameHour,
-            Money = GlobalData.PlayerMoney
-        });
+            Money = GlobalData.PlayerMoney,
+            PetHealth = GlobalData.PetHealth,
+            PetHappiness = GlobalData.PetHappiness,
+            PetEnergy = GlobalData.PetEnergy,
+            PetHunger = GlobalData.PetHunger
+        };
+
+        if (_snapshots.Count > 0)
+        {
+            var prev = _snapshots[_snapshots.Count - 1];
+            if (SnapshotHourEquals(prev.GameHour, gameHour))
+            {
+                _snapshots[_snapshots.Count - 1] = snap;
+                return;
+            }
+        }
+
+        _snapshots.Add(snap);
+    }
+
+    /// <summary>Same discrete in-game hour (and same 24h day bucket) — merge instead of appending so quit does not duplicate the last point.</summary>
+    static bool SnapshotHourEquals(float gameHourA, float gameHourB)
+    {
+        return Mathf.FloorToInt(gameHourA) == Mathf.FloorToInt(gameHourB);
     }
 
     void OnApplicationQuit()

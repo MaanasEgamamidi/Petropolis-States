@@ -8,7 +8,7 @@ using UnityEngine;
 /// <summary>
 /// Generates numbered HTML session report files in a <c>Session Reports/</c> folder at the project root.
 /// Uses Chart.js (CDN) with per-segment line coloring: green = gain, red = loss, gray = flat.
-/// X-axis uses cumulative hours with 3-hour aligned ticks and day boundary labels.
+/// X-axis uses cumulative hours with 3-hour aligned ticks and day boundary labels; pet stats share one multi-line chart with a legend.
 /// </summary>
 public static class ReportWriter
 {
@@ -36,12 +36,16 @@ public static class ReportWriter
 
         float startHour = snapshots.Count > 0 ? snapshots[0].GameHour : 0f;
         string pointsJs = BuildPointsArray(snapshots);
+        string healthJs = BuildStatPointsArray(snapshots, s => s.PetHealth);
+        string happinessJs = BuildStatPointsArray(snapshots, s => s.PetHappiness);
+        string energyJs = BuildStatPointsArray(snapshots, s => s.PetEnergy);
+        string hungerJs = BuildStatPointsArray(snapshots, s => s.PetHunger);
 
         string reportTimestamp = FormatWashingtonLocalTimestamp(DateTime.UtcNow);
         string html = BuildHtml(
             reportTimestamp, playerName, petName, sessionLength,
             startingMoney, endingMoney, netChange, highestMoney, lowestMoney,
-            pointsJs, startHour, totalGameHours);
+            pointsJs, healthJs, happinessJs, energyJs, hungerJs, startHour, totalGameHours);
 
         File.WriteAllText(filePath, html, Encoding.UTF8);
         Debug.Log($"[SessionReport] Saved report to {filePath}");
@@ -116,12 +120,33 @@ public static class ReportWriter
         return sb.ToString();
     }
 
+    static string BuildStatPointsArray(List<SessionTracker.MoneySnapshot> snapshots, Func<SessionTracker.MoneySnapshot, float> getY)
+    {
+        var sb = new StringBuilder("[");
+        float cumHours = 0f;
+        for (int i = 0; i < snapshots.Count; i++)
+        {
+            if (i > 0)
+            {
+                float diff = snapshots[i].GameHour - snapshots[i - 1].GameHour;
+                if (diff < 0f) diff += 24f;
+                cumHours += diff;
+                sb.Append(',');
+            }
+            sb.Append($"{{x:{cumHours:0.##},y:{getY(snapshots[i]):0.##}}}");
+        }
+        sb.Append(']');
+        return sb.ToString();
+    }
+
     static string BuildHtml(
         string reportTimestamp,
         string playerName, string petName, string sessionLength,
         float startingMoney, float endingMoney, float netChange,
         float highestMoney, float lowestMoney,
-        string pointsJs, float startHour, float totalGameHours)
+        string pointsJs,
+        string healthJs, string happinessJs, string energyJs, string hungerJs,
+        float startHour, float totalGameHours)
     {
         string netSign = netChange >= 0 ? "+" : "";
         string netColor = netChange > 0 ? "#2a7d2a" : netChange < 0 ? "#a33" : "#444";
@@ -222,12 +247,21 @@ public static class ReportWriter
   <canvas id=""chart""></canvas>
 </div>
 
+<h2>Pet stats over time</h2>
+<div class=""chart-wrap"">
+  <canvas id=""chartPetStats""></canvas>
+</div>
+
 <script src=""https://cdn.jsdelivr.net/npm/chart.js@4""></script>
 <script>
 (function() {{
   var startHour = {startHourStr};
   var showDays = {showDays};
   var data = {pointsJs};
+  var dataHealth = {healthJs};
+  var dataHappiness = {happinessJs};
+  var dataEnergy = {energyJs};
+  var dataHunger = {hungerJs};
 
   function fmtHour(cumH) {{
     var hod = ((startHour + cumH) % 24 + 24) % 24;
@@ -357,6 +391,137 @@ public static class ReportWriter
       }}
     }}
   }});
+
+  // PetStatsBarsController default colors (RGB 0-1 → hex) for parity with in-game bars.
+  var colHealth = '#e64d59';
+  var colHappiness = '#f2cc40';
+  var colEnergy = '#4099f2';
+  var colHunger = '#73cc66';
+
+  var petStatsEl = document.getElementById('chartPetStats');
+  if (petStatsEl && (dataHealth.length || dataHappiness.length || dataEnergy.length || dataHunger.length)) {{
+    var petLine = function(series, label, hex) {{
+      return {{
+        label: label,
+        data: series,
+        borderColor: hex,
+        backgroundColor: hex,
+        tension: 0.2,
+        fill: false,
+        pointRadius: 3.5,
+        pointBackgroundColor: hex,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        pointHoverRadius: 6,
+        borderWidth: 2.5
+      }};
+    }};
+    new Chart(petStatsEl.getContext('2d'), {{
+      type: 'line',
+      data: {{
+        datasets: [
+          petLine(dataHealth, 'Health', colHealth),
+          petLine(dataHappiness, 'Happiness', colHappiness),
+          petLine(dataEnergy, 'Energy', colEnergy),
+          petLine(dataHunger, 'Hunger', colHunger)
+        ]
+      }},
+      options: {{
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2.4,
+        interaction: {{ mode: 'index', intersect: false }},
+        plugins: {{
+          legend: {{
+            display: true,
+            position: 'bottom',
+            labels: {{
+              usePointStyle: true,
+              pointStyle: 'rectRounded',
+              padding: 14,
+              font: {{ size: 12 }}
+            }}
+          }},
+          tooltip: {{
+            backgroundColor: '#333',
+            titleFont: {{ size: 12 }},
+            bodyFont: {{ size: 12 }},
+            padding: 8,
+            cornerRadius: 4,
+            callbacks: {{
+              title: function(items) {{
+                if (!items.length) return '';
+                return fmtHour(items[0].parsed.x) + (showDays ? ' — Day ' + dayNum(items[0].parsed.x) : '');
+              }},
+              label: function(item) {{
+                return ' ' + item.dataset.label + ': ' + item.parsed.y.toFixed(1);
+              }}
+            }}
+          }}
+        }},
+        scales: {{
+          x: xScaleConfig(),
+          y: {{
+            title: {{
+              display: true,
+              text: 'Stat (0-100)',
+              color: '#777',
+              font: {{ size: 12 }}
+            }},
+            min: 0,
+            max: 100,
+            grid: {{ color: 'rgba(0,0,0,0.06)' }},
+            border: {{ color: '#ccc' }},
+            ticks: {{
+              color: '#666',
+              font: {{ size: 11 }}
+            }}
+          }}
+        }}
+      }}
+    }});
+  }}
+
+  function xScaleConfig() {{
+    return {{
+      type: 'linear',
+      title: {{ display: false }},
+      grid: {{
+        color: 'rgba(0,0,0,0.06)',
+        drawTicks: true,
+        tickLength: 6
+      }},
+      border: {{ color: '#ccc' }},
+      ticks: {{
+        maxRotation: 0,
+        autoSkip: false,
+        color: '#666',
+        font: {{ size: 11 }},
+        callback: function(val) {{
+          var hod = ((startHour + val) % 24 + 24) % 24;
+          var onThree = Math.abs(hod - Math.round(hod / 3) * 3) < 0.01;
+          if (!onThree) return '';
+          var label = fmtHour(val);
+          if (showDays) {{
+            var atMidnight = Math.abs(hod) < 0.01 || Math.abs(hod - 24) < 0.01;
+            var isFirst = Math.abs(val) < 0.01;
+            if (atMidnight || isFirst) {{
+              return [label, 'Day ' + dayNum(val)];
+            }}
+          }}
+          return label;
+        }},
+        stepSize: 1
+      }},
+      afterBuildTicks: function(axis) {{
+        var ticks = [];
+        for (var t = firstAligned; t <= maxCum + 0.5; t += 3) {{
+          ticks.push({{ value: t }});
+        }}
+        axis.ticks = ticks;
+      }}
+    }};
+  }}
 }})();
 </script>
 </body>

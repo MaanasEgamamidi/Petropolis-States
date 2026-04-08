@@ -1,0 +1,373 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Report — April 7, 2026, 8:58:39 PM</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f4f4f4;
+    color: #333;
+    max-width: 960px;
+    margin: 36px auto;
+    padding: 0 24px;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 1.35em;
+    font-weight: 600;
+    border-bottom: 2px solid #d0d0d0;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+  }
+  .report-ts {
+    margin: 0 0 22px 0;
+    color: #666;
+    font-size: 0.95em;
+  }
+  h2 {
+    font-size: 1.05em;
+    font-weight: 600;
+    margin-top: 26px;
+    margin-bottom: 8px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 18px;
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 14px;
+    border-bottom: 1px solid #eee;
+  }
+  tr:last-child th, tr:last-child td { border-bottom: none; }
+  th {
+    font-weight: 600;
+    width: 42%;
+    color: #555;
+  }
+  .net {
+    color: #2a7d2a;
+    font-weight: 600;
+  }
+  .chart-wrap {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 16px 18px 10px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Session Report</h1>
+<p class="report-ts">April 7, 2026, 8:58:39 PM</p>
+
+<h2>Player Info</h2>
+<table>
+  <tr><th>Player Name</th><td>Player</td></tr>
+  <tr><th>Pet Name</th><td>Dog</td></tr>
+  <tr><th>Session Length</th><td>2.1 in-game days</td></tr>
+</table>
+
+<h2>Money Summary</h2>
+<table>
+  <tr><th>Starting Amount</th><td>$150.00</td></tr>
+  <tr><th>Ending Amount</th><td>$250.00</td></tr>
+  <tr><th>Net Change</th><td class="net">+$100.00</td></tr>
+  <tr><th>Highest Reached</th><td>$250.00</td></tr>
+  <tr><th>Lowest Reached</th><td>$150.00</td></tr>
+</table>
+
+<h2>Money Over Time</h2>
+<div class="chart-wrap">
+  <canvas id="chart"></canvas>
+</div>
+
+<h2>Pet stats over time</h2>
+<div class="chart-wrap">
+  <canvas id="chartPetStats"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+(function() {
+  var startHour = 10;
+  var showDays = true;
+  var data = [{x:0,y:150.00},{x:1,y:150.00},{x:2,y:150.00},{x:3,y:150.00},{x:4,y:150.00},{x:5,y:150.00},{x:6,y:150.00},{x:7,y:150.00},{x:8,y:150.00},{x:9,y:150.00},{x:10,y:150.00},{x:11,y:150.00},{x:12,y:150.00},{x:13,y:150.00},{x:14,y:150.00},{x:15,y:150.00},{x:16,y:150.00},{x:17,y:150.00},{x:18,y:150.00},{x:19,y:150.00},{x:20,y:200.00},{x:21,y:200.00},{x:22,y:200.00},{x:23,y:200.00},{x:24,y:200.00},{x:25,y:200.00},{x:26,y:200.00},{x:27,y:200.00},{x:28,y:200.00},{x:29,y:200.00},{x:30,y:200.00},{x:31,y:200.00},{x:32,y:200.00},{x:33,y:200.00},{x:34,y:200.00},{x:35,y:200.00},{x:36,y:200.00},{x:37,y:200.00},{x:38,y:200.00},{x:39,y:200.00},{x:40,y:200.00},{x:41,y:200.00},{x:42,y:200.00},{x:43,y:200.00},{x:44,y:250.00},{x:45,y:250.00},{x:46,y:250.00},{x:47,y:250.00},{x:48,y:250.00},{x:49,y:250.00},{x:50,y:250.00},{x:51,y:250.00}];
+  var dataHealth = [{x:0,y:100},{x:1,y:96.81},{x:2,y:92.81},{x:3,y:98.35},{x:4,y:94.35},{x:5,y:92.02},{x:6,y:94.02},{x:7,y:96.02},{x:8,y:98.02},{x:9,y:98.52},{x:10,y:99.02},{x:11,y:99.52},{x:12,y:100},{x:13,y:100},{x:14,y:100},{x:15,y:100},{x:16,y:100},{x:17,y:100},{x:18,y:100},{x:19,y:99.08},{x:20,y:98.08},{x:21,y:97.98},{x:22,y:93.98},{x:23,y:89.98},{x:24,y:87.21},{x:25,y:87.53},{x:26,y:89.53},{x:27,y:91.53},{x:28,y:92.33},{x:29,y:98.33},{x:30,y:94.33},{x:31,y:91.42},{x:32,y:87.41},{x:33,y:86.41},{x:34,y:85.41},{x:35,y:84.41},{x:36,y:83.41},{x:37,y:82.42},{x:38,y:81.41},{x:39,y:80.41},{x:40,y:79.41},{x:41,y:78.41},{x:42,y:77.41},{x:43,y:76.41},{x:44,y:75.41},{x:45,y:71.42},{x:46,y:67.42},{x:47,y:63.42},{x:48,y:59.42},{x:49,y:55.42},{x:50,y:51.42},{x:51,y:43.81}];
+  var dataHappiness = [{x:0,y:100},{x:1,y:96.81},{x:2,y:92.81},{x:3,y:88.81},{x:4,y:84.82},{x:5,y:84.15},{x:6,y:92.15},{x:7,y:100},{x:8,y:99.99},{x:9,y:100},{x:10,y:100},{x:11,y:100},{x:12,y:100},{x:13,y:100},{x:14,y:100},{x:15,y:100},{x:16,y:100},{x:17,y:100},{x:18,y:100},{x:19,y:99.08},{x:20,y:98.08},{x:21,y:94.09},{x:22,y:90.09},{x:23,y:86.09},{x:24,y:84.55},{x:25,y:89.19},{x:26,y:97.19},{x:27,y:100},{x:28,y:99.19},{x:29,y:99.62},{x:30,y:95.62},{x:31,y:93.79},{x:32,y:89.78},{x:33,y:88.78},{x:34,y:87.78},{x:35,y:86.78},{x:36,y:85.78},{x:37,y:84.78},{x:38,y:83.78},{x:39,y:82.78},{x:40,y:81.78},{x:41,y:80.78},{x:42,y:79.78},{x:43,y:78.78},{x:44,y:77.78},{x:45,y:73.79},{x:46,y:69.79},{x:47,y:65.79},{x:48,y:61.79},{x:49,y:57.79},{x:50,y:53.79},{x:51,y:46.18}];
+  var dataEnergy = [{x:0,y:100},{x:1,y:96.81},{x:2,y:92.81},{x:3,y:88.81},{x:4,y:84.82},{x:5,y:79.15},{x:6,y:69.14},{x:7,y:59.14},{x:8,y:49.15},{x:9,y:46.64},{x:10,y:44.14},{x:11,y:41.64},{x:12,y:39.14},{x:13,y:36.64},{x:14,y:34.15},{x:15,y:31.64},{x:16,y:29.14},{x:17,y:26.64},{x:18,y:24.14},{x:19,y:23.01},{x:20,y:22.01},{x:21,y:38.03},{x:22,y:44.03},{x:23,y:60.03},{x:24,y:54.79},{x:25,y:46.48},{x:26,y:36.47},{x:27,y:26.47},{x:28,y:17.68},{x:29,y:13.68},{x:30,y:49.68},{x:31,y:44.6},{x:32,y:40.59},{x:33,y:39.59},{x:34,y:38.59},{x:35,y:37.59},{x:36,y:36.59},{x:37,y:35.59},{x:38,y:34.59},{x:39,y:33.59},{x:40,y:32.59},{x:41,y:31.59},{x:42,y:30.59},{x:43,y:29.59},{x:44,y:28.59},{x:45,y:24.6},{x:46,y:20.6},{x:47,y:16.59},{x:48,y:12.6},{x:49,y:8.59},{x:50,y:4.6},{x:51,y:0}];
+  var dataHunger = [{x:0,y:100},{x:1,y:96.81},{x:2,y:92.81},{x:3,y:88.81},{x:4,y:84.82},{x:5,y:79.15},{x:6,y:69.14},{x:7,y:59.14},{x:8,y:49.15},{x:9,y:46.64},{x:10,y:44.14},{x:11,y:41.64},{x:12,y:39.14},{x:13,y:36.64},{x:14,y:34.15},{x:15,y:31.64},{x:16,y:29.14},{x:17,y:26.64},{x:18,y:24.14},{x:19,y:23.01},{x:20,y:22.01},{x:21,y:38.03},{x:22,y:84.03},{x:23,y:80.03},{x:24,y:74.79},{x:25,y:66.48},{x:26,y:56.47},{x:27,y:46.47},{x:28,y:37.68},{x:29,y:83.68},{x:30,y:79.68},{x:31,y:74.6},{x:32,y:70.59},{x:33,y:69.59},{x:34,y:68.59},{x:35,y:67.59},{x:36,y:66.59},{x:37,y:65.59},{x:38,y:64.59},{x:39,y:63.59},{x:40,y:62.59},{x:41,y:61.59},{x:42,y:60.59},{x:43,y:59.59},{x:44,y:58.59},{x:45,y:54.59},{x:46,y:50.6},{x:47,y:46.59},{x:48,y:42.6},{x:49,y:38.59},{x:50,y:34.6},{x:51,y:26.99}];
+
+  function fmtHour(cumH) {
+    var hod = ((startHour + cumH) % 24 + 24) % 24;
+    var h12 = hod % 12 === 0 ? 12 : Math.floor(hod) % 12;
+    var p = Math.floor(hod) < 12 ? 'AM' : 'PM';
+    return h12 + ' ' + p;
+  }
+
+  function dayNum(cumH) {
+    return Math.floor((startHour + cumH) / 24) + 1;
+  }
+
+  var maxCum = data.length > 0 ? data[data.length - 1].x : 0;
+
+  var firstAligned = (3 - (startHour % 3)) % 3;
+  if (firstAligned > maxCum) firstAligned = 0;
+
+  var ctx = document.getElementById('chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        data: data,
+        fill: {
+          target: 'origin',
+          above: 'rgba(80,160,90,0.06)',
+          below: 'rgba(180,60,60,0.06)'
+        },
+        tension: 0.2,
+        pointRadius: 3.5,
+        pointBackgroundColor: '#4a7c59',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: '#333',
+        borderWidth: 2.5,
+        segment: {
+          borderColor: function(c) {
+            var y0 = c.p0.parsed.y, y1 = c.p1.parsed.y;
+            if (y1 > y0) return '#3a9d4a';
+            if (y1 < y0) return '#c44';
+            return '#999';
+          }
+        }
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2.8,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#333',
+          titleFont: { size: 12 },
+          bodyFont: { size: 12 },
+          padding: 8,
+          cornerRadius: 4,
+          callbacks: {
+            title: function(items) {
+              if (!items.length) return '';
+              return fmtHour(items[0].parsed.x) + (showDays ? ' — Day ' + dayNum(items[0].parsed.x) : '');
+            },
+            label: function(item) {
+              return '  $' + item.parsed.y.toFixed(2);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          title: { display: false },
+          grid: {
+            color: 'rgba(0,0,0,0.06)',
+            drawTicks: true,
+            tickLength: 6
+          },
+          border: { color: '#ccc' },
+          ticks: {
+            maxRotation: 0,
+            autoSkip: false,
+            color: '#666',
+            font: { size: 11 },
+            callback: function(val) {
+              var hod = ((startHour + val) % 24 + 24) % 24;
+              var onThree = Math.abs(hod - Math.round(hod / 3) * 3) < 0.01;
+              if (!onThree) return '';
+              var label = fmtHour(val);
+              if (showDays) {
+                var atMidnight = Math.abs(hod) < 0.01 || Math.abs(hod - 24) < 0.01;
+                var isFirst = Math.abs(val) < 0.01;
+                if (atMidnight || isFirst) {
+                  return [label, 'Day ' + dayNum(val)];
+                }
+              }
+              return label;
+            },
+            stepSize: 1
+          },
+          afterBuildTicks: function(axis) {
+            var ticks = [];
+            for (var t = firstAligned; t <= maxCum + 0.5; t += 3) {
+              ticks.push({ value: t });
+            }
+            axis.ticks = ticks;
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Money ($)',
+            color: '#777',
+            font: { size: 12 }
+          },
+          grid: {
+            color: 'rgba(0,0,0,0.06)'
+          },
+          border: { color: '#ccc' },
+          ticks: {
+            color: '#666',
+            font: { size: 11 },
+            callback: function(val) { return '$' + val; }
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // PetStatsBarsController default colors (RGB 0-1 → hex) for parity with in-game bars.
+  var colHealth = '#e64d59';
+  var colHappiness = '#f2cc40';
+  var colEnergy = '#4099f2';
+  var colHunger = '#73cc66';
+
+  var petStatsEl = document.getElementById('chartPetStats');
+  if (petStatsEl && (dataHealth.length || dataHappiness.length || dataEnergy.length || dataHunger.length)) {
+    var petLine = function(series, label, hex) {
+      return {
+        label: label,
+        data: series,
+        borderColor: hex,
+        backgroundColor: hex,
+        tension: 0.2,
+        fill: false,
+        pointRadius: 3.5,
+        pointBackgroundColor: hex,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        pointHoverRadius: 6,
+        borderWidth: 2.5
+      };
+    };
+    new Chart(petStatsEl.getContext('2d'), {
+      type: 'line',
+      data: {
+        datasets: [
+          petLine(dataHealth, 'Health', colHealth),
+          petLine(dataHappiness, 'Happiness', colHappiness),
+          petLine(dataEnergy, 'Energy', colEnergy),
+          petLine(dataHunger, 'Hunger', colHunger)
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2.4,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'rectRounded',
+              padding: 14,
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#333',
+            titleFont: { size: 12 },
+            bodyFont: { size: 12 },
+            padding: 8,
+            cornerRadius: 4,
+            callbacks: {
+              title: function(items) {
+                if (!items.length) return '';
+                return fmtHour(items[0].parsed.x) + (showDays ? ' — Day ' + dayNum(items[0].parsed.x) : '');
+              },
+              label: function(item) {
+                return ' ' + item.dataset.label + ': ' + item.parsed.y.toFixed(1);
+              }
+            }
+          }
+        },
+        scales: {
+          x: xScaleConfig(),
+          y: {
+            title: {
+              display: true,
+              text: 'Stat (0-100)',
+              color: '#777',
+              font: { size: 12 }
+            },
+            min: 0,
+            max: 100,
+            grid: { color: 'rgba(0,0,0,0.06)' },
+            border: { color: '#ccc' },
+            ticks: {
+              color: '#666',
+              font: { size: 11 }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function xScaleConfig() {
+    return {
+      type: 'linear',
+      title: { display: false },
+      grid: {
+        color: 'rgba(0,0,0,0.06)',
+        drawTicks: true,
+        tickLength: 6
+      },
+      border: { color: '#ccc' },
+      ticks: {
+        maxRotation: 0,
+        autoSkip: false,
+        color: '#666',
+        font: { size: 11 },
+        callback: function(val) {
+          var hod = ((startHour + val) % 24 + 24) % 24;
+          var onThree = Math.abs(hod - Math.round(hod / 3) * 3) < 0.01;
+          if (!onThree) return '';
+          var label = fmtHour(val);
+          if (showDays) {
+            var atMidnight = Math.abs(hod) < 0.01 || Math.abs(hod - 24) < 0.01;
+            var isFirst = Math.abs(val) < 0.01;
+            if (atMidnight || isFirst) {
+              return [label, 'Day ' + dayNum(val)];
+            }
+          }
+          return label;
+        },
+        stepSize: 1
+      },
+      afterBuildTicks: function(axis) {
+        var ticks = [];
+        for (var t = firstAligned; t <= maxCum + 0.5; t += 3) {
+          ticks.push({ value: t });
+        }
+        axis.ticks = ticks;
+      }
+    };
+  }
+})();
+</script>
+</body>
+</html>
