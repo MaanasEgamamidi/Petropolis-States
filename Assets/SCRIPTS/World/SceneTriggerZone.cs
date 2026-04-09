@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
-/// Attach to a trigger collider (e.g. Pet Shop zone in World). When the player enters the zone and presses the interact key,
+/// Attach to a trigger collider (e.g. PetShopZone under Zones in World). When the player enters the zone and presses the interact key,
 /// loads the target scene. Leave <see cref="targetSceneName"/> empty until a shop/interior scene is in Build Settings.
 /// World → PetChoose additive loading only runs when <c>targetSceneName</c> is <c>PetChoose</c> (not used for the pet shop zone).
 /// </summary>
