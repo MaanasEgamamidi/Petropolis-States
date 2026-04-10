@@ -152,6 +152,8 @@ public class PetStatisticsPanelController : MonoBehaviour
             _toggleExpanded = !_toggleExpanded;
 
         bool wantOpen = _holdIntroPeekRemaining > 0f || ComputeOpenForMode(mode, qHeld);
+        if (NpcProximityChatOpener.IsWorldNpcChatOpen)
+            wantOpen = false;
         float targetX = wantOpen ? openAnchoredX : closedAnchoredX;
         float step = slideSpeed * Time.deltaTime;
         _currentAnchoredX = Mathf.MoveTowards(_currentAnchoredX, targetX, step);

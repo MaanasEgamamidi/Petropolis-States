@@ -81,12 +81,22 @@ namespace StarterAssets
 
 		void Update()
 		{
-			if (!WorldPauseController.IsPaused)
+			if (WorldPauseController.IsPaused)
+			{
+				look = Vector2.zero;
+				move = Vector2.zero;
+				jump = false;
+				sprint = false;
 				return;
-			look = Vector2.zero;
-			move = Vector2.zero;
-			jump = false;
-			sprint = false;
+			}
+
+			if (NpcProximityChatOpener.IsWorldNpcChatOpen)
+			{
+				look = Vector2.zero;
+				move = Vector2.zero;
+				jump = false;
+				sprint = false;
+			}
 		}
 
 		private void Start()

@@ -168,6 +168,8 @@ namespace StarterAssets
         {
             if (WorldPauseController.IsPaused)
                 return;
+            if (NpcProximityChatOpener.IsWorldNpcChatOpen)
+                return;
 
             CameraRotation();
         }

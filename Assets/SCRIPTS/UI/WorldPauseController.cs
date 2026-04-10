@@ -209,13 +209,16 @@ public class WorldPauseController : MonoBehaviour
 #endif
     }
 
-    static bool IsTypingInUiInput()
+    /// <summary>True when a TMP or legacy InputField has focus (typing), so gameplay shortcuts should not fire.</summary>
+    public static bool IsFocusedOnTextInput()
     {
         GameObject sel = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
         if (sel == null)
             return false;
         return sel.GetComponent<TMP_InputField>() != null || sel.GetComponent<UnityEngine.UI.InputField>() != null;
     }
+
+    static bool IsTypingInUiInput() => IsFocusedOnTextInput();
 
     IEnumerator OpenPauseRoutine()
     {

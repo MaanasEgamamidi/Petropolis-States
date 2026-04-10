@@ -98,58 +98,77 @@ public class SceneTriggerZone : MonoBehaviour
     {
         if (!_playerInZone)
             return;
+        if (WorldPauseController.IsPaused)
+            return;
 
 #if ENABLE_INPUT_SYSTEM
-        if (Keyboard.current != null && Keyboard.current[interactKey].wasPressedThisFrame)
+        if (Keyboard.current == null || !Keyboard.current[interactKey].wasPressedThisFrame)
 #else
-        if (Input.GetKeyDown(interactKey))
+        if (!Input.GetKeyDown(interactKey))
 #endif
         {
-            if (oneTimeUse && _usedZoneIds.Contains(ZoneId))
-            {
-                if (debugLogs) Debug.Log("[SceneTriggerZone] Zone already used this session; ignoring.");
-                return;
-            }
+            return;
+        }
 
-            if (string.IsNullOrEmpty(targetSceneName))
-            {
-                if (debugLogs)
-                    Debug.LogWarning($"[SceneTriggerZone] No target scene on '{gameObject.name}'. Assign Target Scene Name when the interior (e.g. pet shop) scene is ready.");
-                return;
-            }
-            if (debugLogs) Debug.Log($"[SceneTriggerZone] Loading scene: {targetSceneName}");
+        if (NpcProximityChatOpener.IsWorldNpcChatOpen || WorldPauseController.IsFocusedOnTextInput())
+        {
+            if (debugLogs)
+                Debug.Log("[SceneTriggerZone] Ignoring interact — NPC chat is open or a text field is focused.");
+            return;
+        }
 
-            if (oneTimeUse)
-                _usedZoneIds.Add(ZoneId);
+        bool petChooseFromWorld = targetSceneName == "PetChoose" && gameObject.scene.name == "World";
+        if (petChooseFromWorld && GlobalData.StoredPetSkin > 0)
+        {
+            if (debugLogs)
+                Debug.Log("[SceneTriggerZone] Pet already chosen; not opening PetChoose again.");
+            return;
+        }
 
-            // When leaving World to PetChoose, load additively so World stays in memory
-            bool isWorldToPetChoose = targetSceneName == "PetChoose" && gameObject.scene.name == "World";
-            if (isWorldToPetChoose)
+        if (oneTimeUse && _usedZoneIds.Contains(ZoneId))
+        {
+            if (debugLogs) Debug.Log("[SceneTriggerZone] Zone already used this session; ignoring.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(targetSceneName))
+        {
+            if (debugLogs)
+                Debug.LogWarning($"[SceneTriggerZone] No target scene on '{gameObject.name}'. Assign Target Scene Name when the interior (e.g. pet shop) scene is ready.");
+            return;
+        }
+
+        if (debugLogs) Debug.Log($"[SceneTriggerZone] Loading scene: {targetSceneName}");
+
+        if (oneTimeUse)
+            _usedZoneIds.Add(ZoneId);
+
+        // When leaving World to PetChoose, load additively so World stays in memory
+        if (petChooseFromWorld)
+        {
+            GlobalData.PetChooseOpenedFromWorld = true;
+            GlobalData.MarkPetChooseFlowStartedFromWorld();
+            AdditiveSceneHelper.FreezeWorldBeforePetChooseLoad(); // Freeze before load to avoid "only one EventSystem" warning
+            var panel = fadeToBlackPanel;
+            if (panel != null && panel.GetComponent<CanvasGroup>() != null)
             {
-                GlobalData.PetChooseOpenedFromWorld = true;
-                GlobalData.MarkPetChooseFlowStartedFromWorld();
-                AdditiveSceneHelper.FreezeWorldBeforePetChooseLoad(); // Freeze before load to avoid "only one EventSystem" warning
-                var panel = fadeToBlackPanel;
-                if (panel != null && panel.GetComponent<CanvasGroup>() != null)
-                {
-                    FadeTransitionRunner.RunFadeThenLoadSceneAdditive(panel, fadeDuration, targetSceneName);
-                }
-                else
-                {
-                    SceneManager.LoadScene(targetSceneName, LoadSceneMode.Additive);
-                }
+                FadeTransitionRunner.RunFadeThenLoadSceneAdditive(panel, fadeDuration, targetSceneName);
             }
             else
             {
-                var panel = fadeToBlackPanel;
-                if (panel != null && panel.GetComponent<CanvasGroup>() != null)
-                {
-                    FadeTransitionRunner.RunFadeThenLoadScene(panel, fadeDuration, targetSceneName);
-                }
-                else
-                {
-                    SceneManager.LoadScene(targetSceneName);
-                }
+                SceneManager.LoadScene(targetSceneName, LoadSceneMode.Additive);
+            }
+        }
+        else
+        {
+            var panel = fadeToBlackPanel;
+            if (panel != null && panel.GetComponent<CanvasGroup>() != null)
+            {
+                FadeTransitionRunner.RunFadeThenLoadScene(panel, fadeDuration, targetSceneName);
+            }
+            else
+            {
+                SceneManager.LoadScene(targetSceneName);
             }
         }
     }

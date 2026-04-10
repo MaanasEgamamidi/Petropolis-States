@@ -51,9 +51,9 @@ public class MinimapController : MonoBehaviour
                 return;
             }
 
-            // Keep rendering while fading out after M (PresentationAlpha still > 0).
-            bool needCamera = !MinimapSettings.RuntimeSuppressed
-                || MinimapSettings.PresentationAlpha > 0.001f;
+            // Keep rendering while fading out after M or while NPC chat hides the minimap (PresentationAlpha still > 0).
+            bool minimapRequested = !MinimapSettings.RuntimeSuppressed && !NpcProximityChatOpener.IsWorldNpcChatOpen;
+            bool needCamera = minimapRequested || MinimapSettings.PresentationAlpha > 0.001f;
             if (!needCamera)
             {
                 _cam.enabled = false;

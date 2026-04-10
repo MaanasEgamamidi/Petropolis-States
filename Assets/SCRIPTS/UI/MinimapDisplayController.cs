@@ -99,7 +99,8 @@ public class MinimapDisplayController : MonoBehaviour
             return;
 
         CanvasGroup cg = EnsureCanvasGroup();
-        float target = MinimapSettings.IsVisible ? 1f : 0f;
+        bool showMinimap = MinimapSettings.IsVisible && !NpcProximityChatOpener.IsWorldNpcChatOpen;
+        float target = showMinimap ? 1f : 0f;
         float step = Time.deltaTime / Mathf.Max(0.01f, fadeDuration);
         _presentationAlpha = Mathf.MoveTowards(_presentationAlpha, target, step);
         cg.alpha = _presentationAlpha;

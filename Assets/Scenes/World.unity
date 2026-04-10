@@ -969,6 +969,7 @@ GameObject:
   - component: {fileID: 59078585}
   - component: {fileID: 59078584}
   - component: {fileID: 59078583}
+  - component: {fileID: 59078586}
   m_Layer: 0
   m_Name: SupermarketZone
   m_TagString: Untagged
@@ -1069,6 +1070,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 59078581}
   m_Mesh: {fileID: 0}
+--- !u!114 &59078586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59078581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4e8a91c2d0b4367a9f5e3b1c8d7e2a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcChatZone
+  chatWindowName: ChatWindow_Supermarket
+  playerTag: Player
+  interactHintWhenInside: Press C to chat at the supermarket
 --- !u!1 &71572674
 GameObject:
   m_ObjectHideFlags: 0
@@ -2315,7 +2331,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &262150966
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2334,7 +2350,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 550, y: -0.0024414}
+  m_AnchoredPosition: {x: 550, y: -0.0024414062}
   m_SizeDelta: {x: -1396, y: -480}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &262150967
@@ -2469,45 +2485,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1570788537}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!21 &272191084
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: MinimapRawImageUI(Clone)
-  m_Shader: {fileID: 4800000, guid: 7b8c9d0e1f2a4b6c8d0e2f4a6b8c0d2e, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Transparent
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _BorderWidthUV: 0.03
-    - _EdgeAA: 2
-    - _UseBorder: 0
-    - _UseCircularClip: 1
-    m_Colors:
-    - _BorderColor: {r: 0.08, g: 0.08, b: 0.12, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &277777542
 GameObject:
   m_ObjectHideFlags: 0
@@ -3143,6 +3120,7 @@ GameObject:
   - component: {fileID: 371520458}
   - component: {fileID: 371520457}
   - component: {fileID: 371520460}
+  - component: {fileID: 371520461}
   m_Layer: 0
   m_Name: ParkZone
   m_TagString: Untagged
@@ -3261,6 +3239,21 @@ MonoBehaviour:
   happinessChangePerSecond: 3
   energyDrainPerSecond: 1.5
   hungerDrainPerSecond: 1.5
+--- !u!114 &371520461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371520455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4e8a91c2d0b4367a9f5e3b1c8d7e2a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcChatZone
+  chatWindowName: 
+  playerTag: Player
+  interactHintWhenInside: Park — walk your pet here
 --- !u!1 &374174042
 GameObject:
   m_ObjectHideFlags: 0
@@ -4126,6 +4119,45 @@ Transform:
   m_Children: []
   m_Father: {fileID: 697678274}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!21 &481794197
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MinimapRawImageUI(Clone)
+  m_Shader: {fileID: 4800000, guid: 7b8c9d0e1f2a4b6c8d0e2f4a6b8c0d2e, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Transparent
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BorderWidthUV: 0.03
+    - _EdgeAA: 2
+    - _UseBorder: 0
+    - _UseCircularClip: 1
+    m_Colors:
+    - _BorderColor: {r: 0.08, g: 0.08, b: 0.12, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &482345881
 GameObject:
   m_ObjectHideFlags: 0
@@ -4136,7 +4168,7 @@ GameObject:
   m_Component:
   - component: {fileID: 482345882}
   m_Layer: 0
-  m_Name: NPC3
+  m_Name: SupermarketOwnerNPC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4434,6 +4466,7 @@ GameObject:
   - component: {fileID: 558561478}
   - component: {fileID: 558561477}
   - component: {fileID: 558561481}
+  - component: {fileID: 558561482}
   m_Layer: 0
   m_Name: PetShopZone
   m_TagString: Untagged
@@ -4535,6 +4568,21 @@ Transform:
   m_Father: {fileID: 21521812}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &558561481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 558561476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4e8a91c2d0b4367a9f5e3b1c8d7e2a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcChatZone
+  chatWindowName: ChatWindow_PetStore
+  playerTag: Player
+  interactHintWhenInside: Press C to chat · Press E to choose a pet
+--- !u!114 &558561482
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6758,7 +6806,7 @@ GameObject:
   m_Component:
   - component: {fileID: 802429623}
   m_Layer: 0
-  m_Name: NPC2
+  m_Name: HospitalNPC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10743,6 +10791,7 @@ GameObject:
   - component: {fileID: 1132329210}
   - component: {fileID: 1132329209}
   - component: {fileID: 1132329208}
+  - component: {fileID: 1132329212}
   m_Layer: 5
   m_Name: Chats
   m_TagString: Untagged
@@ -10811,7 +10860,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_TargetDisplay: 0
 --- !u!224 &1132329211
 RectTransform:
@@ -10835,6 +10884,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1132329212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1132329207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c9e41a82f6b4e5d8b3a1f0e9d8c7b6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcProximityChatOpener
+  interactHintText: {fileID: 0}
 --- !u!1 &1156032541
 GameObject:
   m_ObjectHideFlags: 0
@@ -13532,6 +13594,7 @@ GameObject:
   - component: {fileID: 1514028490}
   - component: {fileID: 1514028489}
   - component: {fileID: 1514028488}
+  - component: {fileID: 1514028491}
   m_Layer: 0
   m_Name: HospitalZone
   m_TagString: Untagged
@@ -13569,7 +13632,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -13632,6 +13695,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1514028486}
   m_Mesh: {fileID: 0}
+--- !u!114 &1514028491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1514028486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4e8a91c2d0b4367a9f5e3b1c8d7e2a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcChatZone
+  chatWindowName: ChatWindow_Hospital
+  playerTag: Player
+  interactHintWhenInside: Press C to chat at the hospital
 --- !u!1 &1519367569
 GameObject:
   m_ObjectHideFlags: 0
@@ -14207,7 +14285,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1657504856
 RectTransform:
   m_ObjectHideFlags: 0
@@ -14226,7 +14304,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 550, y: -0.0018921}
+  m_AnchoredPosition: {x: 550, y: -0.0018920898}
   m_SizeDelta: {x: -1396, y: -480}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1657504857
@@ -18226,7 +18304,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2073373079}
   m_Layer: 0
-  m_Name: NPC1
+  m_Name: PetShopOwnerNPC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19199,7 +19277,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
-  m_Material: {fileID: 272191084}
+  m_Material: {fileID: 481794197}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -38283,7 +38361,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &8933641486371318404
 GameObject:
   m_ObjectHideFlags: 0
