@@ -49,7 +49,7 @@ public class ChatManager : MonoBehaviour
     void Start()
     {
         UpdatePlaceholder();
-        StartCoroutine(ShowGreeting());
+        ShowGreeting();
     }
 
     void UpdatePlaceholder()
@@ -59,12 +59,12 @@ public class ChatManager : MonoBehaviour
             placeholder.text = $"Message {NpcName}...";
     }
 
-    IEnumerator ShowGreeting()
+    void ShowGreeting()
     {
-        yield return null;
-        if (_npcIdentity == null) yield break;
+        if (_npcIdentity == null) return;
 
         string text = _npcIdentity.FormattedGreeting;
+        SessionChatLog.RecordMessage(NpcName, fromPlayer: false, text, GlobalData.CurrentTimeOfDay);
         SpawnNpcBubble(text);
         _history.Add(new ChatMessage { role = "assistant", content = text });
     }
@@ -78,6 +78,8 @@ public class ChatManager : MonoBehaviour
 
         SpawnPlayerBubble(text);
         _history.Add(new ChatMessage { role = "user", content = text });
+
+        SessionChatLog.RecordMessage(NpcName, fromPlayer: true, text, GlobalData.CurrentTimeOfDay);
 
         StartCoroutine(ScrollToBottom());
         OnUserMessageCommitted?.Invoke();
@@ -98,7 +100,7 @@ public class ChatManager : MonoBehaviour
     {
         SpawnNpcBubble(text);
         _history.Add(new ChatMessage { role = "assistant", content = text });
-        StartCoroutine(ScrollToBottom());
+        SessionChatLog.RecordMessage(NpcName, fromPlayer: false, text, GlobalData.CurrentTimeOfDay);
     }
 
     // ── Bubble Spawning ─────────────────────────────────────────────

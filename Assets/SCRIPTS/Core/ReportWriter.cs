@@ -9,6 +9,7 @@ using UnityEngine;
 /// Generates numbered HTML session report files in a <c>Session Reports/</c> folder at the project root.
 /// Uses Chart.js (CDN) with per-segment line coloring: green = gain, red = loss, gray = flat.
 /// X-axis uses cumulative hours with 3-hour aligned ticks and day boundary labels; pet stats share one multi-line chart with a legend.
+/// Includes an NPC chat transcript (<c>You:</c> / <c>NPC:</c> lines) from <see cref="SessionChatLog"/>.
 /// </summary>
 public static class ReportWriter
 {
@@ -23,7 +24,8 @@ public static class ReportWriter
         float endingMoney,
         float highestMoney,
         float lowestMoney,
-        List<SessionTracker.MoneySnapshot> snapshots)
+        List<SessionTracker.MoneySnapshot> snapshots,
+        IReadOnlyList<SessionChatLog.Entry> playerChatLog)
     {
         string reportsDir = Path.Combine(Application.dataPath, "..", "Session Reports");
         Directory.CreateDirectory(reportsDir);
@@ -42,10 +44,12 @@ public static class ReportWriter
         string hungerJs = BuildStatPointsArray(snapshots, s => s.PetHunger);
 
         string reportTimestamp = FormatWashingtonLocalTimestamp(DateTime.UtcNow);
+        string chatLogHtml = BuildPlayerChatLogHtml(playerChatLog);
         string html = BuildHtml(
             reportTimestamp, playerName, petName, sessionLength,
             startingMoney, endingMoney, netChange, highestMoney, lowestMoney,
-            pointsJs, healthJs, happinessJs, energyJs, hungerJs, startHour, totalGameHours);
+            pointsJs, healthJs, happinessJs, energyJs, hungerJs, startHour, totalGameHours,
+            chatLogHtml);
 
         File.WriteAllText(filePath, html, Encoding.UTF8);
         Debug.Log($"[SessionReport] Saved report to {filePath}");
@@ -139,6 +143,37 @@ public static class ReportWriter
         return sb.ToString();
     }
 
+    static string BuildPlayerChatLogHtml(IReadOnlyList<SessionChatLog.Entry> entries)
+    {
+        if (entries == null || entries.Count == 0)
+            return "<p class=\"chat-transcript-empty\">No NPC chat this session.</p>";
+
+        var sorted = new List<SessionChatLog.Entry>(entries);
+        sorted.Sort((a, b) => a.Sequence.CompareTo(b.Sequence));
+
+        var sb = new StringBuilder();
+        sb.Append("<div class=\"chat-transcript\">\n");
+
+        string prevPartner = null;
+        foreach (SessionChatLog.Entry e in sorted)
+        {
+            string partner = string.IsNullOrEmpty(e.NpcName) ? "NPC" : e.NpcName;
+            if (prevPartner != partner)
+            {
+                sb.Append($"  <div class=\"chat-partner\"><strong>{Escape(partner)}</strong></div>\n");
+                prevPartner = partner;
+            }
+
+            if (e.FromPlayer)
+                sb.Append($"  <div class=\"chat-line chat-you\"><strong>You</strong>: {Escape(e.Message)}</div>\n");
+            else
+                sb.Append($"  <div class=\"chat-line chat-npc\"><strong>{Escape(partner)}</strong>: {Escape(e.Message)}</div>\n");
+        }
+
+        sb.Append("</div>");
+        return sb.ToString();
+    }
+
     static string BuildHtml(
         string reportTimestamp,
         string playerName, string petName, string sessionLength,
@@ -146,7 +181,8 @@ public static class ReportWriter
         float highestMoney, float lowestMoney,
         string pointsJs,
         string healthJs, string happinessJs, string energyJs, string hungerJs,
-        float startHour, float totalGameHours)
+        float startHour, float totalGameHours,
+        string playerChatLogHtml)
     {
         string netSign = netChange >= 0 ? "+" : "";
         string netColor = netChange > 0 ? "#2a7d2a" : netChange < 0 ? "#a33" : "#444";
@@ -219,6 +255,39 @@ public static class ReportWriter
     padding: 16px 18px 10px;
     margin-top: 10px;
   }}
+  .chat-section {{
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 14px 18px 12px;
+    margin-top: 10px;
+    font-size: 0.95em;
+  }}
+  .chat-transcript {{
+    white-space: pre-wrap;
+    word-break: break-word;
+  }}
+  .chat-partner {{
+    font-size: 1em;
+    color: #444;
+    margin: 0.55em 0 0.08em 0;
+    line-height: 1.35;
+  }}
+  .chat-transcript .chat-partner:first-child {{ margin-top: 0; }}
+  .chat-line {{
+    margin: 0 0 0.15em 0;
+    padding: 0;
+    line-height: 1.35;
+  }}
+  .chat-line:last-child {{ margin-bottom: 0; }}
+  .chat-you {{ color: #1a4d80; }}
+  .chat-npc {{ color: #333; }}
+  .chat-line strong {{ font-weight: 700; }}
+  .chat-transcript-empty {{
+    color: #666;
+    font-size: 0.95em;
+    margin: 0;
+  }}
 </style>
 </head>
 <body>
@@ -250,6 +319,11 @@ public static class ReportWriter
 <h2>Pet stats over time</h2>
 <div class=""chart-wrap"">
   <canvas id=""chartPetStats""></canvas>
+</div>
+
+<h2>NPC chat transcript</h2>
+<div class=""chat-section"">
+{playerChatLogHtml}
 </div>
 
 <script src=""https://cdn.jsdelivr.net/npm/chart.js@4""></script>

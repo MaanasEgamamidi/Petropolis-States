@@ -56,6 +56,8 @@ public class SessionTracker : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        SessionChatLog.Clear();
+
         _sessionStartRealTime = Time.realtimeSinceStartup;
         _startingMoney = GlobalData.PlayerMoney;
         _highestMoney = _startingMoney;
@@ -151,7 +153,8 @@ public class SessionTracker : MonoBehaviour
             endingMoney: GlobalData.PlayerMoney,
             highestMoney: _highestMoney,
             lowestMoney: _lowestMoney,
-            snapshots: _snapshots
+            snapshots: _snapshots,
+            playerChatLog: SessionChatLog.Entries
         );
     }
 
