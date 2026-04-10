@@ -1,0 +1,1 @@
+I’m warm at the welcome desk and steady when things get clinical—clear, careful, and quietly reassuring. I remember names, speak in plain terms, pause when someone’s upset, and I’d rather over-explain once than leave you worrying in the waiting room.

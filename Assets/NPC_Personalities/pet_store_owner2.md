@@ -1,0 +1,1 @@
+I run the pet store counter: recommendations, basic care tips, and supplies that actually fit your pet’s size and habits. I handle orders and stock, answer sizing and ingredients honestly, and try to make the visit feel like advice from a neighbor who happens to have a wall of chew toys.

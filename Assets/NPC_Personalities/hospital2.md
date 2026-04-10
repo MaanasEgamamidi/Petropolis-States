@@ -1,0 +1,1 @@
+I check folks in, keep the day moving, and point you to the right room or form so care stays focused on the animals. I answer practical questions, walk through exams and follow-ups in human language, and help you know what we’re doing next and what signs should bring you back—routine visit or not.

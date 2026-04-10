@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Drives the chat UI: spawns message bubbles, scrolls, and manages input.
-/// Reads the NPC name from an <see cref="NpcIdentity"/> on the ChatPanel.
+/// Lives on the same GameObject as <see cref="NpcIdentity"/>.
 /// No API / networking logic lives here.
 /// </summary>
 public class ChatManager : MonoBehaviour
@@ -16,11 +16,12 @@ public class ChatManager : MonoBehaviour
     [SerializeField] Button         sendButton;
     [SerializeField] ScrollRect     scrollRect;
     [SerializeField] RectTransform  messageContainer;
-    [SerializeField] NpcIdentity    npcIdentity;
 
     [Header("Bubble Prefabs")]
     [SerializeField] GameObject playerBubblePrefab;
     [SerializeField] GameObject npcBubblePrefab;
+
+    NpcIdentity _npcIdentity;
 
     public struct ChatMessage
     {
@@ -32,10 +33,11 @@ public class ChatManager : MonoBehaviour
 
     public IReadOnlyList<ChatMessage> History => _history;
 
-    public string NpcName => npcIdentity != null ? npcIdentity.NpcName : "NPC";
+    public string NpcName => _npcIdentity != null ? _npcIdentity.NpcName : "NPC";
 
     void Awake()
     {
+        _npcIdentity = GetComponent<NpcIdentity>();
         sendButton.onClick.AddListener(() => OnSendMessage(chatInput.Text.Trim()));
         chatInput.OnSubmitMessage += OnSendMessage;
     }
@@ -56,9 +58,9 @@ public class ChatManager : MonoBehaviour
     IEnumerator ShowGreeting()
     {
         yield return null;
-        if (npcIdentity == null) yield break;
+        if (_npcIdentity == null) yield break;
 
-        string text = npcIdentity.FormattedGreeting;
+        string text = _npcIdentity.FormattedGreeting;
         SpawnNpcBubble(text);
         _history.Add(new ChatMessage { role = "assistant", content = text });
     }

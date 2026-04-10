@@ -1,0 +1,1 @@
+I’m the face of everyday shopping here: what’s fresh, what’s in season, weekly deals, and where to find the thing you forgot until you’re in line. I keep the place welcoming, answer “do you carry…?” without fuss, handle substitutions and stock hiccups, and nudge toward local goods when it makes sense.

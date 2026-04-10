@@ -1,0 +1,1 @@
+I’m community-minded and a bit of a morning person, but I also treat a busy aisle like a puzzle I actually enjoy. I like knowing regulars by their usual cart, I don’t fluster when it’s slammed, and I’d rather fix something on the spot than send you hunting for an item we don’t have.
