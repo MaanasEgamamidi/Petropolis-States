@@ -160,16 +160,21 @@ public static class ReportWriter
             string partner = string.IsNullOrEmpty(e.NpcName) ? "NPC" : e.NpcName;
             if (prevPartner != partner)
             {
-                sb.Append($"  <div class=\"chat-partner\"><strong>{Escape(partner)}</strong></div>\n");
+                if (prevPartner != null)
+                    sb.Append("  </div>\n");
+                sb.Append("  <div class=\"chat-npc-block\">\n");
+                sb.Append($"    <div class=\"chat-partner\"><strong>{Escape(partner)}</strong></div>\n");
                 prevPartner = partner;
             }
 
             if (e.FromPlayer)
-                sb.Append($"  <div class=\"chat-line chat-you\"><strong>You</strong>: {Escape(e.Message)}</div>\n");
+                sb.Append($"    <div class=\"chat-line chat-you\"><strong>You</strong>: {Escape(e.Message)}</div>\n");
             else
-                sb.Append($"  <div class=\"chat-line chat-npc\"><strong>{Escape(partner)}</strong>: {Escape(e.Message)}</div>\n");
+                sb.Append($"    <div class=\"chat-line chat-npc\"><strong>{Escape(partner)}</strong>: {Escape(e.Message)}</div>\n");
         }
 
+        if (prevPartner != null)
+            sb.Append("  </div>\n");
         sb.Append("</div>");
         return sb.ToString();
     }
@@ -255,8 +260,8 @@ public static class ReportWriter
     padding: 16px 18px 10px;
     margin-top: 10px;
   }}
-  .chat-section {{
-    background: #fff;
+   .chat-section {{
+    background: #f9f9f9;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     padding: 14px 18px 12px;
@@ -267,20 +272,27 @@ public static class ReportWriter
     white-space: pre-wrap;
     word-break: break-word;
   }}
+  .chat-npc-block {{
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 12px 14px 10px;
+    margin-top: 12px;
+  }}
+  .chat-npc-block:first-child {{ margin-top: 0; }}
   .chat-partner {{
     font-size: 1em;
     color: #444;
-    margin: 0.55em 0 0.08em 0;
+    margin: 0 0 0.08em 0;
     line-height: 1.35;
   }}
-  .chat-transcript .chat-partner:first-child {{ margin-top: 0; }}
   .chat-line {{
     margin: 0 0 0.15em 0;
     padding: 0;
     line-height: 1.35;
   }}
-  .chat-line:last-child {{ margin-bottom: 0; }}
-  .chat-you {{ color: #1a4d80; }}
+  .chat-npc-block .chat-line:last-child {{ margin-bottom: 0; }}
+  .chat-you {{ color: #333; }}
   .chat-npc {{ color: #333; }}
   .chat-line strong {{ font-weight: 700; }}
   .chat-transcript-empty {{
