@@ -1115,6 +1115,7 @@ GameObject:
   - component: {fileID: 6356707799415900691}
   - component: {fileID: 6292547395296361074}
   - component: {fileID: 2351254955982676153}
+  - component: {fileID: -4640154095477653353}
   m_Layer: 0
   m_Name: ChatWindow
   m_TagString: Untagged
@@ -1240,6 +1241,18 @@ MonoBehaviour:
   messageContainer: {fileID: 8631772512754817720}
   playerBubblePrefab: {fileID: 9056327205992807560, guid: 1e0ea1bb521ef1641b602ce5da9c514c, type: 3}
   npcBubblePrefab: {fileID: 2134443006970966392, guid: 204ee835afda73a4489c71ed9f51405d, type: 3}
+--- !u!114 &-4640154095477653353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8919602665238657953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33d1a95613bf05c47b268bfb2454bbe2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcOpenAiChatBridge
 --- !u!1 &8933641484799228460
 GameObject:
   m_ObjectHideFlags: 0

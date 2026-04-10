@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -22,6 +23,9 @@ public class ChatManager : MonoBehaviour
     [SerializeField] GameObject npcBubblePrefab;
 
     NpcIdentity _npcIdentity;
+
+    /// <summary>Raised after a user message is appended to History.</summary>
+    public event Action OnUserMessageCommitted;
 
     public struct ChatMessage
     {
@@ -76,6 +80,16 @@ public class ChatManager : MonoBehaviour
         _history.Add(new ChatMessage { role = "user", content = text });
 
         StartCoroutine(ScrollToBottom());
+        OnUserMessageCommitted?.Invoke();
+    }
+
+    /// <summary>
+    /// Disables or re-enables the send button and input field (e.g. while waiting for an API reply).
+    /// </summary>
+    public void SetInteractionLocked(bool locked)
+    {
+        sendButton.interactable = !locked;
+        chatInput.InputField.interactable = !locked;
     }
 
     // ── Public API for external systems (AI service, etc.) ──────────

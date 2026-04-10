@@ -2325,6 +2325,7 @@ GameObject:
   - component: {fileID: 262150969}
   - component: {fileID: 262150968}
   - component: {fileID: 262150967}
+  - component: {fileID: 262150972}
   m_Layer: 0
   m_Name: ChatWindow_Supermarket
   m_TagString: Untagged
@@ -2454,6 +2455,18 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &262150972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 262150965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33d1a95613bf05c47b268bfb2454bbe2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcOpenAiChatBridge
 --- !u!1 &269875656
 GameObject:
   m_ObjectHideFlags: 0
@@ -3253,7 +3266,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcChatZone
   chatWindowName: 
   playerTag: Player
-  interactHintWhenInside: Park — walk your pet here
+  interactHintWhenInside: "Park \u2014 walk your pet here"
 --- !u!1 &374174042
 GameObject:
   m_ObjectHideFlags: 0
@@ -4119,45 +4132,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 697678274}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!21 &481794197
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: MinimapRawImageUI(Clone)
-  m_Shader: {fileID: 4800000, guid: 7b8c9d0e1f2a4b6c8d0e2f4a6b8c0d2e, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Transparent
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _BorderWidthUV: 0.03
-    - _EdgeAA: 2
-    - _UseBorder: 0
-    - _UseCircularClip: 1
-    m_Colors:
-    - _BorderColor: {r: 0.08, g: 0.08, b: 0.12, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &482345881
 GameObject:
   m_ObjectHideFlags: 0
@@ -4581,7 +4555,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcChatZone
   chatWindowName: ChatWindow_PetStore
   playerTag: Player
-  interactHintWhenInside: Press C to chat · Press E to choose a pet
+  interactHintWhenInside: "Press C to chat \xB7 Press E to choose a pet"
 --- !u!114 &558561482
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12640,6 +12614,45 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 4416926081852918481, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
   m_PrefabInstance: {fileID: 1380258157}
   m_PrefabAsset: {fileID: 0}
+--- !u!21 &1388069588
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MinimapRawImageUI(Clone)
+  m_Shader: {fileID: 4800000, guid: 7b8c9d0e1f2a4b6c8d0e2f4a6b8c0d2e, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Transparent
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BorderWidthUV: 0.03
+    - _EdgeAA: 2
+    - _UseBorder: 0
+    - _UseCircularClip: 1
+    m_Colors:
+    - _BorderColor: {r: 0.08, g: 0.08, b: 0.12, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &1391191895
 GameObject:
   m_ObjectHideFlags: 0
@@ -14279,6 +14292,7 @@ GameObject:
   - component: {fileID: 1657504859}
   - component: {fileID: 1657504858}
   - component: {fileID: 1657504857}
+  - component: {fileID: 1657504862}
   m_Layer: 0
   m_Name: ChatWindow_Hospital
   m_TagString: Untagged
@@ -14408,6 +14422,18 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1657504862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657504855}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33d1a95613bf05c47b268bfb2454bbe2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcOpenAiChatBridge
 --- !u!1 &1659545079
 GameObject:
   m_ObjectHideFlags: 0
@@ -19277,7 +19303,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
-  m_Material: {fileID: 481794197}
+  m_Material: {fileID: 1388069588}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -38355,6 +38381,7 @@ GameObject:
   - component: {fileID: 6356707797733710523}
   - component: {fileID: 6292547394694195930}
   - component: {fileID: 2351254955488522257}
+  - component: {fileID: 8919602665702370058}
   m_Layer: 0
   m_Name: ChatWindow_PetStore
   m_TagString: Untagged
@@ -38362,6 +38389,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
+--- !u!114 &8919602665702370058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8919602665702370057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33d1a95613bf05c47b268bfb2454bbe2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcOpenAiChatBridge
 --- !u!1 &8933641486371318404
 GameObject:
   m_ObjectHideFlags: 0
