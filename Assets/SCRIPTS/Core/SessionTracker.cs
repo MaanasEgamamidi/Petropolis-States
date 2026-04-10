@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,6 +31,8 @@ public class SessionTracker : MonoBehaviour
 
     readonly List<MoneySnapshot> _snapshots = new List<MoneySnapshot>();
 
+    bool _sessionReportWritten;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void SubscribeCreateOnPetConfirmed()
     {
@@ -38,11 +41,28 @@ public class SessionTracker : MonoBehaviour
 
     static void CreateTrackerIfNeeded()
     {
-        if (Instance != null) return;
+        if (Instance) return;
 
         var go = new GameObject("SessionTracker");
         DontDestroyOnLoad(go);
         go.AddComponent<SessionTracker>();
+    }
+
+    /// <summary>
+    /// Writes the session report if one has not been written yet. Used by the Editor play-mode exit hook
+    /// (quit/destroy order is unreliable when stopping Play Mode) and can be called from builds on shutdown.
+    /// </summary>
+    public static void WriteReportIfNeeded()
+    {
+        if (!Instance)
+        {
+#if UNITY_EDITOR
+            Debug.LogWarning("[SessionReport] No SessionTracker this session — confirm a pet in PetChoose so tracking starts. Report not written.");
+#endif
+            return;
+        }
+
+        Instance.TryWriteSessionReport();
     }
 
     void Awake()
@@ -57,6 +77,7 @@ public class SessionTracker : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         SessionChatLog.Clear();
+        _sessionReportWritten = false;
 
         _sessionStartRealTime = Time.realtimeSinceStartup;
         _startingMoney = GlobalData.PlayerMoney;
@@ -133,29 +154,53 @@ public class SessionTracker : MonoBehaviour
         return Mathf.FloorToInt(gameHourA) == Mathf.FloorToInt(gameHourB);
     }
 
-    void OnApplicationQuit()
+    void OnApplicationQuit() => TryWriteSessionReport();
+
+    void OnDestroy()
     {
+        // Builds / fallback: Editor exit is handled by SessionReportPlayModeExit (ExitingPlayMode).
+        if (Instance != this) return;
+        TryWriteSessionReport();
+    }
+
+    void TryWriteSessionReport()
+    {
+        if (_sessionReportWritten) return;
         if (!ShouldGenerateReport())
+        {
+#if UNITY_EDITOR
+            Debug.Log("[SessionReport] Skipped: turn on Edit > Generate Session Reports to enable.");
+#endif
             return;
+        }
 
-        RecordSnapshot(GlobalData.CurrentTimeOfDay);
+        _sessionReportWritten = true;
 
-        float sessionRealSeconds = Time.realtimeSinceStartup - _sessionStartRealTime;
+        try
+        {
+            RecordSnapshot(GlobalData.CurrentTimeOfDay);
 
-        float totalGameHours = ComputeTotalGameHours();
+            float sessionRealSeconds = Time.realtimeSinceStartup - _sessionStartRealTime;
+            float totalGameHours = ComputeTotalGameHours();
 
-        ReportWriter.Generate(
-            playerName: GlobalData.StoredName ?? "Player",
-            petName: GlobalData.PetName ?? "Unknown",
-            sessionRealSeconds: sessionRealSeconds,
-            totalGameHours: totalGameHours,
-            startingMoney: _startingMoney,
-            endingMoney: GlobalData.PlayerMoney,
-            highestMoney: _highestMoney,
-            lowestMoney: _lowestMoney,
-            snapshots: _snapshots,
-            playerChatLog: SessionChatLog.Entries
-        );
+            ReportWriter.Generate(
+                playerName: GlobalData.StoredName ?? "Player",
+                petName: GlobalData.PetName ?? "Unknown",
+                sessionRealSeconds: sessionRealSeconds,
+                totalGameHours: totalGameHours,
+                startingMoney: _startingMoney,
+                endingMoney: GlobalData.PlayerMoney,
+                highestMoney: _highestMoney,
+                lowestMoney: _lowestMoney,
+                snapshots: _snapshots,
+                playerChatLog: SessionChatLog.Entries
+            );
+        }
+        catch (Exception ex)
+        {
+            _sessionReportWritten = false;
+            Debug.LogError($"[SessionReport] Failed to write report: {ex.Message}\n{ex}");
+        }
     }
 
     static bool ShouldGenerateReport()

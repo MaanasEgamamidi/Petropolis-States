@@ -37,7 +37,10 @@ public class MessageBubbleController : MonoBehaviour
         var container = root.parent as RectTransform;
         if (container == null) return;
 
-        float maxWidth = container.rect.width * maxWidthRatio;
+        // Scroll content often reports width 0 on the same frame the bubble is spawned;
+        // clamping to that collapses the bubble and TMP stacks one character per line.
+        float usableWidth = ResolveMessageAreaWidth(container);
+        float maxWidth = Mathf.Max(usableWidth * maxWidthRatio, 80f);
 
         var bubbleBody = root.childCount > 0 ? root.GetChild(0).GetComponent<RectTransform>() : null;
         if (bubbleBody == null) return;
@@ -54,5 +57,20 @@ public class MessageBubbleController : MonoBehaviour
                 csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
             bubbleBody.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxWidth);
         }
+    }
+
+    static float ResolveMessageAreaWidth(RectTransform container)
+    {
+        Canvas.ForceUpdateCanvases();
+
+        for (RectTransform r = container; r != null; r = r.parent as RectTransform)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(r);
+            float w = r.rect.width;
+            if (w > 1f)
+                return w;
+        }
+
+        return 400f;
     }
 }

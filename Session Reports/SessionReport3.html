@@ -1,0 +1,420 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Report — April 10, 2026, 1:56:48 PM</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f4f4f4;
+    color: #333;
+    max-width: 960px;
+    margin: 36px auto;
+    padding: 0 24px;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 1.35em;
+    font-weight: 600;
+    border-bottom: 2px solid #d0d0d0;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+  }
+  .report-ts {
+    margin: 0 0 22px 0;
+    color: #666;
+    font-size: 0.95em;
+  }
+  h2 {
+    font-size: 1.05em;
+    font-weight: 600;
+    margin-top: 26px;
+    margin-bottom: 8px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 18px;
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 14px;
+    border-bottom: 1px solid #eee;
+  }
+  tr:last-child th, tr:last-child td { border-bottom: none; }
+  th {
+    font-weight: 600;
+    width: 42%;
+    color: #555;
+  }
+  .net {
+    color: #2a7d2a;
+    font-weight: 600;
+  }
+  .chart-wrap {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 16px 18px 10px;
+    margin-top: 10px;
+  }
+  .chat-section {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 14px 18px 12px;
+    margin-top: 10px;
+    font-size: 0.95em;
+  }
+  .chat-transcript {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .chat-partner {
+    font-size: 1em;
+    color: #444;
+    margin: 0.55em 0 0.08em 0;
+    line-height: 1.35;
+  }
+  .chat-transcript .chat-partner:first-child { margin-top: 0; }
+  .chat-line {
+    margin: 0 0 0.15em 0;
+    padding: 0;
+    line-height: 1.35;
+  }
+  .chat-line:last-child { margin-bottom: 0; }
+  .chat-you { color: #1a4d80; }
+  .chat-npc { color: #333; }
+  .chat-line strong { font-weight: 700; }
+  .chat-transcript-empty {
+    color: #666;
+    font-size: 0.95em;
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>Session Report</h1>
+<p class="report-ts">April 10, 2026, 1:56:48 PM</p>
+
+<h2>Player Info</h2>
+<table>
+  <tr><th>Player Name</th><td>Player</td></tr>
+  <tr><th>Pet Name</th><td>Dog</td></tr>
+  <tr><th>Session Length</th><td>1.1 in-game day</td></tr>
+</table>
+
+<h2>Money Summary</h2>
+<table>
+  <tr><th>Starting Amount</th><td>$150.00</td></tr>
+  <tr><th>Ending Amount</th><td>$500.00</td></tr>
+  <tr><th>Net Change</th><td class="net">+$350.00</td></tr>
+  <tr><th>Highest Reached</th><td>$500.00</td></tr>
+  <tr><th>Lowest Reached</th><td>$150.00</td></tr>
+</table>
+
+<h2>Money Over Time</h2>
+<div class="chart-wrap">
+  <canvas id="chart"></canvas>
+</div>
+
+<h2>Pet stats over time</h2>
+<div class="chart-wrap">
+  <canvas id="chartPetStats"></canvas>
+</div>
+
+<h2>NPC chat transcript</h2>
+<div class="chat-section">
+<div class="chat-transcript">
+  <div class="chat-partner"><strong>Doctor Bob</strong></div>
+  <div class="chat-line chat-npc"><strong>Doctor Bob</strong>: Welcome to the Petropolis Animal Clinic! I'm Doctor Bob. How can I help you and your pet today?</div>
+  <div class="chat-line chat-you"><strong>You</strong>: heal my pet, its deadd</div>
+  <div class="chat-line chat-npc"><strong>Doctor Bob</strong>: I’m really sorry to hear about your pet. That must be so difficult for you. If you'd like to talk about what happened or share any memories, I’m here to listen. Just know that grieving for our furry friends is important.</div>
+  <div class="chat-partner"><strong>Margie</strong></div>
+  <div class="chat-line chat-npc"><strong>Margie</strong>: Morning! Welcome to Margie's Market. Looking for anything in particular, or just browsing today?</div>
+  <div class="chat-line chat-you"><strong>You</strong>: eie eieie</div>
+  <div class="chat-line chat-npc"><strong>Margie</strong>: Good morning! It sounds like you're either excited or trying to call a pet! What can I help you find today at Margie's Market?</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+(function() {
+  var startHour = 10;
+  var showDays = true;
+  var data = [{x:0,y:150.00},{x:1,y:150.00},{x:2,y:150.00},{x:3,y:150.00},{x:4,y:150.00},{x:5,y:150.00},{x:6,y:150.00},{x:7,y:150.00},{x:8,y:150.00},{x:9,y:150.00},{x:10,y:150.00},{x:11,y:150.00},{x:12,y:150.00},{x:13,y:150.00},{x:14,y:150.00},{x:15,y:150.00},{x:16,y:150.00},{x:17,y:150.00},{x:18,y:150.00},{x:19,y:150.00},{x:20,y:200.00},{x:21,y:200.00},{x:22,y:200.00},{x:23,y:200.00},{x:24,y:200.00},{x:25,y:200.00},{x:26,y:200.00},{x:27,y:500.00}];
+  var dataHealth = [{x:0,y:100},{x:1,y:97.91},{x:2,y:93.9},{x:3,y:89.91},{x:4,y:85.91},{x:5,y:81.9},{x:6,y:77.9},{x:7,y:73.9},{x:8,y:69.9},{x:9,y:68.9},{x:10,y:67.9},{x:11,y:66.9},{x:12,y:65.9},{x:13,y:64.9},{x:14,y:63.9},{x:15,y:62.9},{x:16,y:61.9},{x:17,y:60.9},{x:18,y:59.9},{x:19,y:58.9},{x:20,y:57.9},{x:21,y:53.9},{x:22,y:49.9},{x:23,y:45.9},{x:24,y:41.9},{x:25,y:37.9},{x:26,y:33.9},{x:27,y:27.88}];
+  var dataHappiness = [{x:0,y:100},{x:1,y:97.91},{x:2,y:93.9},{x:3,y:89.91},{x:4,y:85.91},{x:5,y:81.9},{x:6,y:77.9},{x:7,y:73.9},{x:8,y:69.9},{x:9,y:68.9},{x:10,y:67.9},{x:11,y:66.9},{x:12,y:65.9},{x:13,y:64.9},{x:14,y:63.9},{x:15,y:62.9},{x:16,y:61.9},{x:17,y:60.9},{x:18,y:59.9},{x:19,y:58.9},{x:20,y:57.9},{x:21,y:53.9},{x:22,y:49.9},{x:23,y:45.9},{x:24,y:41.9},{x:25,y:37.9},{x:26,y:33.9},{x:27,y:27.88}];
+  var dataEnergy = [{x:0,y:100},{x:1,y:97.91},{x:2,y:93.9},{x:3,y:89.91},{x:4,y:85.91},{x:5,y:81.9},{x:6,y:77.9},{x:7,y:73.9},{x:8,y:69.9},{x:9,y:68.9},{x:10,y:67.9},{x:11,y:66.9},{x:12,y:65.9},{x:13,y:64.9},{x:14,y:63.9},{x:15,y:62.9},{x:16,y:61.9},{x:17,y:60.9},{x:18,y:59.9},{x:19,y:58.9},{x:20,y:57.9},{x:21,y:53.9},{x:22,y:49.9},{x:23,y:45.9},{x:24,y:41.9},{x:25,y:37.9},{x:26,y:33.9},{x:27,y:27.88}];
+  var dataHunger = [{x:0,y:100},{x:1,y:97.91},{x:2,y:93.9},{x:3,y:89.91},{x:4,y:85.91},{x:5,y:81.9},{x:6,y:77.9},{x:7,y:73.9},{x:8,y:69.9},{x:9,y:68.9},{x:10,y:67.9},{x:11,y:66.9},{x:12,y:65.9},{x:13,y:64.9},{x:14,y:63.9},{x:15,y:62.9},{x:16,y:61.9},{x:17,y:60.9},{x:18,y:59.9},{x:19,y:58.9},{x:20,y:57.9},{x:21,y:53.9},{x:22,y:49.9},{x:23,y:45.9},{x:24,y:41.9},{x:25,y:37.9},{x:26,y:33.9},{x:27,y:27.88}];
+
+  function fmtHour(cumH) {
+    var hod = ((startHour + cumH) % 24 + 24) % 24;
+    var h12 = hod % 12 === 0 ? 12 : Math.floor(hod) % 12;
+    var p = Math.floor(hod) < 12 ? 'AM' : 'PM';
+    return h12 + ' ' + p;
+  }
+
+  function dayNum(cumH) {
+    return Math.floor((startHour + cumH) / 24) + 1;
+  }
+
+  var maxCum = data.length > 0 ? data[data.length - 1].x : 0;
+
+  var firstAligned = (3 - (startHour % 3)) % 3;
+  if (firstAligned > maxCum) firstAligned = 0;
+
+  var ctx = document.getElementById('chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        data: data,
+        fill: {
+          target: 'origin',
+          above: 'rgba(80,160,90,0.06)',
+          below: 'rgba(180,60,60,0.06)'
+        },
+        tension: 0.2,
+        pointRadius: 3.5,
+        pointBackgroundColor: '#4a7c59',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: '#333',
+        borderWidth: 2.5,
+        segment: {
+          borderColor: function(c) {
+            var y0 = c.p0.parsed.y, y1 = c.p1.parsed.y;
+            if (y1 > y0) return '#3a9d4a';
+            if (y1 < y0) return '#c44';
+            return '#999';
+          }
+        }
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2.8,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#333',
+          titleFont: { size: 12 },
+          bodyFont: { size: 12 },
+          padding: 8,
+          cornerRadius: 4,
+          callbacks: {
+            title: function(items) {
+              if (!items.length) return '';
+              return fmtHour(items[0].parsed.x) + (showDays ? ' — Day ' + dayNum(items[0].parsed.x) : '');
+            },
+            label: function(item) {
+              return '  $' + item.parsed.y.toFixed(2);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          title: { display: false },
+          grid: {
+            color: 'rgba(0,0,0,0.06)',
+            drawTicks: true,
+            tickLength: 6
+          },
+          border: { color: '#ccc' },
+          ticks: {
+            maxRotation: 0,
+            autoSkip: false,
+            color: '#666',
+            font: { size: 11 },
+            callback: function(val) {
+              var hod = ((startHour + val) % 24 + 24) % 24;
+              var onThree = Math.abs(hod - Math.round(hod / 3) * 3) < 0.01;
+              if (!onThree) return '';
+              var label = fmtHour(val);
+              if (showDays) {
+                var atMidnight = Math.abs(hod) < 0.01 || Math.abs(hod - 24) < 0.01;
+                var isFirst = Math.abs(val) < 0.01;
+                if (atMidnight || isFirst) {
+                  return [label, 'Day ' + dayNum(val)];
+                }
+              }
+              return label;
+            },
+            stepSize: 1
+          },
+          afterBuildTicks: function(axis) {
+            var ticks = [];
+            for (var t = firstAligned; t <= maxCum + 0.5; t += 3) {
+              ticks.push({ value: t });
+            }
+            axis.ticks = ticks;
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Money ($)',
+            color: '#777',
+            font: { size: 12 }
+          },
+          grid: {
+            color: 'rgba(0,0,0,0.06)'
+          },
+          border: { color: '#ccc' },
+          ticks: {
+            color: '#666',
+            font: { size: 11 },
+            callback: function(val) { return '$' + val; }
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // PetStatsBarsController default colors (RGB 0-1 → hex) for parity with in-game bars.
+  var colHealth = '#e64d59';
+  var colHappiness = '#f2cc40';
+  var colEnergy = '#4099f2';
+  var colHunger = '#73cc66';
+
+  var petStatsEl = document.getElementById('chartPetStats');
+  if (petStatsEl && (dataHealth.length || dataHappiness.length || dataEnergy.length || dataHunger.length)) {
+    var petLine = function(series, label, hex) {
+      return {
+        label: label,
+        data: series,
+        borderColor: hex,
+        backgroundColor: hex,
+        tension: 0.2,
+        fill: false,
+        pointRadius: 3.5,
+        pointBackgroundColor: hex,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        pointHoverRadius: 6,
+        borderWidth: 2.5
+      };
+    };
+    new Chart(petStatsEl.getContext('2d'), {
+      type: 'line',
+      data: {
+        datasets: [
+          petLine(dataHealth, 'Health', colHealth),
+          petLine(dataHappiness, 'Happiness', colHappiness),
+          petLine(dataEnergy, 'Energy', colEnergy),
+          petLine(dataHunger, 'Hunger', colHunger)
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2.4,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'rectRounded',
+              padding: 14,
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#333',
+            titleFont: { size: 12 },
+            bodyFont: { size: 12 },
+            padding: 8,
+            cornerRadius: 4,
+            callbacks: {
+              title: function(items) {
+                if (!items.length) return '';
+                return fmtHour(items[0].parsed.x) + (showDays ? ' — Day ' + dayNum(items[0].parsed.x) : '');
+              },
+              label: function(item) {
+                return ' ' + item.dataset.label + ': ' + item.parsed.y.toFixed(1);
+              }
+            }
+          }
+        },
+        scales: {
+          x: xScaleConfig(),
+          y: {
+            title: {
+              display: true,
+              text: 'Stat (0-100)',
+              color: '#777',
+              font: { size: 12 }
+            },
+            min: 0,
+            max: 100,
+            grid: { color: 'rgba(0,0,0,0.06)' },
+            border: { color: '#ccc' },
+            ticks: {
+              color: '#666',
+              font: { size: 11 }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function xScaleConfig() {
+    return {
+      type: 'linear',
+      title: { display: false },
+      grid: {
+        color: 'rgba(0,0,0,0.06)',
+        drawTicks: true,
+        tickLength: 6
+      },
+      border: { color: '#ccc' },
+      ticks: {
+        maxRotation: 0,
+        autoSkip: false,
+        color: '#666',
+        font: { size: 11 },
+        callback: function(val) {
+          var hod = ((startHour + val) % 24 + 24) % 24;
+          var onThree = Math.abs(hod - Math.round(hod / 3) * 3) < 0.01;
+          if (!onThree) return '';
+          var label = fmtHour(val);
+          if (showDays) {
+            var atMidnight = Math.abs(hod) < 0.01 || Math.abs(hod - 24) < 0.01;
+            var isFirst = Math.abs(val) < 0.01;
+            if (atMidnight || isFirst) {
+              return [label, 'Day ' + dayNum(val)];
+            }
+          }
+          return label;
+        },
+        stepSize: 1
+      },
+      afterBuildTicks: function(axis) {
+        var ticks = [];
+        for (var t = firstAligned; t <= maxCum + 0.5; t += 3) {
+          ticks.push({ value: t });
+        }
+        axis.ticks = ticks;
+      }
+    };
+  }
+})();
+</script>
+</body>
+</html>
