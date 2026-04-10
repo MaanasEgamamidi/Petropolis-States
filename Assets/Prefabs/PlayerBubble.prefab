@@ -194,7 +194,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4294962137
   m_fontColor: {r: 0.85, g: 0.92, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -516,3 +516,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MessageBubbleController
   senderNameLabel: {fileID: 8440688025546623677}
   messageTextLabel: {fileID: 661149421433952999}
+  maxWidthRatio: 0.85
