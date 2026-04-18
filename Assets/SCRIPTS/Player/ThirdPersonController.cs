@@ -17,17 +17,25 @@ public class ThirdPersonController : MonoBehaviour
 {
     [Header("Player")]
     [Tooltip("Move speed of the character in m/s")]
-    public float MoveSpeed = 3.5f;
+    public float MoveSpeed = 4.75f;
 
     [Tooltip("Sprint speed of the character in m/s")]
-    public float SprintSpeed = 8f;
+    public float SprintSpeed = 10.4f;
 
     [Tooltip("How fast the character turns to face movement direction")]
     [Range(0.0f, 0.3f)]
     public float RotationSmoothTime = 0.12f;
 
     [Tooltip("Acceleration and deceleration")]
-    public float SpeedChangeRate = 10.0f;
+    public float SpeedChangeRate = 14.0f;
+
+    [Tooltip("Animator playback speed (locomotion, jumps, etc.). 1 is normal.")]
+    [Range(0.8f, 1.5f)]
+    public float AnimatorSpeed = 1.12f;
+
+    [Tooltip("When grounded and walking (not sprinting), multiplied with AnimatorSpeed so foot cadence is calmer. Does not change move speed.")]
+    [Range(0.65f, 1f)]
+    public float WalkAnimationPlaybackScale = 1f;
 
     public AudioClip LandingAudioClip;
     public AudioClip[] FootstepAudioClips;
@@ -82,7 +90,6 @@ public class ThirdPersonController : MonoBehaviour
 
     // player
     private float _speed;
-    private float _animationBlend;
     private float _targetRotation = 0.0f;
     private float _rotationVelocity;
     private float _verticalVelocity;
@@ -211,6 +218,24 @@ public class ThirdPersonController : MonoBehaviour
             _cinemachineTargetYaw, 0.0f);
     }
 
+    /// <summary>
+    /// Maps planar speed (m/s) to the Starter Assets Third Person "Speed" parameter. The default
+    /// animator blend tree uses thresholds 0 / 2 / 6 (idle / walk / run), not raw m/s.
+    /// </summary>
+    public static float StarterAssetsLocomotionBlendSpeed(float planarSpeedMetersPerSecond, float moveSpeed,
+        float sprintSpeed)
+    {
+        if (planarSpeedMetersPerSecond < 0.01f || moveSpeed < 0.01f)
+            return 0f;
+        if (planarSpeedMetersPerSecond <= moveSpeed)
+            return Mathf.Lerp(0f, 2f, Mathf.InverseLerp(0f, moveSpeed, planarSpeedMetersPerSecond));
+        if (sprintSpeed <= moveSpeed)
+            return 6f;
+        float runBlend = Mathf.InverseLerp(moveSpeed, sprintSpeed,
+            Mathf.Min(planarSpeedMetersPerSecond, sprintSpeed));
+        return Mathf.Lerp(2f, 6f, runBlend);
+    }
+
     private void Move()
     {
         float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
@@ -235,9 +260,6 @@ public class ThirdPersonController : MonoBehaviour
             _speed = targetSpeed;
         }
 
-        _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
-        if (_animationBlend < 0.01f) _animationBlend = 0f;
-
         // Negate to fix inverted movement (W moves forward, A moves left)
         Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
@@ -258,8 +280,14 @@ public class ThirdPersonController : MonoBehaviour
 
         if (_hasAnimator)
         {
-            _animator.SetFloat(_animIDSpeed, _animationBlend);
+            _animator.SetFloat(_animIDSpeed,
+                StarterAssetsLocomotionBlendSpeed(_speed, MoveSpeed, SprintSpeed));
             _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
+
+            float playback = AnimatorSpeed;
+            if (Grounded && !_input.sprint && _input.move != Vector2.zero)
+                playback *= WalkAnimationPlaybackScale;
+            _animator.speed = playback;
         }
     }
 

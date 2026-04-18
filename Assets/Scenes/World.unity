@@ -18070,10 +18070,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c45367dc90cd7c459139dc2be214585, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThirdPersonController
-  MoveSpeed: 3.5
-  SprintSpeed: 8
+  MoveSpeed: 4.75
+  SprintSpeed: 10.4
   RotationSmoothTime: 0.12
-  SpeedChangeRate: 10
+  SpeedChangeRate: 14
+  AnimatorSpeed: 1.12
+  WalkAnimationPlaybackScale: 1
   LandingAudioClip: {fileID: 8300000, guid: ff697d3070687ce4583faa0561a145a2, type: 3}
   FootstepAudioClips:
   - {fileID: 8300000, guid: 72f526a6a9890f643a88e85a61c86c8a, type: 3}
@@ -33261,7 +33263,7 @@ MonoBehaviour:
   dogMeshVisual: {fileID: 0}
   followTarget: {fileID: 2022202574}
   followOffset: {x: 0.8, y: 0, z: -1.2}
-  followSpeed: 8.5
+  followSpeed: 12
   groundLayers:
     serializedVersion: 2
     m_Bits: 1
@@ -33276,7 +33278,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 3357fe387a73ced47913a2ea647033b5, type: 2}
   dogMeshRenderer: {fileID: 1108722889955143909}
   snapIfBeyondHorizontal: 12
-  idleCatchUpSpeed: 3.5
+  idleCatchUpSpeed: 4.75
   catchUpDistance: 2.5
 --- !u!1 &5749046379122425499
 GameObject:

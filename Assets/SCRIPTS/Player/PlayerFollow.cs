@@ -20,8 +20,8 @@ public class PlayerFollow : MonoBehaviour
     [Tooltip("Offset from the player (e.g. behind and to the side). X=right, Z=behind.")]
     [SerializeField] Vector3 followOffset = new Vector3(0.8f, 0f, -1.2f);
 
-    [Tooltip("How fast the dog moves toward the target. Should be slightly above player SprintSpeed to keep up.")]
-    [SerializeField] float followSpeed = 8.5f;
+    [Tooltip("Max follow speed (m/s). The dog matches the player's speed up to this cap; set slightly above player sprint for catch-up.")]
+    [SerializeField] float followSpeed = 12f;
 
     [Header("Ground")]
     [Tooltip("Layers to raycast for ground (roads, sidewalks, etc.). Should match player's GroundLayers.")]
@@ -45,14 +45,31 @@ public class PlayerFollow : MonoBehaviour
     Animator _animator;
     CharacterController _playerController;
     StarterAssets.StarterAssetsInputs _playerInputs;
-    float _playerMoveSpeed = 3.5f;
-    float _playerSprintSpeed = 8f;
+    ThirdPersonController _playerTpc;
+    StarterAssets.ThirdPersonController _playerTpcSa;
+    float _playerMoveSpeed = 4.75f;
+    float _playerSprintSpeed = 10.4f;
 
     [Tooltip("If farther than this from the follow slot (horizontal), snap beside the player (e.g. after PetChoose).")]
     [SerializeField] float snapIfBeyondHorizontal = 12f;
 
     [Tooltip("While idle, still walk toward the slot at least this planar speed if outside catchUpDistance.")]
-    [SerializeField] float idleCatchUpSpeed = 3.5f;
+    [SerializeField] float idleCatchUpSpeed = 4.75f;
+
+    /// <summary>DogFollow.controller uses Speed &gt; ~0.1 walk, &gt; 3 run (not Starter Assets 0/2/6).</summary>
+    static float DogFollowAnimatorSpeed(float planarMps, bool sprinting, float moveSpeed, float sprintSpeed)
+    {
+        if (planarMps < 0.05f)
+            return 0f;
+        if (!sprinting)
+        {
+            float t = Mathf.InverseLerp(0f, moveSpeed, Mathf.Min(planarMps, moveSpeed));
+            return Mathf.Lerp(0.15f, 2.8f, t);
+        }
+
+        float runT = Mathf.InverseLerp(moveSpeed, sprintSpeed, Mathf.Min(planarMps, sprintSpeed));
+        return Mathf.Lerp(3.2f, 6.5f, runT);
+    }
 
     [Tooltip("Planar distance under which idle catch-up stops (meters).")]
     [SerializeField] float catchUpDistance = 2.5f;
@@ -120,15 +137,19 @@ public class PlayerFollow : MonoBehaviour
 
         SnapBesidePlayerIfNeeded(force: false);
 
-        float playerSpeed = GetPlayerHorizontalSpeed();
+        SyncPlayerLocomotionFromController();
+
+        float matchSpeed = GetPlayerMatchSpeed();
         bool playerSprinting = _playerInputs != null && _playerInputs.sprint;
-        float targetSpeed = ComputeDogSpeed(playerSpeed, playerSprinting);
 
         if (_animator != null)
-            _animator.SetFloat(SpeedParam, targetSpeed);
+        {
+            float dogSpeedParam = DogFollowAnimatorSpeed(matchSpeed, playerSprinting, _playerMoveSpeed, _playerSprintSpeed);
+            _animator.SetFloat(SpeedParam, dogSpeedParam);
+        }
 
         Vector3 targetPos = GetFollowSlotWorldPosition();
-        float moveSpeed = targetSpeed > 0.1f ? followSpeed * Mathf.Clamp01(targetSpeed / _playerSprintSpeed) : 0f;
+        float moveSpeed = matchSpeed > 0.05f ? Mathf.Min(matchSpeed, followSpeed) : 0f;
 
         Vector3 planarToSlot = targetPos - transform.position;
         planarToSlot.y = 0f;
@@ -166,34 +187,46 @@ public class PlayerFollow : MonoBehaviour
 
     void ResolvePlayer()
     {
-        if (followTarget != null && _playerController != null) return;
-        var player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            var root = player.transform.root;
-            _playerController = root.GetComponentInChildren<CharacterController>();
-            _playerInputs = root.GetComponentInChildren<StarterAssets.StarterAssetsInputs>();
-            if (_playerController != null)
-                followTarget = _playerController.transform;
-            else if (followTarget == null)
-                followTarget = root;
+        if (followTarget != null && _playerController != null && (_playerTpc != null || _playerTpcSa != null))
+            return;
 
-            // Read player speeds from ThirdPersonController so pet keeps up
-            var tpc = root.GetComponentInChildren<ThirdPersonController>();
-            if (tpc != null)
-            {
-                _playerMoveSpeed = tpc.MoveSpeed;
-                _playerSprintSpeed = tpc.SprintSpeed;
-            }
-            else
-            {
-                var tpcSA = root.GetComponentInChildren<StarterAssets.ThirdPersonController>();
-                if (tpcSA != null)
-                {
-                    _playerMoveSpeed = tpcSA.MoveSpeed;
-                    _playerSprintSpeed = tpcSA.SprintSpeed;
-                }
-            }
+        Transform rootTf = null;
+        if (followTarget != null)
+            rootTf = followTarget.root;
+        else
+        {
+            var player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                rootTf = player.transform.root;
+        }
+
+        if (rootTf == null)
+            return;
+
+        _playerController = rootTf.GetComponentInChildren<CharacterController>();
+        _playerInputs = rootTf.GetComponentInChildren<StarterAssets.StarterAssetsInputs>();
+        if (_playerController != null && followTarget == null)
+            followTarget = _playerController.transform;
+        else if (followTarget == null)
+            followTarget = rootTf;
+
+        _playerTpc = rootTf.GetComponentInChildren<ThirdPersonController>();
+        _playerTpcSa = _playerTpc == null ? rootTf.GetComponentInChildren<StarterAssets.ThirdPersonController>() : null;
+
+        SyncPlayerLocomotionFromController();
+    }
+
+    void SyncPlayerLocomotionFromController()
+    {
+        if (_playerTpc != null)
+        {
+            _playerMoveSpeed = _playerTpc.MoveSpeed;
+            _playerSprintSpeed = _playerTpc.SprintSpeed;
+        }
+        else if (_playerTpcSa != null)
+        {
+            _playerMoveSpeed = _playerTpcSa.MoveSpeed;
+            _playerSprintSpeed = _playerTpcSa.SprintSpeed;
         }
     }
 
@@ -220,21 +253,31 @@ public class PlayerFollow : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(look.normalized);
     }
 
-    float GetPlayerHorizontalSpeed()
+    /// <summary>
+    /// Planar speed (m/s) to mirror: actual CharacterController velocity when moving, or intended
+    /// walk/sprint cap × input while accelerating (matches ThirdPersonController feel).
+    /// </summary>
+    float GetPlayerMatchSpeed()
     {
-        if (_playerController == null) return 0f;
-        var v = _playerController.velocity;
-        float velSpeed = new Vector3(v.x, 0f, v.z).magnitude;
-        if (velSpeed > 0.05f) return velSpeed;
-        if (_playerInputs != null && _playerInputs.move.sqrMagnitude > 0.01f)
-            return _playerInputs.sprint ? _playerSprintSpeed : _playerMoveSpeed;
-        return 0f;
-    }
+        if (_playerController == null)
+            return 0f;
 
-    float ComputeDogSpeed(float playerSpeed, bool playerSprinting)
-    {
-        if (playerSpeed < 0.1f) return 0f;
-        return playerSprinting ? _playerSprintSpeed : Mathf.Min(playerSpeed, _playerMoveSpeed);
+        var v = _playerController.velocity;
+        float vel = new Vector3(v.x, 0f, v.z).magnitude;
+
+        if (_playerInputs == null)
+            return vel > 0.05f ? vel : 0f;
+
+        if (_playerInputs.move.sqrMagnitude < 0.01f)
+            return vel > 0.05f ? vel : 0f;
+
+        float inputMag = _playerInputs.analogMovement ? Mathf.Clamp01(_playerInputs.move.magnitude) : 1f;
+        float intended = (_playerInputs.sprint ? _playerSprintSpeed : _playerMoveSpeed) * inputMag;
+
+        if (vel < 0.05f)
+            return intended;
+
+        return vel;
     }
 
     /// <summary>
