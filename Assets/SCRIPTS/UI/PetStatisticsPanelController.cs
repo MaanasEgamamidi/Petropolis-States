@@ -16,7 +16,7 @@ public class PetStatisticsPanelController : MonoBehaviour
     [Tooltip("Fades the drag-handle bar and \"Pet Statistics\" label with the panel: full when collapsed (left), invisible when open (right). Auto-added under Left Box / Drag Handle if unset.")]
     [SerializeField] CanvasGroup dragHandleChrome;
 
-    [Tooltip("Inverse of drag handle: invisible when collapsed (left), full opacity when open (right). Auto-added under Left Box / Stats if unset.")]
+    [Tooltip("Inverse of drag handle: invisible when collapsed (left), full opacity when open (right). Auto-added under Left Box / Stats if unset. Covers all Stats descendants (bars, label rows, FeelingText), so they all fade in together when sliding right and out together when sliding left.")]
     [SerializeField] CanvasGroup statsChrome;
 
     [Tooltip("Anchored X when closed (toggle off / not holding). Match Left Box X in the scene so edit mode and play mode look the same.")]

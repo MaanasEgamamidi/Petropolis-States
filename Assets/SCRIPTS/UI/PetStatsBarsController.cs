@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
@@ -7,14 +8,18 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Drives the four pet-stat bar fills from <see cref="GlobalData"/> values,
-/// applies passive decay each frame, and optionally lets number keys 1-4 boost stats.
+/// applies passive decay each frame, and optionally lets number keys 2-4 boost happiness/energy/hunger.
+/// Health is a derived stat: <c>(PetEnergy + PetHunger) / 2</c>; when it reaches 0 the world fades to the
+/// closing scene (same path as the pause-menu Quit button).
 /// Bar widths can ease toward live stats (<see cref="smoothBarChanges"/>) so jumps from zones or keys animate smoothly.
 /// Each bar has a full-width background track (dark border, dimmed) and a fill Image whose
 /// border and right-edge curve follow the fill as it decays.
+/// A short feeling word (e.g. "Happy", "Sick") derived from the four stats is written into <see cref="feelingText"/>.
 /// Attach to the <c>Bars</c> GameObject under <c>Pet Statistics / Left Box / Stats</c>.
 /// </summary>
 public class PetStatsBarsController : MonoBehaviour
 {
+    static bool s_GameOverTriggered;
     const int BarTexWidth = 128;
 
     // Fill bar sprite: colored fill with dark border ring baked in.
@@ -59,9 +64,19 @@ public class PetStatsBarsController : MonoBehaviour
     [SerializeField] [Min(0f)] float decayRate = 1f;
 
     [Header("Number-Key Boost")]
-    [Tooltip("When enabled, keys 1-4 add boostAmount to Health, Happiness, Energy, Hunger respectively.")]
+    [Tooltip("When enabled, keys 2-4 add boostAmount to Happiness, Energy, Hunger. Health is derived and not boosted directly.")]
     [SerializeField] bool numberKeyBoostEnabled = true;
     [SerializeField] [Min(0f)] float boostAmount = 10f;
+
+    [Header("Game Over")]
+    [Tooltip("Scene loaded when health reaches 0 (energy + hunger both empty). Matches the pause-menu Quit destination.")]
+    [SerializeField] string closingSceneName = "ClosingScene";
+    [Tooltip("Black-fade duration before loading the closing scene on game over.")]
+    [SerializeField] [Min(0.02f)] float gameOverFadeDuration = 0.85f;
+
+    [Header("Feeling Text")]
+    [Tooltip("TMP text under Pet Statistics / Left Box / Stats / FeelingText. Auto-resolved by name if unset.")]
+    [SerializeField] TMP_Text feelingText;
 
     [Header("Bar animation")]
     [Tooltip("When true, fill width eases toward GlobalData; when false, fills match stats every frame.")]
@@ -85,7 +100,21 @@ public class PetStatsBarsController : MonoBehaviour
     void Awake()
     {
         ResolveBarReferences();
+        ResolveFeelingText();
+        if (GlobalData.PetEnergy > 0.5f || GlobalData.PetHunger > 0.5f)
+            s_GameOverTriggered = false;
+        RecomputeHealth();
         ResetDisplayedStatsToGlobal();
+    }
+
+    void ResolveFeelingText()
+    {
+        if (feelingText != null) return;
+        Transform stats = transform.parent;
+        if (stats == null) return;
+        Transform t = stats.Find("FeelingText");
+        if (t != null)
+            feelingText = t.GetComponent<TMP_Text>();
     }
 
     void ResetDisplayedStatsToGlobal()
@@ -294,7 +323,8 @@ public class PetStatsBarsController : MonoBehaviour
     /// Creates a full-width background track Image as a sibling of <paramref name="fillBar"/>,
     /// positioned to exactly underlay it. A <see cref="LayoutElement"/> with ignoreLayout=true
     /// prevents the VerticalLayoutGroup from giving it its own slot in the stack.
-    /// After layout, the track's anchored position is snapped to match the fill bar so they overlap.
+    /// The track copies the fill bar's <c>localScale</c> so a designer-applied shrink on the fill
+    /// (e.g. <c>localScale = 0.85</c>) still produces a visually-aligned track at 100% fill.
     /// </summary>
     Image CreateTrack(Image fillBar, Color barColor)
     {
@@ -303,10 +333,8 @@ public class PetStatsBarsController : MonoBehaviour
         var trackGO = new GameObject(fillBar.gameObject.name + "_Track", typeof(RectTransform), typeof(LayoutElement), typeof(Image));
         trackGO.transform.SetParent(fillBar.transform.parent, false);
 
-        // Exclude from the VerticalLayoutGroup so it takes no layout slot.
         trackGO.GetComponent<LayoutElement>().ignoreLayout = true;
 
-        // Place directly behind the fill bar in draw order.
         trackGO.transform.SetSiblingIndex(fillBar.transform.GetSiblingIndex());
 
         var img = trackGO.GetComponent<Image>();
@@ -315,13 +343,13 @@ public class PetStatsBarsController : MonoBehaviour
         img.preserveAspect = false;
         img.color  = new Color(barColor.r, barColor.g, barColor.b, trackAlpha);
 
-        // Mirror the fill bar's pivot and position so the track overlaps it exactly at full width.
         RectTransform rt     = trackGO.GetComponent<RectTransform>();
         RectTransform fillRt = fillBar.rectTransform;
         rt.pivot           = fillRt.pivot;
         rt.anchorMin       = fillRt.anchorMin;
         rt.anchorMax       = fillRt.anchorMax;
         rt.anchoredPosition = fillRt.anchoredPosition;
+        rt.localScale       = fillRt.localScale;
         rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _barFullWidth);
         rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,   _barFullHeight);
 
@@ -355,16 +383,24 @@ public class PetStatsBarsController : MonoBehaviour
         if (numberKeyBoostEnabled)
             HandleBoostInput();
 
+        RecomputeHealth();
+        UpdateFeeling();
+        CheckGameOver();
         SyncFills();
     }
 
     void ApplyDecay(float dt)
     {
         float loss = decayRate * dt;
-        GlobalData.PetHealth    = Mathf.Max(0f, GlobalData.PetHealth    - loss);
         GlobalData.PetHappiness = Mathf.Max(0f, GlobalData.PetHappiness - loss);
         GlobalData.PetEnergy    = Mathf.Max(0f, GlobalData.PetEnergy    - loss);
         GlobalData.PetHunger    = Mathf.Max(0f, GlobalData.PetHunger    - loss);
+    }
+
+    /// <summary>Health is the average of energy and hunger; reaching 0 ends the game.</summary>
+    static void RecomputeHealth()
+    {
+        GlobalData.PetHealth = (GlobalData.PetEnergy + GlobalData.PetHunger) * 0.5f;
     }
 
     void HandleBoostInput()
@@ -372,16 +408,63 @@ public class PetStatsBarsController : MonoBehaviour
 #if ENABLE_INPUT_SYSTEM
         var kb = Keyboard.current;
         if (kb == null) return;
-        if (kb[Key.Digit1].wasPressedThisFrame) GlobalData.PetHealth    = Mathf.Min(100f, GlobalData.PetHealth    + boostAmount);
         if (kb[Key.Digit2].wasPressedThisFrame) GlobalData.PetHappiness = Mathf.Min(100f, GlobalData.PetHappiness + boostAmount);
         if (kb[Key.Digit3].wasPressedThisFrame) GlobalData.PetEnergy    = Mathf.Min(100f, GlobalData.PetEnergy    + boostAmount);
         if (kb[Key.Digit4].wasPressedThisFrame) GlobalData.PetHunger    = Mathf.Min(100f, GlobalData.PetHunger    + boostAmount);
 #else
-        if (Input.GetKeyDown(KeyCode.Alpha1)) GlobalData.PetHealth    = Mathf.Min(100f, GlobalData.PetHealth    + boostAmount);
         if (Input.GetKeyDown(KeyCode.Alpha2)) GlobalData.PetHappiness = Mathf.Min(100f, GlobalData.PetHappiness + boostAmount);
         if (Input.GetKeyDown(KeyCode.Alpha3)) GlobalData.PetEnergy    = Mathf.Min(100f, GlobalData.PetEnergy    + boostAmount);
         if (Input.GetKeyDown(KeyCode.Alpha4)) GlobalData.PetHunger    = Mathf.Min(100f, GlobalData.PetHunger    + boostAmount);
 #endif
+    }
+
+    void CheckGameOver()
+    {
+        if (s_GameOverTriggered) return;
+        if (GlobalData.PetHealth > 0.001f) return;
+
+        s_GameOverTriggered = true;
+        Time.timeScale = 1f;
+        GameObject panel = FadeTransitionRunner.CreateFullScreenBlackFadePanel();
+        FadeTransitionRunner.RunFadeThenLoadScene(panel, gameOverFadeDuration, closingSceneName);
+    }
+
+    // ── Feeling word ───────────────────────────────────────────────────────────
+
+    /// <summary>Single ordered list of (label, predicate) pairs evaluated top-down. The first match wins,
+    /// so high-priority states (Dying, Miserable) come first and Content / "Okay" sit at the bottom.</summary>
+    static readonly System.Collections.Generic.List<(string Label, System.Func<float, float, float, float, bool> Predicate)> Feelings = new()
+    {
+        ("Dying x_x",     (he, ha, en, hu) => he <= 5f),
+        ("Miserable T_T", (he, ha, en, hu) => en <= 15f && hu <= 15f),
+        ("Sick @_@",      (he, ha, en, hu) => he <= 25f),
+        ("Famished >.<",  (he, ha, en, hu) => hu <= 20f),
+        ("Exhausted -_-", (he, ha, en, hu) => en <= 20f),
+        ("Sad :(",        (he, ha, en, hu) => ha <= 20f),
+        ("Hungry :P",     (he, ha, en, hu) => hu <= 40f),
+        ("Sleepy zZ",     (he, ha, en, hu) => en <= 40f),
+        ("Gloomy :/",     (he, ha, en, hu) => ha <= 40f),
+        ("Joyful ^_^",    (he, ha, en, hu) => ha >= 80f && en >= 70f),
+        ("Energetic \\o/", (he, ha, en, hu) => en >= 80f && hu >= 70f),
+        ("Happy :)",      (he, ha, en, hu) => ha >= 70f && hu >= 70f),
+        ("Content :>",    (he, ha, en, hu) => he >= 70f && ha >= 60f),
+        ("Okay :|",       (he, ha, en, hu) => true),
+    };
+
+    void UpdateFeeling()
+    {
+        if (feelingText == null) return;
+        string label = ResolveFeeling(GlobalData.PetHealth, GlobalData.PetHappiness, GlobalData.PetEnergy, GlobalData.PetHunger);
+        if (feelingText.text != label)
+            feelingText.text = label;
+    }
+
+    static string ResolveFeeling(float health, float happiness, float energy, float hunger)
+    {
+        foreach (var f in Feelings)
+            if (f.Predicate(health, happiness, energy, hunger))
+                return f.Label;
+        return "Okay :|";
     }
 
     void SyncFills()
