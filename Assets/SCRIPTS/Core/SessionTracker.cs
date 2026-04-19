@@ -37,6 +37,11 @@ public class SessionTracker : MonoBehaviour
     /// <summary>Player horizontal distance (meters) accumulated while the pet is active this session.</summary>
     float _distanceWithPetMeters;
 
+    /// <summary>Public read-only accessor for the in-progress total of meters walked with the pet this session.</summary>
+    public float DistanceWithPetMeters => _distanceWithPetMeters;
+
+    float _lastGameHourForPetOwned = -1f;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void SubscribeCreateOnPetConfirmed()
     {
@@ -122,6 +127,8 @@ public class SessionTracker : MonoBehaviour
         float tod = GlobalData.CurrentTimeOfDay;
         int hour = Mathf.FloorToInt(tod);
 
+        AccumulatePetOwnedGameHours(tod);
+
         if (!_firstHourRecorded)
         {
             _startGameHour = tod;
@@ -136,6 +143,22 @@ public class SessionTracker : MonoBehaviour
             RecordSnapshot(tod);
             _lastRecordedHour = hour;
         }
+    }
+
+    void AccumulatePetOwnedGameHours(float currentGameHour)
+    {
+        if (_lastGameHourForPetOwned < 0f)
+        {
+            _lastGameHourForPetOwned = currentGameHour;
+            return;
+        }
+
+        float diff = currentGameHour - _lastGameHourForPetOwned;
+        if (diff < 0f) diff += 24f; // wrapped past midnight
+        if (diff > 0f && diff < 12f) // ignore impossible jumps
+            BadgeManager.AddPetOwnedGameHours(diff);
+
+        _lastGameHourForPetOwned = currentGameHour;
     }
 
     void RecordSnapshot(float gameHour)
@@ -198,6 +221,10 @@ public class SessionTracker : MonoBehaviour
             float sessionRealSeconds = Time.realtimeSinceStartup - _sessionStartRealTime;
             float totalGameHours = ComputeTotalGameHours();
 
+            var earnedBadges = BadgeManager.Instance != null
+                ? BadgeManager.Instance.EarnedTiers
+                : (System.Collections.Generic.IReadOnlyDictionary<BadgeId, int>)new System.Collections.Generic.Dictionary<BadgeId, int>();
+
             ReportWriter.Generate(
                 playerName: GlobalData.StoredName ?? "Player",
                 petName: GlobalData.PetName ?? "Unknown",
@@ -209,7 +236,8 @@ public class SessionTracker : MonoBehaviour
                 highestMoney: _highestMoney,
                 lowestMoney: _lowestMoney,
                 snapshots: _snapshots,
-                playerChatLog: SessionChatLog.Entries
+                playerChatLog: SessionChatLog.Entries,
+                earnedBadges: earnedBadges
             );
         }
         catch (Exception ex)

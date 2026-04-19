@@ -80,6 +80,7 @@ public class ChatManager : MonoBehaviour
         _history.Add(new ChatMessage { role = "user", content = text });
 
         SessionChatLog.RecordMessage(NpcName, fromPlayer: true, text, GlobalData.CurrentTimeOfDay);
+        BadgeManager.MarkNpcTalkedTo(NpcName);
 
         StartCoroutine(ScrollToBottom());
         OnUserMessageCommitted?.Invoke();

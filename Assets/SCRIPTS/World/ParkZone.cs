@@ -30,6 +30,8 @@ public class ParkZone : MonoBehaviour
     bool _hasEnteredOnce;
     Coroutine _logCoroutine;
 
+    float _lastGameHourForParkTime = -1f;
+
     void Awake()
     {
         // Triggers need a non-static object and a Rigidbody to detect CharacterController.
@@ -50,7 +52,15 @@ public class ParkZone : MonoBehaviour
 
     void Update()
     {
-        if (!_playerInZone || GlobalData.StoredPetSkin <= 0)
+        if (!_playerInZone)
+        {
+            _lastGameHourForParkTime = -1f;
+            return;
+        }
+
+        AccumulateParkGameHours();
+
+        if (GlobalData.StoredPetSkin <= 0)
             return;
 
         float dt = Time.deltaTime;
@@ -58,6 +68,23 @@ public class ParkZone : MonoBehaviour
         GlobalData.PetHappiness = Mathf.Clamp(GlobalData.PetHappiness + happinessChangePerSecond * dt, 0f, 100f);
         GlobalData.PetEnergy    = Mathf.Clamp(GlobalData.PetEnergy    - energyDrainPerSecond     * dt, 0f, 100f);
         GlobalData.PetHunger    = Mathf.Clamp(GlobalData.PetHunger    - hungerDrainPerSecond    * dt, 0f, 100f);
+    }
+
+    void AccumulateParkGameHours()
+    {
+        float current = GlobalData.CurrentTimeOfDay;
+        if (_lastGameHourForParkTime < 0f)
+        {
+            _lastGameHourForParkTime = current;
+            return;
+        }
+
+        float diff = current - _lastGameHourForParkTime;
+        if (diff < 0f) diff += 24f; // wrapped past midnight
+        if (diff > 0f && diff < 12f)
+            BadgeManager.AddParkGameHours(diff);
+
+        _lastGameHourForParkTime = current;
     }
 
     bool IsPlayer(Collider other)
@@ -84,6 +111,7 @@ public class ParkZone : MonoBehaviour
         if (!IsPlayer(other)) return;
 
         _playerInZone = false;
+        _lastGameHourForParkTime = -1f;
 
         if (_logCoroutine != null)
         {

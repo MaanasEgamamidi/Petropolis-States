@@ -27,7 +27,8 @@ public static class ReportWriter
         float highestMoney,
         float lowestMoney,
         List<SessionTracker.MoneySnapshot> snapshots,
-        IReadOnlyList<SessionChatLog.Entry> playerChatLog)
+        IReadOnlyList<SessionChatLog.Entry> playerChatLog,
+        IReadOnlyDictionary<BadgeId, int> earnedBadges = null)
     {
         string reportsDir = Path.Combine(Application.dataPath, "..", "Session Reports");
         Directory.CreateDirectory(reportsDir);
@@ -48,11 +49,12 @@ public static class ReportWriter
         string reportTimestamp = FormatWashingtonLocalTimestamp(DateTime.UtcNow);
         string chatLogHtml = BuildPlayerChatLogHtml(playerChatLog);
         string distanceStr = FormatDistanceMeters(distanceWithPetMeters);
+        string badgesHtml = BuildBadgesHtml(earnedBadges);
         string html = BuildHtml(
             reportTimestamp, playerName, petName, sessionLength, distanceStr,
             startingMoney, endingMoney, netChange, highestMoney, lowestMoney,
             pointsJs, healthJs, happinessJs, energyJs, hungerJs, startHour, totalGameHours,
-            chatLogHtml);
+            chatLogHtml, badgesHtml);
 
         File.WriteAllText(filePath, html, Encoding.UTF8);
         Debug.Log($"[SessionReport] Saved report to {filePath}");
@@ -191,6 +193,74 @@ public static class ReportWriter
         return sb.ToString();
     }
 
+    static string BuildBadgesHtml(IReadOnlyDictionary<BadgeId, int> earnedBadges)
+    {
+        var sb = new StringBuilder();
+        sb.Append("<div class=\"badges-grid\">\n");
+
+        foreach (var kvp in BadgeDefinitions.All)
+        {
+            BadgeDefinition def = kvp.Value;
+            int earnedTier = BadgeTier.None;
+            if (earnedBadges != null && earnedBadges.TryGetValue(def.Id, out int t))
+                earnedTier = t;
+
+            // Pick which image to show: highest earned tier; otherwise the lowest-tier image (tinted dark).
+            int imageIndex;
+            if (def.IsTiered)
+            {
+                imageIndex = earnedTier > 0 ? Mathf.Clamp(earnedTier - 1, 0, def.TierImagePaths.Length - 1) : 0;
+            }
+            else
+            {
+                imageIndex = 0;
+            }
+
+            string imageRel = "../" + def.TierImagePaths[imageIndex].Replace('\\', '/');
+            bool earned = earnedTier > 0 && !def.NotImplemented;
+
+            string statusLabel;
+            if (def.NotImplemented)
+            {
+                statusLabel = "Coming soon";
+            }
+            else if (!earned)
+            {
+                statusLabel = "Not yet earned";
+            }
+            else if (def.IsTiered)
+            {
+                statusLabel = BadgeDefinitions.TierName(earnedTier) + " Tier";
+            }
+            else
+            {
+                statusLabel = "Earned!";
+            }
+
+            var tooltipSb = new StringBuilder();
+            tooltipSb.Append(def.DisplayName).Append(" (").Append(def.Category).Append(")\n");
+            for (int i = 0; i < def.TierCriteria.Length; i++)
+            {
+                if (i > 0) tooltipSb.Append('\n');
+                tooltipSb.Append(def.TierCriteria[i]);
+            }
+            if (def.NotImplemented)
+                tooltipSb.Append("\n(Tracking not implemented yet — always shows as not earned for now.)");
+
+            string tileClass = earned ? "badge-tile earned" : "badge-tile locked";
+            string statusClass = earned ? "badge-status earned" : (def.NotImplemented ? "badge-status soon" : "badge-status locked");
+
+            sb.Append("  <div class=\"").Append(tileClass).Append("\" title=\"").Append(Escape(tooltipSb.ToString())).Append("\">\n");
+            sb.Append("    <img class=\"badge-img\" src=\"").Append(Escape(imageRel)).Append("\" alt=\"").Append(Escape(def.DisplayName)).Append("\" />\n");
+            sb.Append("    <div class=\"badge-name\">").Append(Escape(def.DisplayName)).Append("</div>\n");
+            sb.Append("    <div class=\"").Append(statusClass).Append("\">").Append(Escape(statusLabel)).Append("</div>\n");
+            sb.Append("  </div>\n");
+        }
+
+        sb.Append("</div>");
+        return sb.ToString();
+    }
+
     static string BuildHtml(
         string reportTimestamp,
         string playerName, string petName, string sessionLength,
@@ -200,7 +270,7 @@ public static class ReportWriter
         string pointsJs,
         string healthJs, string happinessJs, string energyJs, string hungerJs,
         float startHour, float totalGameHours,
-        string playerChatLogHtml)
+        string playerChatLogHtml, string badgesHtml)
     {
         string netSign = netChange >= 0 ? "+" : "";
         string netColor = netChange > 0 ? "#2a7d2a" : netChange < 0 ? "#a33" : "#444";
@@ -313,6 +383,61 @@ public static class ReportWriter
     font-size: 0.95em;
     margin: 0;
   }}
+  .badges-grid {{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 18px;
+    margin-top: 10px;
+  }}
+  @media (max-width: 720px) {{
+    .badges-grid {{ grid-template-columns: repeat(2, 1fr); }}
+  }}
+  .badge-tile {{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px 8px 12px;
+    border-radius: 6px;
+    background: #f9f9f9;
+    border: 1px solid #ececec;
+    cursor: help;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }}
+  .badge-tile:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }}
+  .badge-img {{
+    width: 100%;
+    max-width: 140px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    margin-bottom: 8px;
+  }}
+  .badge-tile.locked .badge-img {{
+    filter: brightness(0.35) saturate(0.4);
+    opacity: 0.75;
+  }}
+  .badge-name {{
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+  }}
+  .badge-tile.locked .badge-name {{ color: #888; }}
+  .badge-status {{
+    font-size: 0.82em;
+    font-weight: 500;
+  }}
+  .badge-status.earned {{ color: #2a7d2a; }}
+  .badge-status.locked {{ color: #999; }}
+  .badge-status.soon {{ color: #b88a2a; }}
 </style>
 </head>
 <body>
@@ -346,6 +471,9 @@ public static class ReportWriter
 <div class=""chart-wrap"">
   <canvas id=""chartPetStats""></canvas>
 </div>
+
+<h2>Badges</h2>
+{badgesHtml}
 
 <h2>NPC chat transcript</h2>
 <div class=""chat-section"">
