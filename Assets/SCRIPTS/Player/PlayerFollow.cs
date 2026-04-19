@@ -74,6 +74,10 @@ public class PlayerFollow : MonoBehaviour
     [Tooltip("Planar distance under which idle catch-up stops (meters).")]
     [SerializeField] float catchUpDistance = 2.5f;
 
+    /// <summary>Last frame's player XZ position for <see cref="SessionTracker"/> distance-with-pet.</summary>
+    Vector3 _lastPlayerPlanarForDistance;
+    bool _hasLastPlayerPlanarForDistance;
+
     void Awake()
     {
         _animator = GetComponent<Animator>();
@@ -133,7 +137,13 @@ public class PlayerFollow : MonoBehaviour
             if (followTarget == null) return;
         }
 
-        if (GlobalData.StoredPetSkin <= 0) return;
+        if (GlobalData.StoredPetSkin <= 0)
+        {
+            _hasLastPlayerPlanarForDistance = false;
+            return;
+        }
+
+        RecordDistanceWithPetForSessionReport();
 
         SnapBesidePlayerIfNeeded(force: false);
 
@@ -183,6 +193,20 @@ public class PlayerFollow : MonoBehaviour
                 transform.position = pos;
             }
         }
+    }
+
+    void RecordDistanceWithPetForSessionReport()
+    {
+        Vector3 planarNow = new Vector3(followTarget.position.x, 0f, followTarget.position.z);
+        if (_hasLastPlayerPlanarForDistance)
+        {
+            float delta = Vector3.Distance(planarNow, _lastPlayerPlanarForDistance);
+            if (delta > 0.0001f && delta < 50f)
+                SessionTracker.AddDistanceWithPetMeters(delta);
+        }
+
+        _lastPlayerPlanarForDistance = planarNow;
+        _hasLastPlayerPlanarForDistance = true;
     }
 
     void ResolvePlayer()

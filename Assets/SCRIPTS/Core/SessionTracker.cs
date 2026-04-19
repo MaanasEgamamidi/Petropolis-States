@@ -5,7 +5,8 @@ using UnityEngine;
 /// <summary>
 /// Singleton created when the player confirms a pet (<see cref="GlobalData.OnPetConfirmed"/>).
 /// Records session economy data and writes an HTML report on quit: hourly money and pet-stat snapshots,
-/// money high/low watermarks, and total session length from that point forward.
+/// money high/low watermarks, distance traveled with the pet (player planar movement while pet is active),
+/// and total session length from that point forward.
 /// </summary>
 public class SessionTracker : MonoBehaviour
 {
@@ -32,6 +33,9 @@ public class SessionTracker : MonoBehaviour
     readonly List<MoneySnapshot> _snapshots = new List<MoneySnapshot>();
 
     bool _sessionReportWritten;
+
+    /// <summary>Player horizontal distance (meters) accumulated while the pet is active this session.</summary>
+    float _distanceWithPetMeters;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void SubscribeCreateOnPetConfirmed()
@@ -65,6 +69,16 @@ public class SessionTracker : MonoBehaviour
         Instance.TryWriteSessionReport();
     }
 
+    /// <summary>
+    /// Adds planar travel distance for the session report. Called from <see cref="PlayerFollow"/> while the pet
+    /// is visible; delta should be the player's horizontal movement per frame (meters).
+    /// </summary>
+    public static void AddDistanceWithPetMeters(float planarDeltaMeters)
+    {
+        if (Instance == null || planarDeltaMeters <= 0f) return;
+        Instance._distanceWithPetMeters += planarDeltaMeters;
+    }
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -78,6 +92,7 @@ public class SessionTracker : MonoBehaviour
 
         SessionChatLog.Clear();
         _sessionReportWritten = false;
+        _distanceWithPetMeters = 0f;
 
         _sessionStartRealTime = Time.realtimeSinceStartup;
         _startingMoney = GlobalData.PlayerMoney;
@@ -188,6 +203,7 @@ public class SessionTracker : MonoBehaviour
                 petName: GlobalData.PetName ?? "Unknown",
                 sessionRealSeconds: sessionRealSeconds,
                 totalGameHours: totalGameHours,
+                distanceWithPetMeters: _distanceWithPetMeters,
                 startingMoney: _startingMoney,
                 endingMoney: GlobalData.PlayerMoney,
                 highestMoney: _highestMoney,

@@ -9,7 +9,8 @@ using UnityEngine;
 /// Generates numbered HTML session report files in a <c>Session Reports/</c> folder at the project root.
 /// Uses Chart.js (CDN) with per-segment line coloring: green = gain, red = loss, gray = flat.
 /// X-axis uses cumulative hours with 3-hour aligned ticks and day boundary labels; pet stats share one multi-line chart with a legend.
-/// Includes an NPC chat transcript (<c>You:</c> / <c>NPC:</c> lines) from <see cref="SessionChatLog"/>.
+/// Includes distance traveled with the pet (player planar movement while the pet is active), an NPC chat
+/// transcript (<c>You:</c> / <c>NPC:</c> lines) from <see cref="SessionChatLog"/>.
 /// </summary>
 public static class ReportWriter
 {
@@ -20,6 +21,7 @@ public static class ReportWriter
         string petName,
         float sessionRealSeconds,
         float totalGameHours,
+        float distanceWithPetMeters,
         float startingMoney,
         float endingMoney,
         float highestMoney,
@@ -45,8 +47,9 @@ public static class ReportWriter
 
         string reportTimestamp = FormatWashingtonLocalTimestamp(DateTime.UtcNow);
         string chatLogHtml = BuildPlayerChatLogHtml(playerChatLog);
+        string distanceStr = FormatDistanceMeters(distanceWithPetMeters);
         string html = BuildHtml(
-            reportTimestamp, playerName, petName, sessionLength,
+            reportTimestamp, playerName, petName, sessionLength, distanceStr,
             startingMoney, endingMoney, netChange, highestMoney, lowestMoney,
             pointsJs, healthJs, happinessJs, energyJs, hungerJs, startHour, totalGameHours,
             chatLogHtml);
@@ -93,6 +96,15 @@ public static class ReportWriter
 
         DateTime local = TimeZoneInfo.ConvertTimeFromUtc(utcNow, WashingtonTimeZone());
         return local.ToString("MMMM d, yyyy, h:mm:ss tt", CultureInfo.InvariantCulture);
+    }
+
+    static string FormatDistanceMeters(float meters)
+    {
+        if (float.IsNaN(meters) || float.IsInfinity(meters) || meters < 0f)
+            meters = 0f;
+        if (meters >= 1000f)
+            return $"{meters / 1000f:0.##} km";
+        return $"{meters:0.#} m";
     }
 
     static string FormatSessionLength(float gameHours)
@@ -182,6 +194,7 @@ public static class ReportWriter
     static string BuildHtml(
         string reportTimestamp,
         string playerName, string petName, string sessionLength,
+        string distanceWithPetDisplay,
         float startingMoney, float endingMoney, float netChange,
         float highestMoney, float lowestMoney,
         string pointsJs,
@@ -312,6 +325,7 @@ public static class ReportWriter
   <tr><th>Player Name</th><td>{Escape(playerName)}</td></tr>
   <tr><th>Pet Name</th><td>{Escape(petName)}</td></tr>
   <tr><th>Session Length</th><td>{Escape(sessionLength)}</td></tr>
+  <tr><th>Distance with pet</th><td>{Escape(distanceWithPetDisplay)}</td></tr>
 </table>
 
 <h2>Money Summary</h2>
