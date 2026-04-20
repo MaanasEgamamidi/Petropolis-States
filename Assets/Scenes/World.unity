@@ -3549,7 +3549,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: You just achieved ____ (____ Tier)!
+  m_Text: 
 --- !u!222 &429564997
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7298,16 +7298,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 826848406}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 291a7dfe07cdff64386a94d4348819ed, type: 3}
+  m_Script: {fileID: 11500000, guid: c61b9e4413ce2014fabd270283e37ebd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NotificationController
-  autoTriggerEvent: 2
+  m_EditorClassIdentifier: Assembly-CSharp::BadgeNotificationController
   onScreenY: -80
   offScreenY: 150
   useInitialPositionAsOffScreen: 1
   slideDuration: 0.4
   displayDuration: 3
-  triggerDelay: 1
+  bodyText: {fileID: 0}
+  legacyBodyText: {fileID: 429564996}
+  tieredTemplate: You just achieved {NAME} ({TIER} Tier)!
+  singleTierTemplate: You just achieved {NAME}!
 --- !u!1 &826969286
 GameObject:
   m_ObjectHideFlags: 0

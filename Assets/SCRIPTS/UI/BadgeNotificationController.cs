@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Slide-down notification specialised for badge unlocks. Displays the line
@@ -32,6 +33,9 @@ public class BadgeNotificationController : MonoBehaviour
     [Tooltip("TMP text that renders the full sentence. {NAME} is replaced with the badge name, {TIER} with 'Bronze'/'Silver'/'Gold' (omitted for single-tier badges).")]
     [SerializeField] TMP_Text bodyText;
 
+    [Tooltip("Optional uGUI Text when this notification does not use TextMeshPro.")]
+    [SerializeField] Text legacyBodyText;
+
     [Tooltip("Template used when the badge is tiered. Default: 'You just achieved {NAME} ({TIER} Tier)!'")]
     [SerializeField, TextArea(1, 2)] string tieredTemplate = "You just achieved {NAME} ({TIER} Tier)!";
 
@@ -54,6 +58,8 @@ public class BadgeNotificationController : MonoBehaviour
 
         if (bodyText == null)
             bodyText = GetComponentInChildren<TMP_Text>(true);
+        if (legacyBodyText == null)
+            legacyBodyText = GetComponentInChildren<Text>(true);
     }
 
     /// <summary>
@@ -61,14 +67,15 @@ public class BadgeNotificationController : MonoBehaviour
     /// </summary>
     public void ShowBadge(string badgeName, string tierName)
     {
+        bool hasTier = !string.IsNullOrEmpty(tierName);
+        string tpl = hasTier ? tieredTemplate : singleTierTemplate;
+        string line = tpl
+            .Replace("{NAME}", badgeName ?? string.Empty)
+            .Replace("{TIER}", tierName ?? string.Empty);
         if (bodyText != null)
-        {
-            bool hasTier = !string.IsNullOrEmpty(tierName);
-            string tpl = hasTier ? tieredTemplate : singleTierTemplate;
-            bodyText.text = tpl
-                .Replace("{NAME}", badgeName ?? string.Empty)
-                .Replace("{TIER}", tierName ?? string.Empty);
-        }
+            bodyText.text = line;
+        if (legacyBodyText != null)
+            legacyBodyText.text = line;
 
         if (_activeRoutine != null)
             StopCoroutine(_activeRoutine);
@@ -90,7 +97,7 @@ public class BadgeNotificationController : MonoBehaviour
 
         while (elapsed < slideDuration)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / slideDuration));
             SetAnchoredY(Mathf.Lerp(startY, targetY, t));
             yield return null;
