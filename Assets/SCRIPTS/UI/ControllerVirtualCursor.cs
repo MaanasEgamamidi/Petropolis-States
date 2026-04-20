@@ -284,11 +284,29 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
             pad = GameplayInput.GetUsableGamepad();
         }
 
-        bool use = pad != null && sceneWantsCursor;
-        if (_cursorImage != null)
-            _cursorImage.enabled = use;
+        // Keyboard/mouse: hardware cursor may stay hidden in fullscreen / after FPS lock; mirror the mouse with
+        // the same sprite used for gamepad so pause menus always show a pointer.
+        bool mousePauseOverlay = WorldPauseController.IsPaused && sceneWantsCursor && pad == null &&
+                                 Mouse.current != null;
+        bool useGamepad = pad != null && sceneWantsCursor;
+        bool showGraphic = useGamepad || mousePauseOverlay;
 
-        if (!use)
+        if (_cursorImage != null)
+            _cursorImage.enabled = showGraphic;
+
+        if (mousePauseOverlay)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = false;
+            _screenPosition = Mouse.current.position.ReadValue();
+            _screenPosition.x = Mathf.Clamp(_screenPosition.x, 0f, Screen.width - 1f);
+            _screenPosition.y = Mathf.Clamp(_screenPosition.y, 0f, Screen.height - 1f);
+            ApplyCursorTransform();
+            UpdateHoverSprite();
+            return;
+        }
+
+        if (!useGamepad)
         {
             _lastHoveredForSprite = null;
             return;
