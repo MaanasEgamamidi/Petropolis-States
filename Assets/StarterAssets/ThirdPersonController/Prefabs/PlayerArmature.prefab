@@ -1168,7 +1168,7 @@ MonoBehaviour:
   look: {x: 0, y: 0}
   jump: 0
   sprint: 0
-  analogMovement: 0
+  analogMovement: 1
   cursorLocked: 1
   cursorInputForLook: 1
 --- !u!114 &4416926081852918493

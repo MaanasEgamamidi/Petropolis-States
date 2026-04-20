@@ -1,10 +1,13 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
 /// Controls the Back/Next buttons in PetChoose scene to cycle through dog materials (Dog_01–Dog_06).
 /// Confirm saves the choice to GlobalData and fades to World scene.
+/// Gamepad: LB / RB = previous / next pet; D-pad / stick moves focus; A submits the focused button.
 /// </summary>
 public class PetChooseController : MonoBehaviour
 {
@@ -83,7 +86,73 @@ public class PetChooseController : MonoBehaviour
     {
         ApplyMaterial(_currentIndex);
         RefreshConfirmInteractable();
+        SetupControllerNavigation();
+        StartCoroutine(SelectInitialSelectableNextFrame());
     }
+
+    void SetupControllerNavigation()
+    {
+        if (backButton == null || nextButton == null || confirmButton == null)
+            return;
+
+        TMP_InputField nameField = petNameInputField;
+        Selectable nameSelectable = nameField;
+
+        NavExplicit(backButton, left: null, right: nextButton, up: null,
+            down: nameSelectable != null ? nameSelectable : confirmButton);
+        NavExplicit(nextButton, left: backButton, right: null, up: null,
+            down: nameSelectable != null ? nameSelectable : confirmButton);
+
+        if (nameField != null)
+        {
+            NavExplicit(nameField, left: null, right: null, up: nextButton, down: confirmButton);
+            NavExplicit(confirmButton, left: null, right: null, up: nameField, down: null);
+        }
+        else
+        {
+            NavExplicit(confirmButton, left: null, right: null, up: nextButton, down: null);
+        }
+    }
+
+    static void NavExplicit(Selectable s, Selectable left, Selectable right, Selectable up, Selectable down)
+    {
+        if (s == null)
+            return;
+        var n = s.navigation;
+        n.mode = Navigation.Mode.Explicit;
+        n.wrapAround = false;
+        n.selectOnLeft = left;
+        n.selectOnRight = right;
+        n.selectOnUp = up;
+        n.selectOnDown = down;
+        s.navigation = n;
+    }
+
+    IEnumerator SelectInitialSelectableNextFrame()
+    {
+        yield return null;
+        if (nextButton == null || EventSystem.current == null)
+            yield break;
+        EventSystem.current.firstSelectedGameObject = nextButton.gameObject;
+        EventSystem.current.SetSelectedGameObject(nextButton.gameObject);
+    }
+
+#if ENABLE_INPUT_SYSTEM
+    void Update()
+    {
+        if (petNameInputField != null && petNameInputField.isFocused)
+            return;
+
+        var pad = GameplayInput.GetUsableGamepad();
+        if (pad == null)
+            return;
+
+        if (pad.leftShoulder.wasPressedThisFrame)
+            OnBackClicked();
+        if (pad.rightShoulder.wasPressedThisFrame)
+            OnNextClicked();
+    }
+#endif
 
     void OnPetNameFieldChanged(string _) => RefreshConfirmInteractable();
 

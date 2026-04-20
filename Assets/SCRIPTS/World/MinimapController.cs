@@ -32,7 +32,7 @@ public class MinimapController : MonoBehaviour
             return;
 
 #if ENABLE_INPUT_SYSTEM
-        if (Keyboard.current != null && Keyboard.current[Key.M].wasPressedThisFrame)
+        if (GameplayInput.MinimapTogglePressedThisFrame())
 #elif ENABLE_LEGACY_INPUT_MANAGER
         if (Input.GetKeyDown(KeyCode.M))
 #else

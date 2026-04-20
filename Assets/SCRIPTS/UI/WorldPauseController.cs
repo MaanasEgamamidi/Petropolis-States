@@ -11,7 +11,7 @@ using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
-/// World: Escape toggles pause — HUD fades out, then pause menu fades in. Same for resume.
+/// World: Escape or right bumper (RB) toggles pause; View/Back (selectButton) also opens the gameplay-settings pause menu.
 /// Settings controls on the pause prefab are bound via <see cref="PauseMenuSettingsHelper"/>.
 /// </summary>
 [DefaultExecutionOrder(-50)]
@@ -184,7 +184,15 @@ public class WorldPauseController : MonoBehaviour
         if (_busy || pauseMenuRoot == null)
             return;
 
-        if (!EscapePressedThisFrame())
+#if ENABLE_INPUT_SYSTEM
+        if (_paused && GameplayInput.GamepadCancelPressedThisFrame() && !IsTypingInUiInput())
+        {
+            StartCoroutine(ClosePauseRoutine());
+            return;
+        }
+#endif
+
+        if (!PauseMenuTogglePressedThisFrame())
             return;
 
         if (IsTypingInUiInput())
@@ -196,13 +204,12 @@ public class WorldPauseController : MonoBehaviour
             StartCoroutine(OpenPauseRoutine());
     }
 
-    static bool EscapePressedThisFrame()
+    static bool PauseMenuTogglePressedThisFrame()
     {
 #if ENABLE_INPUT_SYSTEM
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            return true;
-#endif
-#if ENABLE_LEGACY_INPUT_MANAGER
+        return GameplayInput.PausePressedThisFrame()
+               || GameplayInput.GameplaySettingsMenuPressedThisFrame();
+#elif ENABLE_LEGACY_INPUT_MANAGER
         return Input.GetKeyDown(KeyCode.Escape);
 #else
         return false;
@@ -219,6 +226,32 @@ public class WorldPauseController : MonoBehaviour
     }
 
     static bool IsTypingInUiInput() => IsFocusedOnTextInput();
+
+    void FocusFirstPauseMenuSelectable()
+    {
+        if (pauseMenuRoot == null || EventSystem.current == null)
+            return;
+
+        foreach (var btn in pauseMenuRoot.GetComponentsInChildren<Button>(true))
+        {
+            if (btn == null || !btn.isActiveAndEnabled)
+                continue;
+            string n = btn.gameObject.name;
+            if (n == "BackToGame" || n == "BackToMenu")
+            {
+                EventSystem.current.firstSelectedGameObject = btn.gameObject;
+                EventSystem.current.SetSelectedGameObject(btn.gameObject);
+                return;
+            }
+        }
+
+        var fallback = pauseMenuRoot.GetComponentInChildren<Button>(true);
+        if (fallback != null)
+        {
+            EventSystem.current.firstSelectedGameObject = fallback.gameObject;
+            EventSystem.current.SetSelectedGameObject(fallback.gameObject);
+        }
+    }
 
     IEnumerator OpenPauseRoutine()
     {
@@ -257,6 +290,7 @@ public class WorldPauseController : MonoBehaviour
         _pauseGroup.blocksRaycasts = true;
         _paused = true;
         _busy = false;
+        FocusFirstPauseMenuSelectable();
     }
 
     IEnumerator ClosePauseRoutine()
@@ -279,6 +313,8 @@ public class WorldPauseController : MonoBehaviour
         Time.timeScale = 1f;
         _paused = false;
         IsPaused = false;
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
         RestoreGameCursorAfterMenu();
 
         yield return FadeCanvasGroups(_hudGroups, 0f, 1f, hudFadeInDuration);

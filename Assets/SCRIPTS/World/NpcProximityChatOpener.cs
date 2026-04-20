@@ -135,6 +135,8 @@ public class NpcProximityChatOpener : MonoBehaviour
 #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null && Keyboard.current.cKey.wasPressedThisFrame)
             return true;
+        if (Gamepad.current != null && Gamepad.current.buttonNorth.wasPressedThisFrame)
+            return true;
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
         return Input.GetKeyDown(KeyCode.C);

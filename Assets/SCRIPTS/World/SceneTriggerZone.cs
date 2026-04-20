@@ -102,7 +102,9 @@ public class SceneTriggerZone : MonoBehaviour
             return;
 
 #if ENABLE_INPUT_SYSTEM
-        if (Keyboard.current == null || !Keyboard.current[interactKey].wasPressedThisFrame)
+        bool keyboardInteract = Keyboard.current != null && Keyboard.current[interactKey].wasPressedThisFrame;
+        bool gamepadInteract = Gamepad.current != null && Gamepad.current.buttonWest.wasPressedThisFrame;
+        if (!keyboardInteract && !gamepadInteract)
 #else
         if (!Input.GetKeyDown(interactKey))
 #endif

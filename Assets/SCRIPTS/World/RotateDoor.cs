@@ -74,7 +74,8 @@ public class RotateDoor : MonoBehaviour
         if (dist > interactDistance) return;
 
 #if ENABLE_INPUT_SYSTEM
-        bool interactPressed = Keyboard.current != null && Keyboard.current[Key.E].wasPressedThisFrame;
+        bool interactPressed = (Keyboard.current != null && Keyboard.current[Key.E].wasPressedThisFrame)
+                               || (Gamepad.current != null && Gamepad.current.buttonWest.wasPressedThisFrame);
 #else
         bool interactPressed = Input.GetKeyDown(KeyCode.E);
 #endif

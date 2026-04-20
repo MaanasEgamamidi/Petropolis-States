@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Drives the Pet Statistics screen-space canvas: keep <see cref="petStatisticsRoot"/> active in the scene for
 /// editing; on play, Awake hides it briefly before <see cref="Update"/> applies pet-confirmed visibility and slides
-/// <see cref="leftBox"/> via <see cref="PetInfoSettings"/> and Q (hold / toggle / always open).
+/// <see cref="leftBox"/> via <see cref="PetInfoSettings"/> and Q or gamepad D-pad Right (hold / toggle / always open).
 /// </summary>
 public class PetStatisticsPanelController : MonoBehaviour
 {
@@ -143,15 +143,22 @@ public class PetStatisticsPanelController : MonoBehaviour
 #if ENABLE_INPUT_SYSTEM
         bool qPressed = Keyboard.current != null && Keyboard.current[Key.Q].wasPressedThisFrame;
         bool qHeld = Keyboard.current != null && Keyboard.current[Key.Q].isPressed;
+        bool dpadRightPressed = Gamepad.current != null && Gamepad.current.dpad.right.wasPressedThisFrame;
+        bool dpadRightHeld = Gamepad.current != null && Gamepad.current.dpad.right.isPressed;
 #else
         bool qPressed = Input.GetKeyDown(KeyCode.Q);
         bool qHeld = Input.GetKey(KeyCode.Q);
+        bool dpadRightPressed = false;
+        bool dpadRightHeld = false;
 #endif
 
-        if (mode == PetInfoDisplayMode.Toggle && qPressed)
+        bool statsTogglePress = qPressed || dpadRightPressed;
+        bool statsHeld = qHeld || dpadRightHeld;
+
+        if (mode == PetInfoDisplayMode.Toggle && statsTogglePress)
             _toggleExpanded = !_toggleExpanded;
 
-        bool wantOpen = _holdIntroPeekRemaining > 0f || ComputeOpenForMode(mode, qHeld);
+        bool wantOpen = _holdIntroPeekRemaining > 0f || ComputeOpenForMode(mode, statsHeld);
         if (NpcProximityChatOpener.IsWorldNpcChatOpen)
             wantOpen = false;
         float targetX = wantOpen ? openAnchoredX : closedAnchoredX;
@@ -185,7 +192,7 @@ public class PetStatisticsPanelController : MonoBehaviour
         }
     }
 
-    bool ComputeOpenForMode(PetInfoDisplayMode mode, bool qHeld)
+    bool ComputeOpenForMode(PetInfoDisplayMode mode, bool showInputHeld)
     {
         switch (mode)
         {
@@ -194,7 +201,7 @@ public class PetStatisticsPanelController : MonoBehaviour
             case PetInfoDisplayMode.Toggle:
                 return _toggleExpanded;
             case PetInfoDisplayMode.HoldToShow:
-                return qHeld;
+                return showInputHeld;
             default:
                 return true;
         }

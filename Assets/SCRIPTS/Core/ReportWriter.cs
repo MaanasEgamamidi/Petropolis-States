@@ -219,41 +219,39 @@ public static class ReportWriter
             string imageRel = "../" + def.TierImagePaths[imageIndex].Replace('\\', '/');
             bool earned = earnedTier > 0 && !def.NotImplemented;
 
-            string statusLabel;
-            if (def.NotImplemented)
+            string statusLabel = def.IsTiered
+                ? BadgeDefinitions.TierName(earnedTier) + " Tier"
+                : "Earned!";
+
+            string tileClass = earned ? "badge-tile earned" : (def.NotImplemented ? "badge-tile locked soon" : "badge-tile locked");
+
+            sb.Append("  <div class=\"").Append(tileClass).Append("\">\n");
+
+            if (earned)
             {
-                statusLabel = "Coming soon";
-            }
-            else if (!earned)
-            {
-                statusLabel = "Not yet earned";
-            }
-            else if (def.IsTiered)
-            {
-                statusLabel = BadgeDefinitions.TierName(earnedTier) + " Tier";
+                sb.Append("    <img class=\"badge-img\" src=\"").Append(Escape(imageRel)).Append("\" alt=\"").Append(Escape(def.DisplayName)).Append("\" />\n");
             }
             else
             {
-                statusLabel = "Earned!";
+                string placeholderText = def.NotImplemented ? "Coming soon" : "Not earned yet";
+                sb.Append("    <div class=\"badge-placeholder\"><span>").Append(Escape(placeholderText)).Append("</span></div>\n");
             }
 
-            var tooltipSb = new StringBuilder();
-            tooltipSb.Append(def.DisplayName).Append(" (").Append(def.Category).Append(")\n");
-            for (int i = 0; i < def.TierCriteria.Length; i++)
-            {
-                if (i > 0) tooltipSb.Append('\n');
-                tooltipSb.Append(def.TierCriteria[i]);
-            }
-            if (def.NotImplemented)
-                tooltipSb.Append("\n(Tracking not implemented yet — always shows as not earned for now.)");
-
-            string tileClass = earned ? "badge-tile earned" : "badge-tile locked";
-            string statusClass = earned ? "badge-status earned" : (def.NotImplemented ? "badge-status soon" : "badge-status locked");
-
-            sb.Append("  <div class=\"").Append(tileClass).Append("\" title=\"").Append(Escape(tooltipSb.ToString())).Append("\">\n");
-            sb.Append("    <img class=\"badge-img\" src=\"").Append(Escape(imageRel)).Append("\" alt=\"").Append(Escape(def.DisplayName)).Append("\" />\n");
             sb.Append("    <div class=\"badge-name\">").Append(Escape(def.DisplayName)).Append("</div>\n");
-            sb.Append("    <div class=\"").Append(statusClass).Append("\">").Append(Escape(statusLabel)).Append("</div>\n");
+            if (earned)
+                sb.Append("    <div class=\"badge-status earned\">").Append(Escape(statusLabel)).Append("</div>\n");
+
+            sb.Append("    <div class=\"badge-tooltip\">\n");
+            sb.Append("      <div class=\"tt-title\">").Append(Escape(def.DisplayName)).Append("</div>\n");
+            sb.Append("      <div class=\"tt-sub\">").Append(Escape(def.Category)).Append("</div>\n");
+            sb.Append("      <ul class=\"tt-list\">\n");
+            for (int i = 0; i < def.TierCriteria.Length; i++)
+                sb.Append("        <li>").Append(Escape(def.TierCriteria[i])).Append("</li>\n");
+            sb.Append("      </ul>\n");
+            if (def.NotImplemented)
+                sb.Append("      <div class=\"tt-note\">Tracking not implemented yet — always shown as not earned.</div>\n");
+            sb.Append("    </div>\n");
+
             sb.Append("  </div>\n");
         }
 
@@ -392,18 +390,20 @@ public static class ReportWriter
     border-radius: 4px;
     padding: 18px;
     margin-top: 10px;
+    overflow: visible;
   }}
   @media (max-width: 720px) {{
     .badges-grid {{ grid-template-columns: repeat(2, 1fr); }}
   }}
   .badge-tile {{
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     padding: 10px 8px 12px;
     border-radius: 6px;
-    background: #f9f9f9;
+    background: #fff;
     border: 1px solid #ececec;
     cursor: help;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -420,9 +420,30 @@ public static class ReportWriter
     object-fit: contain;
     margin-bottom: 8px;
   }}
-  .badge-tile.locked .badge-img {{
-    filter: brightness(0.35) saturate(0.4);
-    opacity: 0.75;
+  .badge-placeholder {{
+    width: 100%;
+    max-width: 140px;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef0f2;
+    border: 1px dashed #c9ced3;
+    border-radius: 8px;
+    color: #7a828b;
+    font-size: 1.05em;
+    font-weight: 600;
+    padding: 8px;
+  }}
+  .badge-placeholder span {{
+    display: block;
+    line-height: 1.25;
+  }}
+  .badge-tile.soon .badge-placeholder {{
+    background: #fdf4e3;
+    border-color: #e7d2a3;
+    color: #b88a2a;
   }}
   .badge-name {{
     font-size: 0.95em;
@@ -430,7 +451,7 @@ public static class ReportWriter
     color: #333;
     margin-bottom: 2px;
   }}
-  .badge-tile.locked .badge-name {{ color: #888; }}
+  .badge-tile.locked .badge-name {{ color: #555; }}
   .badge-status {{
     font-size: 0.82em;
     font-weight: 500;
@@ -438,6 +459,71 @@ public static class ReportWriter
   .badge-status.earned {{ color: #2a7d2a; }}
   .badge-status.locked {{ color: #999; }}
   .badge-status.soon {{ color: #b88a2a; }}
+
+  .badge-tooltip {{
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    min-width: 220px;
+    max-width: 280px;
+    background: #333;
+    color: #fff;
+    padding: 10px 14px 12px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    font-size: 0.9em;
+    line-height: 1.45;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    z-index: 10;
+  }}
+  .badge-tooltip::after {{
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+  }}
+  .badge-tile:hover .badge-tooltip {{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }}
+  .badge-tooltip .tt-title {{
+    font-weight: 700;
+    font-size: 1em;
+    margin-bottom: 1px;
+  }}
+  .badge-tooltip .tt-sub {{
+    color: #bbb;
+    font-size: 0.82em;
+    margin-bottom: 7px;
+  }}
+  .badge-tooltip .tt-list {{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }}
+  .badge-tooltip .tt-list li {{
+    padding: 2px 0;
+  }}
+  .badge-tooltip .tt-list li + li {{
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-top: 3px;
+    padding-top: 5px;
+  }}
+  .badge-tooltip .tt-note {{
+    margin-top: 8px;
+    padding-top: 7px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    color: #d0b98a;
+    font-size: 0.82em;
+    font-style: italic;
+  }}
 </style>
 </head>
 <body>
