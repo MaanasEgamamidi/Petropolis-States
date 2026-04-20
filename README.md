@@ -18,7 +18,7 @@
 - Selections persist across scenes via ScriptableObject or PlayerPrefs
 
 ### 🐕 Pet System
-- Adopt a dog from the in-game pet shop with 5 selectable material skins
+- Adopt a dog from the in-game pet shop with 6 selectable material skins
 - Dog follows the player and reacts to care and neglect
 - **Primary stats:** Hunger, Health, Happiness, Energy
 - **Secondary stats:** Cleanliness, Attachment
