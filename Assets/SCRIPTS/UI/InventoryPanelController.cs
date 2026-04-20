@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using StarterAssets;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -27,9 +28,6 @@ public class InventoryPanelController : MonoBehaviour
     [Tooltip("Prefab used for each inventory row; will be instantiated once per item in GlobalData.Inventory.")]
     [SerializeField] InventoryRowView rowPrefab;
 
-    [Tooltip("Optional 'Your inventory is empty.' label; shown only when every item quantity is 0.")]
-    [SerializeField] TMP_Text emptyStateLabel;
-
     [Tooltip("HUD widgets to hide while the inventory is open (Minimap, Money counter, DayNight clock, Pet Statistics). Their previous active state is restored on close.")]
     [SerializeField] GameObject[] uiToHideWhileOpen;
 
@@ -56,6 +54,11 @@ public class InventoryPanelController : MonoBehaviour
     void OnDisable()
     {
         GlobalData.OnInventoryChanged -= HandleInventoryChanged;
+        if (IsOpen)
+        {
+            RestoreCursorAfterMenu();
+            IsOpen = false;
+        }
     }
 
     void SpawnRows()
@@ -78,16 +81,8 @@ public class InventoryPanelController : MonoBehaviour
 
     void RefreshAll()
     {
-        bool anyOwned = false;
         for (int i = 0; i < _rows.Count; i++)
-        {
             _rows[i].Refresh();
-            if (GlobalData.GetItemQuantity(_rows[i].ItemName) > 0)
-                anyOwned = true;
-        }
-
-        if (emptyStateLabel != null)
-            emptyStateLabel.gameObject.SetActive(!anyOwned);
     }
 
     void Update()
@@ -108,12 +103,22 @@ public class InventoryPanelController : MonoBehaviour
         else Open();
     }
 
+    void LateUpdate()
+    {
+        // Continuously re-assert the UI-menu cursor state every frame while open so other systems
+        // (focus changes, OnApplicationFocus, ControllerVirtualCursor, etc.) cannot flip the cursor
+        // back to hidden / spinning. Mirrors NpcProximityChatOpener.LateUpdate.
+        if (IsOpen)
+            UnlockCursorForMenu();
+    }
+
     void Open()
     {
         HideHudWidgets();
         if (panelRoot != null)
             panelRoot.SetActive(true);
         IsOpen = true;
+        UnlockCursorForMenu();
         RefreshAll();
     }
 
@@ -122,7 +127,28 @@ public class InventoryPanelController : MonoBehaviour
         if (panelRoot != null)
             panelRoot.SetActive(false);
         RestoreHudWidgets();
+        RestoreCursorAfterMenu();
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
         IsOpen = false;
+    }
+
+    static void UnlockCursorForMenu()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+#if ENABLE_INPUT_SYSTEM
+        foreach (var sai in Object.FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            sai.SetUiMenuOpen(true);
+#endif
+    }
+
+    static void RestoreCursorAfterMenu()
+    {
+#if ENABLE_INPUT_SYSTEM
+        foreach (var sai in Object.FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            sai.SetUiMenuOpen(false);
+#endif
     }
 
     void HideHudWidgets()

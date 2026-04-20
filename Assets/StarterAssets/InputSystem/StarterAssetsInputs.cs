@@ -96,6 +96,15 @@ namespace StarterAssets
 				move = Vector2.zero;
 				jump = false;
 				sprint = false;
+				return;
+			}
+
+			if (InventoryPanelController.IsOpen)
+			{
+				look = Vector2.zero;
+				move = Vector2.zero;
+				jump = false;
+				sprint = false;
 			}
 		}
 

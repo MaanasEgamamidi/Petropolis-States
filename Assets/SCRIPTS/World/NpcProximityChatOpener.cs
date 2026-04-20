@@ -9,13 +9,17 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// World scene: while inside an <see cref="NpcChatZone"/> that has a chat panel, press <b>C</b> to open it under Chats.
-/// Press C again to close. (Pet shop also uses <b>E</b> on <see cref="SceneTriggerZone"/> for PetChoose.)
+/// Press <b>Escape</b> (or gamepad B / Back) to close — typing letters like "c" inside the chat input no longer closes it.
+/// (Pet shop also uses <b>E</b> on <see cref="SceneTriggerZone"/> for PetChoose.)
 /// Optional <see cref="interactHintText"/> shows <see cref="NpcChatZone.CurrentInteractHint"/>.
 /// </summary>
 public class NpcProximityChatOpener : MonoBehaviour
 {
     /// <summary>True while a World NPC chat panel is open — used to freeze look/move like pause.</summary>
     public static bool IsWorldNpcChatOpen { get; private set; }
+
+    /// <summary>Frame index on which the chat was last closed via Escape, so pause doesn't open the same frame.</summary>
+    public static int LastCloseFrame { get; private set; } = -1;
 
     const string WorldSceneName = "World";
 
@@ -63,14 +67,18 @@ public class NpcProximityChatOpener : MonoBehaviour
             return;
         if (WorldPauseController.IsPaused)
             return;
-        if (!ChatKeyPressedThisFrame())
-            return;
 
-        if (_openChatRoot != null && _openChatRoot.activeSelf)
+        bool chatOpen = _openChatRoot != null && _openChatRoot.activeSelf;
+
+        if (chatOpen)
         {
-            CloseChat();
+            if (CloseKeyPressedThisFrame())
+                CloseChat();
             return;
         }
+
+        if (!OpenKeyPressedThisFrame())
+            return;
 
         string panelName = NpcChatZone.GetActiveChatWindowName();
         if (string.IsNullOrEmpty(panelName))
@@ -113,6 +121,7 @@ public class NpcProximityChatOpener : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(null);
 
         IsWorldNpcChatOpen = false;
+        LastCloseFrame = Time.frameCount;
         SetGameUiCursorForChat(false);
     }
 
@@ -130,7 +139,7 @@ public class NpcProximityChatOpener : MonoBehaviour
 #endif
     }
 
-    static bool ChatKeyPressedThisFrame()
+    static bool OpenKeyPressedThisFrame()
     {
 #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null && Keyboard.current.cKey.wasPressedThisFrame)
@@ -140,6 +149,21 @@ public class NpcProximityChatOpener : MonoBehaviour
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
         return Input.GetKeyDown(KeyCode.C);
+#else
+        return false;
+#endif
+    }
+
+    static bool CloseKeyPressedThisFrame()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            return true;
+        if (Gamepad.current != null && (Gamepad.current.buttonEast.wasPressedThisFrame || Gamepad.current.selectButton.wasPressedThisFrame))
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        return Input.GetKeyDown(KeyCode.Escape);
 #else
         return false;
 #endif

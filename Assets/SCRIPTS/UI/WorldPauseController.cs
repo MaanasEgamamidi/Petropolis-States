@@ -198,6 +198,10 @@ public class WorldPauseController : MonoBehaviour
         if (IsTypingInUiInput())
             return;
 
+        // Don't open pause when Escape just closed (or is about to close) an NPC chat window.
+        if (!_paused && (NpcProximityChatOpener.IsWorldNpcChatOpen || NpcProximityChatOpener.LastCloseFrame == Time.frameCount))
+            return;
+
         if (_paused)
             StartCoroutine(ClosePauseRoutine());
         else
