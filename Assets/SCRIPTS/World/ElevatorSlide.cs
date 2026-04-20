@@ -121,7 +121,7 @@ public class ElevatorSlide : MonoBehaviour
     {
         if (_collider == null)
             return Vector3.Distance(transform.position, _player.position);
-        return Vector3.Distance(_collider.ClosestPoint(_player.position), _player.position);
+        return ColliderInteractionDistance.DistanceToPoint(_collider, _player.position);
     }
 
     void OnDrawGizmosSelected()
