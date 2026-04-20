@@ -7,5 +7,6 @@
   <Project Path="CW.Common.csproj" />
   <Project Path="LeanGUI.csproj" />
   <Project Path="MCPForUnity.Runtime.csproj" />
+  <Project Path="Bezi.Editor.csproj" />
   <Project Path="LeanTransition.Editor.csproj" />
 </Solution>
