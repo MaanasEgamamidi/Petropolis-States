@@ -27,6 +27,9 @@ public class ChatManager : MonoBehaviour
     /// <summary>Raised after a user message is appended to History.</summary>
     public event Action OnUserMessageCommitted;
 
+    /// <summary>Raised after an NPC reply is appended to History. Arg is the reply text.</summary>
+    public event Action<string> OnNpcReplyReceived;
+
     public struct ChatMessage
     {
         public string role;
@@ -102,6 +105,7 @@ public class ChatManager : MonoBehaviour
         SpawnNpcBubble(text);
         _history.Add(new ChatMessage { role = "assistant", content = text });
         SessionChatLog.RecordMessage(NpcName, fromPlayer: false, text, GlobalData.CurrentTimeOfDay);
+        OnNpcReplyReceived?.Invoke(text);
     }
 
     // ── Bubble Spawning ─────────────────────────────────────────────

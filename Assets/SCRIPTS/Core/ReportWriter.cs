@@ -28,7 +28,9 @@ public static class ReportWriter
         float lowestMoney,
         List<SessionTracker.MoneySnapshot> snapshots,
         IReadOnlyList<SessionChatLog.Entry> playerChatLog,
-        IReadOnlyDictionary<BadgeId, int> earnedBadges = null)
+        IReadOnlyDictionary<BadgeId, int> earnedBadges = null,
+        IReadOnlyList<SessionTracker.PurchaseEntry> purchases = null,
+        IReadOnlyList<SessionTracker.FeedEntry> feedings = null)
     {
         string reportsDir = Path.Combine(Application.dataPath, "..", "Session Reports");
         Directory.CreateDirectory(reportsDir);
@@ -50,11 +52,13 @@ public static class ReportWriter
         string chatLogHtml = BuildPlayerChatLogHtml(playerChatLog);
         string distanceStr = FormatDistanceMeters(distanceWithPetMeters);
         string badgesHtml = BuildBadgesHtml(earnedBadges);
+        string purchasesHtml = BuildPurchasesHtml(purchases, startHour);
+        string feedingsHtml = BuildFeedingsHtml(feedings, startHour);
         string html = BuildHtml(
             reportTimestamp, playerName, petName, sessionLength, distanceStr,
             startingMoney, endingMoney, netChange, highestMoney, lowestMoney,
             pointsJs, healthJs, happinessJs, energyJs, hungerJs, startHour, totalGameHours,
-            chatLogHtml, badgesHtml);
+            chatLogHtml, badgesHtml, purchasesHtml, feedingsHtml);
 
         File.WriteAllText(filePath, html, Encoding.UTF8);
         Debug.Log($"[SessionReport] Saved report to {filePath}");
@@ -193,6 +197,97 @@ public static class ReportWriter
         return sb.ToString();
     }
 
+    /// <summary>Same clock math as the chart's JS <c>fmtHour</c> / <c>dayNum</c>. Produces e.g. <c>Day 1, 7:32 AM</c>.</summary>
+    static string FormatInGameClock(float gameHour, float startHour)
+    {
+        float cumHours = gameHour - startHour;
+        if (cumHours < 0f) cumHours += 24f;
+
+        float hod = (startHour + cumHours) % 24f;
+        if (hod < 0f) hod += 24f;
+
+        int dayNum = (int)Math.Floor((startHour + cumHours) / 24f) + 1;
+
+        int wholeHour = (int)Math.Floor(hod);
+        int minutes = (int)Math.Round((hod - wholeHour) * 60f);
+        if (minutes >= 60) { minutes = 0; wholeHour = (wholeHour + 1) % 24; }
+
+        int h12 = wholeHour % 12;
+        if (h12 == 0) h12 = 12;
+        string suffix = wholeHour < 12 ? "AM" : "PM";
+        return $"Day {dayNum}, {h12}:{minutes:00} {suffix}";
+    }
+
+    static string FormatElapsedSeconds(float seconds)
+    {
+        if (float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds < 0f) seconds = 0f;
+        TimeSpan t = TimeSpan.FromSeconds(seconds);
+        if (t.TotalHours >= 1d)
+            return $"{(int)t.TotalHours}:{t.Minutes:00}:{t.Seconds:00}";
+        return $"{t.Minutes:00}:{t.Seconds:00}";
+    }
+
+    static string BuildPurchasesHtml(IReadOnlyList<SessionTracker.PurchaseEntry> purchases, float startHour)
+    {
+        if (purchases == null || purchases.Count == 0)
+            return "<p class=\"report-empty\">No purchases this session.</p>";
+
+        var sb = new StringBuilder();
+        sb.Append("<table class=\"report-table\">\n");
+        sb.Append("  <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>When (in-game)</th><th>Elapsed (real)</th></tr>\n");
+
+        int totalQty = 0;
+        float totalSpent = 0f;
+        for (int i = 0; i < purchases.Count; i++)
+        {
+            SessionTracker.PurchaseEntry p = purchases[i];
+            float lineTotal = p.PricePerUnit * p.Quantity;
+            totalQty += p.Quantity;
+            totalSpent += lineTotal;
+
+            sb.Append("  <tr>");
+            sb.Append("<td>").Append(Escape(p.ItemName)).Append("</td>");
+            sb.Append("<td>").Append(p.Quantity.ToString(CultureInfo.InvariantCulture)).Append("</td>");
+            sb.Append("<td>$").Append(p.PricePerUnit.ToString("0.00", CultureInfo.InvariantCulture)).Append("</td>");
+            sb.Append("<td>$").Append(lineTotal.ToString("0.00", CultureInfo.InvariantCulture)).Append("</td>");
+            sb.Append("<td>").Append(Escape(FormatInGameClock(p.GameHour, startHour))).Append("</td>");
+            sb.Append("<td>").Append(Escape(FormatElapsedSeconds(p.RealSecondsSinceStart))).Append("</td>");
+            sb.Append("</tr>\n");
+        }
+
+        sb.Append("  <tr><th>Totals</th>");
+        sb.Append("<td>").Append(totalQty.ToString(CultureInfo.InvariantCulture)).Append("</td>");
+        sb.Append("<td></td>");
+        sb.Append("<td>$").Append(totalSpent.ToString("0.00", CultureInfo.InvariantCulture)).Append("</td>");
+        sb.Append("<td></td><td></td></tr>\n");
+        sb.Append("</table>");
+        return sb.ToString();
+    }
+
+    static string BuildFeedingsHtml(IReadOnlyList<SessionTracker.FeedEntry> feedings, float startHour)
+    {
+        if (feedings == null || feedings.Count == 0)
+            return "<p class=\"report-empty\">No feedings this session.</p>";
+
+        var sb = new StringBuilder();
+        sb.Append("<table class=\"report-table\">\n");
+        sb.Append("  <tr><th>#</th><th>Food</th><th>When (in-game)</th><th>Elapsed (real)</th></tr>\n");
+
+        for (int i = 0; i < feedings.Count; i++)
+        {
+            SessionTracker.FeedEntry f = feedings[i];
+            sb.Append("  <tr>");
+            sb.Append("<td>").Append((i + 1).ToString(CultureInfo.InvariantCulture)).Append("</td>");
+            sb.Append("<td>").Append(Escape(f.FoodName)).Append("</td>");
+            sb.Append("<td>").Append(Escape(FormatInGameClock(f.GameHour, startHour))).Append("</td>");
+            sb.Append("<td>").Append(Escape(FormatElapsedSeconds(f.RealSecondsSinceStart))).Append("</td>");
+            sb.Append("</tr>\n");
+        }
+
+        sb.Append("</table>");
+        return sb.ToString();
+    }
+
     static string BuildBadgesHtml(IReadOnlyDictionary<BadgeId, int> earnedBadges)
     {
         var sb = new StringBuilder();
@@ -268,7 +363,8 @@ public static class ReportWriter
         string pointsJs,
         string healthJs, string happinessJs, string energyJs, string hungerJs,
         float startHour, float totalGameHours,
-        string playerChatLogHtml, string badgesHtml)
+        string playerChatLogHtml, string badgesHtml,
+        string purchasesHtml, string feedingsHtml)
     {
         string netSign = netChange >= 0 ? "+" : "";
         string netColor = netChange > 0 ? "#2a7d2a" : netChange < 0 ? "#a33" : "#444";
@@ -381,6 +477,18 @@ public static class ReportWriter
     font-size: 0.95em;
     margin: 0;
   }}
+  .report-empty {{
+    color: #666;
+    font-size: 0.95em;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin: 6px 0 18px 0;
+  }}
+  table.report-table th {{ width: auto; font-weight: 600; color: #333; background: #f5f5f5; }}
+  table.report-table td {{ color: #333; }}
+  table.report-table td:nth-child(n+2), table.report-table th:nth-child(n+2) {{ white-space: nowrap; }}
   .badges-grid {{
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -547,6 +655,12 @@ public static class ReportWriter
   <tr><th>Highest Reached</th><td>${highestMoney:0.00}</td></tr>
   <tr><th>Lowest Reached</th><td>${lowestMoney:0.00}</td></tr>
 </table>
+
+<h2>Purchases</h2>
+{purchasesHtml}
+
+<h2>Feedings</h2>
+{feedingsHtml}
 
 <h2>Money Over Time</h2>
 <div class=""chart-wrap"">

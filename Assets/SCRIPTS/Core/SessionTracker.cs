@@ -20,6 +20,26 @@ public class SessionTracker : MonoBehaviour
         public float PetHunger;
     }
 
+    /// <summary>Recorded at the moment the player completes a purchase (haggled <see cref="PricePerUnit"/>).</summary>
+    public struct PurchaseEntry
+    {
+        public string ItemName;
+        public int Quantity;
+        public float PricePerUnit;
+        public float GameHour;
+        public float RealSecondsSinceStart;
+        public DateTime UtcWhen;
+    }
+
+    /// <summary>Recorded each time one unit of dog food (normal or enhanced) is consumed.</summary>
+    public struct FeedEntry
+    {
+        public string FoodName;
+        public float GameHour;
+        public float RealSecondsSinceStart;
+        public DateTime UtcWhen;
+    }
+
     public static SessionTracker Instance { get; private set; }
 
     float _sessionStartRealTime;
@@ -31,6 +51,8 @@ public class SessionTracker : MonoBehaviour
     bool _firstHourRecorded;
 
     readonly List<MoneySnapshot> _snapshots = new List<MoneySnapshot>();
+    readonly List<PurchaseEntry> _purchases = new List<PurchaseEntry>();
+    readonly List<FeedEntry> _feedings = new List<FeedEntry>();
 
     bool _sessionReportWritten;
 
@@ -108,11 +130,15 @@ public class SessionTracker : MonoBehaviour
     void OnEnable()
     {
         GlobalData.OnMoneyChanged += OnMoneyChanged;
+        GlobalData.OnItemPurchased += OnItemPurchased;
+        GlobalData.OnPetFed += OnPetFed;
     }
 
     void OnDisable()
     {
         GlobalData.OnMoneyChanged -= OnMoneyChanged;
+        GlobalData.OnItemPurchased -= OnItemPurchased;
+        GlobalData.OnPetFed -= OnPetFed;
     }
 
     void OnMoneyChanged(float delta)
@@ -120,6 +146,30 @@ public class SessionTracker : MonoBehaviour
         float current = GlobalData.PlayerMoney;
         if (current > _highestMoney) _highestMoney = current;
         if (current < _lowestMoney) _lowestMoney = current;
+    }
+
+    void OnItemPurchased(string itemName, int quantity, float pricePerUnit)
+    {
+        _purchases.Add(new PurchaseEntry
+        {
+            ItemName = itemName,
+            Quantity = quantity,
+            PricePerUnit = pricePerUnit,
+            GameHour = GlobalData.CurrentTimeOfDay,
+            RealSecondsSinceStart = Time.realtimeSinceStartup - _sessionStartRealTime,
+            UtcWhen = DateTime.UtcNow,
+        });
+    }
+
+    void OnPetFed(string foodName)
+    {
+        _feedings.Add(new FeedEntry
+        {
+            FoodName = foodName,
+            GameHour = GlobalData.CurrentTimeOfDay,
+            RealSecondsSinceStart = Time.realtimeSinceStartup - _sessionStartRealTime,
+            UtcWhen = DateTime.UtcNow,
+        });
     }
 
     void Update()
@@ -237,7 +287,9 @@ public class SessionTracker : MonoBehaviour
                 lowestMoney: _lowestMoney,
                 snapshots: _snapshots,
                 playerChatLog: SessionChatLog.Entries,
-                earnedBadges: earnedBadges
+                earnedBadges: earnedBadges,
+                purchases: _purchases,
+                feedings: _feedings
             );
         }
         catch (Exception ex)

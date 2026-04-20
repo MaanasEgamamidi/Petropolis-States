@@ -391,6 +391,9 @@ public class PetStatsBarsController : MonoBehaviour
 
     void ApplyDecay(float dt)
     {
+        if (NpcProximityChatOpener.IsWorldNpcChatOpen)
+            return;
+
         float loss = decayRate * dt;
         GlobalData.PetHappiness = Mathf.Max(0f, GlobalData.PetHappiness - loss);
         GlobalData.PetEnergy    = Mathf.Max(0f, GlobalData.PetEnergy    - loss);

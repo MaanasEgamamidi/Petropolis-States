@@ -126,4 +126,21 @@ public static class OpenAiChatCompletionClient
             onComplete?.Invoke(null, "Failed to parse API response.");
         }
     }
+
+    /// <summary>
+    /// Fire-and-forget single-turn request: one system prompt + one user message. Useful for
+    /// silent background analysis (e.g. extracting purchases from a chat exchange) where the
+    /// full chat history and greeting folding are not needed.
+    /// </summary>
+    public static IEnumerator SendSingleTurnRequest(
+        string systemPrompt,
+        string userContent,
+        Action<string, string> onComplete)
+    {
+        var history = new List<ChatManager.ChatMessage>
+        {
+            new ChatManager.ChatMessage { role = "user", content = userContent ?? "" }
+        };
+        yield return SendChatRequest(systemPrompt, history, onComplete);
+    }
 }

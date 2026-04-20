@@ -63,6 +63,9 @@ public class ParkZone : MonoBehaviour
         if (GlobalData.StoredPetSkin <= 0)
             return;
 
+        if (NpcProximityChatOpener.IsWorldNpcChatOpen)
+            return;
+
         float dt = Time.deltaTime;
         GlobalData.PetHealth    = Mathf.Clamp(GlobalData.PetHealth    + healthChangePerSecond    * dt, 0f, 100f);
         GlobalData.PetHappiness = Mathf.Clamp(GlobalData.PetHappiness + happinessChangePerSecond * dt, 0f, 100f);
