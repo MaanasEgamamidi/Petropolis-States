@@ -12,6 +12,8 @@ using UnityEngine.UI;
 /// at the same time. A press dispatches real UGUI pointer events at the cursor position so any Selectable
 /// (Button, Toggle, Slider, Dropdown, InputField, custom IPointerClickHandler, etc.) activates exactly like a real click.
 /// Hover swaps to a second sprite when the pointer is over an interactable.
+/// The sprite pointer stays hidden until the first gamepad UI input in each menu context, then hides again after controller idle.
+/// Mouse/keyboard do not wake the sprite or reset controller idle; they only briefly allow the OS cursor to show.
 /// Active when a gamepad is connected and the scene is a menu, or in World while paused / NPC chat is open.
 /// PetChoose can be loaded additively while World stays the <see cref="SceneManager.GetActiveScene"/> — that case is detected explicitly.
 /// </summary>
@@ -37,6 +39,8 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
     [Header("Visual")]
     [Tooltip("Width of the cursor graphic in (reference 1080p) pixels. Height is computed from the sprite's aspect.")]
     [SerializeField] float cursorWidth = 48f;
+    [Tooltip("Hide the on-screen pointer after this many seconds without right-stick input or confirm (A). Uses unscaled time.")]
+    [SerializeField] float hideCursorAfterIdleSeconds = 2f;
 
     Canvas _canvas;
     RectTransform _canvasRect;
@@ -53,6 +57,93 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
 
     /// <summary>True while the pointer graphic lives under PetChoose's menu <see cref="Canvas"/> so it draws above Back/Next (same overlay sort order no longer fights sibling canvases).</summary>
     bool _cursorReparentedUnderPetChooseMenu;
+
+    float _gamepadCursorIdleTimer;
+    int _menuCursorContextId = int.MinValue;
+    bool _awaitingFirstGamepadPointerMotion = true;
+    bool _hadGamepadForMenuLastFrame;
+
+    /// <summary>
+    /// After mouse/keyboard UI activity, OS cursor may show until this unscaled time. Independent of gamepad idle timer.
+    /// </summary>
+    float _osCursorGrantedByMouseKeyboardUntilUnscaled = float.NegativeInfinity;
+
+    static int BuildMenuCursorContextId()
+    {
+        unchecked
+        {
+            int h = 17;
+            Scene active = SceneManager.GetActiveScene();
+            h = h * 29 + active.buildIndex;
+            h = h * 29 + (active.name != null ? active.name.GetHashCode() : 0);
+            h = h * 29 + (WorldPauseController.IsPaused ? 1 : 0);
+            h = h * 29 + (NpcProximityChatOpener.IsWorldNpcChatOpen ? 1 : 0);
+            h = h * 29 + (IsPetChooseSceneLoaded() ? 1 : 0);
+            return h;
+        }
+    }
+
+    static Vector2 ApplyRadialDeadzone(Vector2 v, float deadzone)
+    {
+        float m = v.magnitude;
+        if (m < deadzone || m < 1e-6f)
+            return Vector2.zero;
+        float scalar = (m - deadzone) / Mathf.Max(1e-6f, 1f - deadzone);
+        return v * (scalar / m);
+    }
+
+    /// <summary>True if the player is using the gamepad for UI this frame (sticks, d-pad, triggers, or any usual button).</summary>
+    bool ConsumeGamepadUiActivity(Gamepad pad, out Vector2 processedRightStick)
+    {
+        processedRightStick = ApplyRadialDeadzone(pad.rightStick.ReadValue(), stickDeadZone);
+        Vector2 leftProc = ApplyRadialDeadzone(pad.leftStick.ReadValue(), stickDeadZone);
+
+        if (processedRightStick.sqrMagnitude > 1e-8f)
+            return true;
+        if (leftProc.sqrMagnitude > 1e-8f)
+            return true;
+        if (pad.dpad.ReadValue().sqrMagnitude > 1e-8f)
+            return true;
+        if (pad.leftTrigger.ReadValue() > 0.25f || pad.rightTrigger.ReadValue() > 0.25f)
+            return true;
+
+        if (pad.buttonSouth.wasPressedThisFrame || pad.buttonNorth.wasPressedThisFrame ||
+            pad.buttonEast.wasPressedThisFrame || pad.buttonWest.wasPressedThisFrame)
+            return true;
+        if (pad.leftShoulder.wasPressedThisFrame || pad.rightShoulder.wasPressedThisFrame)
+            return true;
+        if (pad.selectButton.wasPressedThisFrame || pad.startButton.wasPressedThisFrame)
+            return true;
+        if (pad.leftStickButton.wasPressedThisFrame || pad.rightStickButton.wasPressedThisFrame)
+            return true;
+        if (pad.dpad.up.wasPressedThisFrame || pad.dpad.down.wasPressedThisFrame ||
+            pad.dpad.left.wasPressedThisFrame || pad.dpad.right.wasPressedThisFrame)
+            return true;
+
+        return false;
+    }
+
+    /// <summary>Mouse or keyboard used for UI — clicks must count (delta alone misses click frames).</summary>
+    static bool MouseOrKeyboardMenuActivityThisFrame()
+    {
+        if (Mouse.current != null)
+        {
+            var m = Mouse.current;
+            if (m.leftButton.wasPressedThisFrame || m.rightButton.wasPressedThisFrame ||
+                m.middleButton.wasPressedThisFrame)
+                return true;
+            if (m.leftButton.isPressed || m.rightButton.isPressed || m.middleButton.isPressed)
+                return true;
+            if (m.delta.ReadValue().sqrMagnitude > 0.0001f)
+                return true;
+            if (m.scroll.ReadValue().sqrMagnitude > 0.0001f)
+                return true;
+        }
+
+        if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
+            return true;
+        return false;
+    }
 
     static bool IsPetChooseSceneLoaded()
     {
@@ -161,6 +252,7 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
         InputSystem.onDeviceChange -= OnDeviceChange;
         if (Instance == this)
             Instance = null;
+        CursorVisibilityKeeper.SuppressMenuHardwareCursor = false;
     }
 
     static void OnActiveSceneChanged(Scene _, Scene __)
@@ -289,7 +381,67 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
         bool mousePauseOverlay = WorldPauseController.IsPaused && sceneWantsCursor && pad == null &&
                                  Mouse.current != null;
         bool useGamepad = pad != null && sceneWantsCursor;
-        bool showGraphic = useGamepad || mousePauseOverlay;
+
+        int menuCtx = BuildMenuCursorContextId();
+        if (menuCtx != _menuCursorContextId)
+        {
+            _menuCursorContextId = menuCtx;
+            if (sceneWantsCursor)
+            {
+                _awaitingFirstGamepadPointerMotion = true;
+                _gamepadCursorIdleTimer = 0f;
+                _screenPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            }
+        }
+
+        if (useGamepad && !_hadGamepadForMenuLastFrame)
+        {
+            _awaitingFirstGamepadPointerMotion = true;
+            _gamepadCursorIdleTimer = 0f;
+            _screenPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+        }
+
+        Vector2 processedRightStick = Vector2.zero;
+        bool suppressSouthClickWhilePointerOff = useGamepad && _awaitingFirstGamepadPointerMotion;
+        if (useGamepad)
+        {
+            if (MouseOrKeyboardMenuActivityThisFrame())
+                _osCursorGrantedByMouseKeyboardUntilUnscaled = Time.unscaledTime + 0.35f;
+
+            bool padOnly = ConsumeGamepadUiActivity(pad, out processedRightStick);
+
+            // Virtual controller pointer: only gamepad activity wakes it, idles it, or clears "awaiting first stick".
+            if (padOnly)
+                _awaitingFirstGamepadPointerMotion = false;
+
+            if (!_awaitingFirstGamepadPointerMotion)
+            {
+                if (padOnly)
+                    _gamepadCursorIdleTimer = 0f;
+                else
+                    _gamepadCursorIdleTimer += Time.unscaledDeltaTime;
+            }
+            else
+                _gamepadCursorIdleTimer = 0f;
+        }
+        else
+        {
+            _gamepadCursorIdleTimer = 0f;
+            _osCursorGrantedByMouseKeyboardUntilUnscaled = float.NegativeInfinity;
+        }
+
+        _hadGamepadForMenuLastFrame = useGamepad;
+
+        bool hideAfterIdleEnabled = hideCursorAfterIdleSeconds > 0f;
+        bool gamepadIdleTimedOut = hideAfterIdleEnabled && _gamepadCursorIdleTimer >= hideCursorAfterIdleSeconds;
+        bool gamepadCursorGraphicOn = useGamepad && !_awaitingFirstGamepadPointerMotion && !gamepadIdleTimedOut;
+        bool showGraphic = gamepadCursorGraphicOn || mousePauseOverlay;
+
+        bool gamepadWouldHideHardware = useGamepad && sceneWantsCursor &&
+                                        (_awaitingFirstGamepadPointerMotion || gamepadIdleTimedOut);
+        bool hardwareHiddenByGamepadPointer = gamepadWouldHideHardware &&
+                                              Time.unscaledTime >= _osCursorGrantedByMouseKeyboardUntilUnscaled;
+        CursorVisibilityKeeper.SuppressMenuHardwareCursor = hardwareHiddenByGamepadPointer;
 
         if (_cursorImage != null)
             _cursorImage.enabled = showGraphic;
@@ -312,18 +464,35 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
             return;
         }
 
-        Vector2 stick = pad.rightStick.ReadValue();
-        if (stick.magnitude >= stickDeadZone)
-            _screenPosition += stick * (pointerSpeedPixelsPerSecond * Time.unscaledDeltaTime);
+        if (!_awaitingFirstGamepadPointerMotion && processedRightStick.sqrMagnitude > 1e-8f)
+            _screenPosition += processedRightStick * (pointerSpeedPixelsPerSecond * Time.unscaledDeltaTime);
 
         _screenPosition.x = Mathf.Clamp(_screenPosition.x, 0f, Screen.width - 1f);
         _screenPosition.y = Mathf.Clamp(_screenPosition.y, 0f, Screen.height - 1f);
 
         ApplyCursorTransform();
-        UpdateHoverSprite();
+        if (showGraphic)
+            UpdateHoverSprite();
 
-        if (pad.buttonSouth.wasPressedThisFrame)
+        if (pad.buttonSouth.wasPressedThisFrame && !suppressSouthClickWhilePointerOff)
             DispatchPointerClick();
+    }
+
+    void LateUpdate()
+    {
+        if (CursorVisibilityKeeper.SuppressMenuHardwareCursor)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = false;
+            return;
+        }
+
+        if (ShouldShowControllerCursorForScene() && Mouse.current != null &&
+            Time.unscaledTime < _osCursorGrantedByMouseKeyboardUntilUnscaled)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 
     void ApplyCursorTransform()

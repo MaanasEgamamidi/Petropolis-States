@@ -121,7 +121,8 @@ namespace StarterAssets
 			if (_uiMenuOpen || WorldPauseController.IsPaused)
 			{
 				Cursor.lockState = CursorLockMode.None;
-				Cursor.visible = true;
+				// Npc chat calls SetUiMenuOpen every LateUpdate; gamepad idle-hide must still hide the OS cursor.
+				Cursor.visible = !CursorVisibilityKeeper.SuppressMenuHardwareCursor;
 				return;
 			}
 			Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
