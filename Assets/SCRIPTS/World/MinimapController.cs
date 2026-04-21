@@ -14,7 +14,7 @@ public class MinimapController : MonoBehaviour
     [SerializeField] float orthographicSize = 25f;
     [SerializeField] string playerTag = "Player";
 
-    [Tooltip("Optional; if null, finds GameObject with playerTag.")]
+    [Tooltip("Optional. If null, uses ThirdPersonController in the scene (avoids multiple 'Player' tags on camera rig / armature); otherwise tag lookup.")]
     [SerializeField] Transform followTarget;
 
     Camera _cam;
@@ -65,16 +65,25 @@ public class MinimapController : MonoBehaviour
 
         if (followTarget == null)
         {
-            var go = GameObject.FindGameObjectWithTag(playerTag);
-            if (go == null)
-                return;
-            followTarget = go.transform;
+            ThirdPersonController tpc = Object.FindFirstObjectByType<ThirdPersonController>(FindObjectsInactive.Exclude);
+            if (tpc != null)
+                followTarget = tpc.transform;
+            else
+            {
+                var go = GameObject.FindGameObjectWithTag(playerTag);
+                if (go == null)
+                    return;
+                followTarget = go.transform;
+            }
         }
 
-        // Match the capsule / locomotion transform (often a child of the tagged root) so the map
-        // stays centered on where the player actually is.
+        // Use the CharacterController (locomotion capsule), not a tagged follow/camera sub-object — those can move with look input.
         Vector3 p = followTarget.position;
-        CharacterController cc = followTarget.GetComponentInChildren<CharacterController>();
+        CharacterController cc = followTarget.GetComponent<CharacterController>();
+        if (cc == null)
+            cc = followTarget.GetComponentInChildren<CharacterController>();
+        if (cc == null)
+            cc = followTarget.GetComponentInParent<CharacterController>();
         if (cc != null)
             p = cc.transform.position;
 

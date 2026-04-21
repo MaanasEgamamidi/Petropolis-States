@@ -13,7 +13,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// World: press <b>T</b> to toggle a compact grid menu listing every child of
 /// <see cref="teleportLocationsRoot"/> as a button. Clicking a button teleports the player to
-/// that child's world position and deducts <see cref="teleportCost"/> from
+/// fixed world positions in child order (see <c>FixedTeleportWorldPositions</c> in source) and deducts <see cref="teleportCost"/> from
 /// <see cref="GlobalData.PlayerMoney"/>. Buttons are disabled (dimmed) when the player can't
 /// afford the trip. The UI is built at runtime with a light (white) theme that matches the
 /// inventory panel — just drop this component on any GameObject (typically the
@@ -30,9 +30,6 @@ public class TeleportMenuController : MonoBehaviour
     [Header("Setup")]
     [Tooltip("Parent whose direct children are teleport destinations. When null, searches for a root GameObject named 'TeleportLocations'. Defaults to this transform if this component is placed on the parent itself.")]
     [SerializeField] Transform teleportLocationsRoot;
-
-    [Tooltip("Tag used to identify the player root for teleporting.")]
-    [SerializeField] string playerTag = "Player";
 
     [Header("Cost")]
     [Tooltip("Amount subtracted from GlobalData.PlayerMoney each time a teleport button is clicked.")]
@@ -257,6 +254,21 @@ public class TeleportMenuController : MonoBehaviour
     }
 
     // ─── Teleport ────────────────────────────────────────────────────────────
+    // World positions for the teleport menu, in the same order as direct children of TeleportLocations
+    // (hospital, pet shop, …, work office).
+    static readonly Vector3[] FixedTeleportWorldPositions =
+    {
+        new Vector3(28.416f, -2.22f, 23.937f),
+        new Vector3(74.675f, -2.595f, 47.201f),
+        new Vector3(78.616f, -2.669f, 17.189f),
+        new Vector3(61.257f, 4.162f, 77.574f),
+        new Vector3(79.84f, -2.62f, 173.97f),
+        new Vector3(-22.27f, -2.706f, 22.42f),
+        new Vector3(34.461f, -2.756f, 139.964f),
+        new Vector3(61.58f, -2.543f, 15.239f),
+        new Vector3(24.54f, -1.903f, 176.66f),
+        new Vector3(61.723f, -2.823f, 123.638f),
+    };
 
     void OnTeleportButtonClicked(int index)
     {
@@ -270,34 +282,52 @@ public class TeleportMenuController : MonoBehaviour
             return;
         }
 
-        GameObject playerRoot = GameObject.FindGameObjectWithTag(playerTag);
-        if (playerRoot == null)
+        if (!TryGetPlayerRigForTeleport(out Transform rootToMove, out CharacterController cc))
         {
-            Debug.LogWarning($"[{nameof(TeleportMenuController)}] Could not find an object tagged '{playerTag}' to teleport.");
+            Debug.LogWarning(
+                $"[{nameof(TeleportMenuController)}] No active {nameof(ThirdPersonController)} with {nameof(CharacterController)} found; cannot teleport.");
             return;
         }
 
-        TeleportPlayerTo(playerRoot.transform, target);
+        Vector3 dest = index < FixedTeleportWorldPositions.Length
+            ? FixedTeleportWorldPositions[index]
+            : target.position;
+        TeleportPlayerToWorldPosition(rootToMove, cc, dest);
         GlobalData.PlayerMoney -= teleportCost;
         Close();
     }
 
-    static void TeleportPlayerTo(Transform playerRoot, Transform target)
+    /// <summary>
+    /// Resolves the scene root to move and the active capsule. Multiple objects use the "Player" tag
+    /// in the armature prefab, so <see cref="GameObject.FindGameObjectWithTag"/> is not safe here.
+    /// </summary>
+    static bool TryGetPlayerRigForTeleport(out Transform rootToMove, out CharacterController cc)
     {
-        // Shift the tagged root by the offset needed so the CharacterController ends at the marker.
-        // Setting root.position = target fails when CC is on a child: capsule and minimap/camera follow
-        // different points than the root transform.
-        Vector3 targetPos = target.position;
-        CharacterController cc = playerRoot.GetComponentInChildren<CharacterController>();
+        rootToMove = null;
+        cc = null;
+        ThirdPersonController tpc = Object.FindFirstObjectByType<ThirdPersonController>(FindObjectsInactive.Exclude);
+        if (tpc == null)
+            return false;
+        cc = tpc.GetComponent<CharacterController>();
+        if (cc == null)
+            return false;
+        // Move the top-level "Player" object so the whole armature, cameras, and dog parent chain stay in sync.
+        rootToMove = tpc.transform.root;
+        return true;
+    }
+
+    static void TeleportPlayerToWorldPosition(Transform rootToMove, CharacterController cc, Vector3 targetPos)
+    {
+        // Shift the root by the offset needed so the CharacterController ends at the target.
         if (cc != null)
         {
             cc.enabled = false;
-            playerRoot.position += targetPos - cc.transform.position;
+            rootToMove.position += targetPos - cc.transform.position;
             cc.enabled = true;
         }
         else
         {
-            playerRoot.position = targetPos;
+            rootToMove.position = targetPos;
         }
 
         Physics.SyncTransforms();
