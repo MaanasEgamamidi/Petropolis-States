@@ -71,7 +71,13 @@ public class MinimapController : MonoBehaviour
             followTarget = go.transform;
         }
 
+        // Match the capsule / locomotion transform (often a child of the tagged root) so the map
+        // stays centered on where the player actually is.
         Vector3 p = followTarget.position;
+        CharacterController cc = followTarget.GetComponentInChildren<CharacterController>();
+        if (cc != null)
+            p = cc.transform.position;
+
         transform.position = p + Vector3.up * heightAbovePlayer;
         transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         _cam.orthographicSize = orthographicSize;
