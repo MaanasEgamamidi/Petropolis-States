@@ -111,6 +111,8 @@ public class ElevatorTeleportZone : MonoBehaviour
         if (NpcProximityChatOpener.IsWorldNpcChatOpen || WorldPauseController.IsFocusedOnTextInput())
             return;
 
+        ElevatorSlide.CloseAll();
+
         var cc = _playerRoot.GetComponentInChildren<CharacterController>();
         Vector3 delta = new Vector3(0f, AscendMeters, ForwardZOffset);
         if (cc != null)

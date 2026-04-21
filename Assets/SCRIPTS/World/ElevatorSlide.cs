@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -48,6 +49,40 @@ public class ElevatorSlide : MonoBehaviour
     Transform _player;
     Collider _collider;
     bool _started;
+
+    static readonly HashSet<ElevatorSlide> _all = new HashSet<ElevatorSlide>();
+
+    void OnEnable()
+    {
+        _all.Add(this);
+    }
+
+    void OnDisable()
+    {
+        _all.Remove(this);
+    }
+
+    /// <summary>
+    /// Sends this panel back to its closed local position. Safe to call repeatedly; does nothing if already closed.
+    /// </summary>
+    public void Close()
+    {
+        if (!_started) return;
+        _isOpen = false;
+        _targetLocalPos = _closedLocalPos;
+    }
+
+    /// <summary>
+    /// Closes every active <see cref="ElevatorSlide"/> in the scene.
+    /// Used by elevator teleport zones so doors appear closed when the player arrives at the other zone.
+    /// </summary>
+    public static void CloseAll()
+    {
+        foreach (var slide in _all)
+        {
+            if (slide != null) slide.Close();
+        }
+    }
 
     void Start()
     {

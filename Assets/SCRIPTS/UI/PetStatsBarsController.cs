@@ -438,20 +438,20 @@ public class PetStatsBarsController : MonoBehaviour
     /// so high-priority states (Dying, Miserable) come first and Content / "Okay" sit at the bottom.</summary>
     static readonly System.Collections.Generic.List<(string Label, System.Func<float, float, float, float, bool> Predicate)> Feelings = new()
     {
-        ("Dying x_x",     (he, ha, en, hu) => he <= 5f),
-        ("Miserable T_T", (he, ha, en, hu) => en <= 15f && hu <= 15f),
-        ("Sick @_@",      (he, ha, en, hu) => he <= 25f),
-        ("Famished >.<",  (he, ha, en, hu) => hu <= 20f),
-        ("Exhausted -_-", (he, ha, en, hu) => en <= 20f),
-        ("Sad :(",        (he, ha, en, hu) => ha <= 20f),
-        ("Hungry :P",     (he, ha, en, hu) => hu <= 40f),
-        ("Sleepy zZ",     (he, ha, en, hu) => en <= 40f),
-        ("Gloomy :/",     (he, ha, en, hu) => ha <= 40f),
-        ("Joyful ^_^",    (he, ha, en, hu) => ha >= 80f && en >= 70f),
-        ("Energetic \\o/", (he, ha, en, hu) => en >= 80f && hu >= 70f),
-        ("Happy :)",      (he, ha, en, hu) => ha >= 70f && hu >= 70f),
-        ("Content :>",    (he, ha, en, hu) => he >= 70f && ha >= 60f),
-        ("Okay :|",       (he, ha, en, hu) => true),
+        ("Dying",      (he, ha, en, hu) => he <= 5f),
+        ("Miserable",  (he, ha, en, hu) => en <= 15f && hu <= 15f),
+        ("Sick",       (he, ha, en, hu) => he <= 25f),
+        ("Famished",   (he, ha, en, hu) => hu <= 20f),
+        ("Exhausted",  (he, ha, en, hu) => en <= 20f),
+        ("Sad",        (he, ha, en, hu) => ha <= 20f),
+        ("Hungry",     (he, ha, en, hu) => hu <= 40f),
+        ("Sleepy",     (he, ha, en, hu) => en <= 40f),
+        ("Gloomy",     (he, ha, en, hu) => ha <= 40f),
+        ("Joyful",     (he, ha, en, hu) => ha >= 80f && en >= 70f),
+        ("Energetic",  (he, ha, en, hu) => en >= 80f && hu >= 70f),
+        ("Happy",      (he, ha, en, hu) => ha >= 70f && hu >= 70f),
+        ("Content",    (he, ha, en, hu) => he >= 70f && ha >= 60f),
+        ("Okay",       (he, ha, en, hu) => true),
     };
 
     void UpdateFeeling()
