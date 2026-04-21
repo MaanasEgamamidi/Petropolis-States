@@ -4,16 +4,16 @@ using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
-/// Trigger volume: while the player is inside, pressing R (keyboard) or Y / north face button (gamepad) teleports them upward in world space (default +20 m).
+/// Trigger volume: while the player is inside, pressing R (keyboard) or Y / north face button (gamepad) moves them
+/// upward in world space by <see cref="AscendMeters"/> from their current position.
 /// Disables <see cref="CharacterController"/> briefly so the move applies cleanly.
 /// Uses a physics overlap each frame so "in zone" matches actual overlap (CharacterController often does not fire OnTriggerExit reliably).
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class ElevatorTeleportZone : MonoBehaviour
 {
-    [Tooltip("World-space Y offset applied when R (keyboard) or gamepad Y / north button is pressed inside the zone.")]
-    [Min(0.01f)]
-    public float verticalOffsetMeters = 20f;
+    const float AscendMeters = 6f;
+    const float ForwardZOffset = -2;
 
     [Tooltip("Tag used to identify the player.")]
     public string playerTag = "Player";
@@ -103,7 +103,7 @@ public class ElevatorTeleportZone : MonoBehaviour
         bool gamepadY = Gamepad.current != null && Gamepad.current.buttonNorth.wasPressedThisFrame;
         bool pressed = keyboardR || gamepadY;
 #else
-        bool pressed = Input.GetKeyDown(KeyCode.R);
+        bool pressed = Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.Y);
 #endif
         if (!pressed)
             return;
@@ -112,7 +112,7 @@ public class ElevatorTeleportZone : MonoBehaviour
             return;
 
         var cc = _playerRoot.GetComponentInChildren<CharacterController>();
-        Vector3 delta = Vector3.up * verticalOffsetMeters;
+        Vector3 delta = new Vector3(0f, AscendMeters, ForwardZOffset);
         if (cc != null)
         {
             cc.enabled = false;

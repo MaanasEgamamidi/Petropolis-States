@@ -97,6 +97,12 @@ public class InventoryPanelController : MonoBehaviour
         }
         if (IsTypingInFocusedInput()) return;
 
+        if (IsOpen && CloseKeyPressedThisFrame())
+        {
+            Close();
+            return;
+        }
+
         if (!TogglePressedThisFrame()) return;
 
         if (IsOpen) Close();
@@ -194,5 +200,17 @@ public class InventoryPanelController : MonoBehaviour
     static bool TogglePressedThisFrame()
     {
         return GameplayInput.InventoryTogglePressedThisFrame();
+    }
+
+    /// <summary>Escape or gamepad B (East) — close-only shortcut while the inventory is open.</summary>
+    static bool CloseKeyPressedThisFrame()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            return true;
+        return GameplayInput.GamepadCancelPressedThisFrame();
+#else
+        return Input.GetKeyDown(KeyCode.Escape);
+#endif
     }
 }

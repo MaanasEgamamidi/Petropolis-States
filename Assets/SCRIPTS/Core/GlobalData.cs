@@ -80,6 +80,27 @@ public class GlobalData : MonoBehaviour
     public const float VitaminsEnergyPerUse = 30f;
     public const float PortableWateringCupEnergyPerUse = 20f;
 
+    // How many individual uses each purchased pack grants. Must match
+    // NPC_Personalities/supermarket_owner.md (Normal Dog Food = 3 feedings, etc.).
+    public const int NormalDogFoodUsesPerPack = 3;
+    public const int EnhancedDogFoodUsesPerPack = 2;
+    public const int VitaminsUsesPerPack = 2;
+    public const int PortableWateringCupUsesPerPack = 4;
+
+    /// <summary>
+    /// Uses granted per purchased pack of each item. The price in <see cref="Inventory"/> is the
+    /// price of one pack; <see cref="TryBuyItem"/> multiplies the purchased pack count by this
+    /// value so the stored quantity reflects total remaining uses (which <see cref="TryUseItem"/>
+    /// decrements one at a time).
+    /// </summary>
+    public static readonly Dictionary<string, int> ItemUsesPerPack = new Dictionary<string, int>
+    {
+        { NormalDogFoodItemName,       NormalDogFoodUsesPerPack },
+        { EnhancedDogFoodItemName,     EnhancedDogFoodUsesPerPack },
+        { VitaminsItemName,            VitaminsUsesPerPack },
+        { PortableWateringCupItemName, PortableWateringCupUsesPerPack },
+    };
+
     /// <summary>Which pet stat an <see cref="ItemEffect"/> applies to.</summary>
     public enum PetStat { Hunger, Energy, Happiness, Cleanliness }
 
@@ -110,9 +131,11 @@ public class GlobalData : MonoBehaviour
     public static event Action<string> OnPetFed;
 
     /// <summary>
-    /// Attempts to buy <paramref name="quantity"/> of <paramref name="itemName"/> at
-    /// <paramref name="pricePerUnit"/>. Deducts money and increases inventory on success.
-    /// Returns false if the item is unknown, quantity is non-positive, or the player cannot afford it.
+    /// Attempts to buy <paramref name="quantity"/> packs of <paramref name="itemName"/> at
+    /// <paramref name="pricePerUnit"/> (price per pack). Deducts money and increases inventory
+    /// by <c>quantity * ItemUsesPerPack[item]</c> so the stored count represents remaining uses
+    /// (e.g. buying 1 Normal Dog Food adds 3 feedings). Returns false if the item is unknown,
+    /// quantity is non-positive, or the player cannot afford it.
     /// </summary>
     public static bool TryBuyItem(string itemName, int quantity, float pricePerUnit)
     {
@@ -122,8 +145,11 @@ public class GlobalData : MonoBehaviour
         float totalCost = pricePerUnit * quantity;
         if (PlayerMoney < totalCost) return false;
 
+        int usesPerPack = ItemUsesPerPack.TryGetValue(itemName, out int upp) && upp > 0 ? upp : 1;
+        int addedUses = quantity * usesPerPack;
+
         PlayerMoney -= totalCost;
-        entry[InventoryQuantityIndex] += quantity;
+        entry[InventoryQuantityIndex] += addedUses;
         OnItemPurchased?.Invoke(itemName, quantity, pricePerUnit);
         OnInventoryChanged?.Invoke();
         return true;

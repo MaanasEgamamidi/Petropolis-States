@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// Software cursor driven by the right stick. Does NOT touch the OS mouse cursor: the player can use mouse and gamepad
+/// Software cursor driven by the left stick. Does NOT touch the OS mouse cursor: the player can use mouse and gamepad
 /// at the same time. A press dispatches real UGUI pointer events at the cursor position so any Selectable
 /// (Button, Toggle, Slider, Dropdown, InputField, custom IPointerClickHandler, etc.) activates exactly like a real click.
 /// Hover swaps to a second sprite when the pointer is over an interactable.
@@ -39,7 +39,7 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
     [Header("Visual")]
     [Tooltip("Width of the cursor graphic in (reference 1080p) pixels. Height is computed from the sprite's aspect.")]
     [SerializeField] float cursorWidth = 48f;
-    [Tooltip("Hide the on-screen pointer after this many seconds without right-stick input or confirm (A). Uses unscaled time.")]
+    [Tooltip("Hide the on-screen pointer after this many seconds without left-stick input or confirm (A). Uses unscaled time.")]
     [SerializeField] float hideCursorAfterIdleSeconds = 2f;
 
     Canvas _canvas;
@@ -64,7 +64,9 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
     bool _hadGamepadForMenuLastFrame;
 
     /// <summary>
-    /// After mouse/keyboard UI activity, OS cursor may show until this unscaled time. Independent of gamepad idle timer.
+    /// Most-recent-input tracking for OS cursor visibility in menu contexts. Physically moving or clicking the
+    /// mouse sets this to <see cref="float.PositiveInfinity"/> (OS cursor shown). Any gamepad activity pins it
+    /// to <see cref="float.NegativeInfinity"/> (OS cursor hidden). Independent of the gamepad idle-hide timer.
     /// </summary>
     float _osCursorGrantedByMouseKeyboardUntilUnscaled = float.NegativeInfinity;
 
@@ -95,14 +97,14 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
     }
 
     /// <summary>True if the player is using the gamepad for UI this frame (sticks, d-pad, triggers, or any usual button).</summary>
-    bool ConsumeGamepadUiActivity(Gamepad pad, out Vector2 processedRightStick)
+    bool ConsumeGamepadUiActivity(Gamepad pad, out Vector2 processedLeftStick)
     {
-        processedRightStick = ApplyRadialDeadzone(pad.rightStick.ReadValue(), stickDeadZone);
-        Vector2 leftProc = ApplyRadialDeadzone(pad.leftStick.ReadValue(), stickDeadZone);
+        processedLeftStick = ApplyRadialDeadzone(pad.leftStick.ReadValue(), stickDeadZone);
+        Vector2 rightProc = ApplyRadialDeadzone(pad.rightStick.ReadValue(), stickDeadZone);
 
-        if (processedRightStick.sqrMagnitude > 1e-8f)
+        if (processedLeftStick.sqrMagnitude > 1e-8f)
             return true;
-        if (leftProc.sqrMagnitude > 1e-8f)
+        if (rightProc.sqrMagnitude > 1e-8f)
             return true;
         if (pad.dpad.ReadValue().sqrMagnitude > 1e-8f)
             return true;
@@ -125,24 +127,22 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
         return false;
     }
 
-    /// <summary>Mouse or keyboard used for UI — clicks must count (delta alone misses click frames).</summary>
-    static bool MouseOrKeyboardMenuActivityThisFrame()
+    /// <summary>True when the user physically moved or clicked the mouse this frame. Keyboard is ignored on
+    /// purpose: typing on the keyboard doesn't mean the player wants the OS mouse cursor to appear.</summary>
+    static bool MouseMenuActivityThisFrame()
     {
-        if (Mouse.current != null)
-        {
-            var m = Mouse.current;
-            if (m.leftButton.wasPressedThisFrame || m.rightButton.wasPressedThisFrame ||
-                m.middleButton.wasPressedThisFrame)
-                return true;
-            if (m.leftButton.isPressed || m.rightButton.isPressed || m.middleButton.isPressed)
-                return true;
-            if (m.delta.ReadValue().sqrMagnitude > 0.0001f)
-                return true;
-            if (m.scroll.ReadValue().sqrMagnitude > 0.0001f)
-                return true;
-        }
+        if (Mouse.current == null)
+            return false;
 
-        if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
+        var m = Mouse.current;
+        if (m.leftButton.wasPressedThisFrame || m.rightButton.wasPressedThisFrame ||
+            m.middleButton.wasPressedThisFrame)
+            return true;
+        if (m.leftButton.isPressed || m.rightButton.isPressed || m.middleButton.isPressed)
+            return true;
+        if (m.delta.ReadValue().sqrMagnitude > 0.0001f)
+            return true;
+        if (m.scroll.ReadValue().sqrMagnitude > 0.0001f)
             return true;
         return false;
     }
@@ -413,14 +413,19 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
             _screenPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
         }
 
-        Vector2 processedRightStick = Vector2.zero;
+        Vector2 processedLeftStick = Vector2.zero;
         bool suppressSouthClickWhilePointerOff = useGamepad && _awaitingFirstGamepadPointerMotion;
         if (useGamepad)
         {
-            if (MouseOrKeyboardMenuActivityThisFrame())
-                _osCursorGrantedByMouseKeyboardUntilUnscaled = Time.unscaledTime + 0.35f;
+            bool padOnly = ConsumeGamepadUiActivity(pad, out processedLeftStick);
 
-            bool padOnly = ConsumeGamepadUiActivity(pad, out processedRightStick);
+            // Most-recent-input wins. Gamepad activity pins the OS cursor "hidden"; mouse activity pins it
+            // "shown". Mouse is applied after gamepad so a physical mouse move during the same frame as a
+            // gamepad input still reveals the OS cursor (the user clearly just reached for the mouse).
+            if (padOnly)
+                _osCursorGrantedByMouseKeyboardUntilUnscaled = float.NegativeInfinity;
+            if (MouseMenuActivityThisFrame())
+                _osCursorGrantedByMouseKeyboardUntilUnscaled = float.PositiveInfinity;
 
             // Virtual controller pointer: only gamepad activity wakes it, idles it, or clears "awaiting first stick".
             if (padOnly)
@@ -449,9 +454,11 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
         bool gamepadCursorGraphicOn = useGamepad && !_awaitingFirstGamepadPointerMotion && !gamepadIdleTimedOut;
         bool showGraphic = gamepadCursorGraphicOn || mousePauseOverlay;
 
-        bool gamepadWouldHideHardware = useGamepad && sceneWantsCursor &&
-                                        (_awaitingFirstGamepadPointerMotion || gamepadIdleTimedOut);
-        bool hardwareHiddenByGamepadPointer = gamepadWouldHideHardware &&
+        // OS mouse cursor suppression is now driven purely by which input was most recent: gamepad activity
+        // pinned the grant to -infinity (hide), mouse activity pinned it to +infinity (show). This replaces
+        // the old rule that only hid the OS cursor while the sprite itself was hidden — players expect the
+        // physical mouse to disappear the instant they touch the controller, not wait for sprite idle-out.
+        bool hardwareHiddenByGamepadPointer = useGamepad && sceneWantsCursor &&
                                               Time.unscaledTime >= _osCursorGrantedByMouseKeyboardUntilUnscaled;
         CursorVisibilityKeeper.SuppressMenuHardwareCursor = hardwareHiddenByGamepadPointer;
 
@@ -476,8 +483,8 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
             return;
         }
 
-        if (!_awaitingFirstGamepadPointerMotion && processedRightStick.sqrMagnitude > 1e-8f)
-            _screenPosition += processedRightStick * (pointerSpeedPixelsPerSecond * Time.unscaledDeltaTime);
+        if (!_awaitingFirstGamepadPointerMotion && processedLeftStick.sqrMagnitude > 1e-8f)
+            _screenPosition += processedLeftStick * (pointerSpeedPixelsPerSecond * Time.unscaledDeltaTime);
 
         _screenPosition.x = Mathf.Clamp(_screenPosition.x, 0f, Screen.width - 1f);
         _screenPosition.y = Mathf.Clamp(_screenPosition.y, 0f, Screen.height - 1f);
