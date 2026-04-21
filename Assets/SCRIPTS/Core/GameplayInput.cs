@@ -100,6 +100,33 @@ public static class GameplayInput
         return Gamepad.current != null && Gamepad.current.leftShoulder.wasPressedThisFrame;
     }
 
+    /// <summary>T or D-pad Up — toggle the teleport menu.</summary>
+    public static bool TeleportMenuTogglePressedThisFrame()
+    {
+        if (Keyboard.current != null && Keyboard.current.tKey.wasPressedThisFrame)
+            return true;
+        return Gamepad.current != null && Gamepad.current.dpad.up.wasPressedThisFrame;
+    }
+
+    /// <summary>G, D-pad Left, or Menu/Start (the "hamburger" button) — toggle the inventory panel.</summary>
+    public static bool InventoryTogglePressedThisFrame()
+    {
+        if (Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame)
+            return true;
+        if (Gamepad.current == null)
+            return false;
+        return Gamepad.current.dpad.left.wasPressedThisFrame
+               || Gamepad.current.startButton.wasPressedThisFrame;
+    }
+
+    /// <summary>F or D-pad Down — feed the pet.</summary>
+    public static bool FeedPetPressedThisFrame()
+    {
+        if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
+            return true;
+        return Gamepad.current != null && Gamepad.current.dpad.down.wasPressedThisFrame;
+    }
+
     /// <summary>Gamepad B (East) — cancel / back (e.g. close pause when mapped in UI).</summary>
     public static bool GamepadCancelPressedThisFrame()
     {
@@ -110,6 +137,9 @@ public static class GameplayInput
     public static bool ChatPressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.C);
     public static bool PausePressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.Escape);
     public static bool MinimapTogglePressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.M);
+    public static bool TeleportMenuTogglePressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.T);
+    public static bool InventoryTogglePressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.G);
+    public static bool FeedPetPressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F);
     public static bool GamepadCancelPressedThisFrame() => false;
 #endif
 }

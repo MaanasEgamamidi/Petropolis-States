@@ -105,6 +105,15 @@ namespace StarterAssets
 				move = Vector2.zero;
 				jump = false;
 				sprint = false;
+				return;
+			}
+
+			if (TeleportMenuController.IsOpen)
+			{
+				look = Vector2.zero;
+				move = Vector2.zero;
+				jump = false;
+				sprint = false;
 			}
 		}
 

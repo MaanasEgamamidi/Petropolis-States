@@ -248,11 +248,7 @@ public class TeleportMenuController : MonoBehaviour
 
     static bool TogglePressedThisFrame()
     {
-#if ENABLE_INPUT_SYSTEM
-        return Keyboard.current != null && Keyboard.current.tKey.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(KeyCode.T);
-#endif
+        return GameplayInput.TeleportMenuTogglePressedThisFrame();
     }
 
     static bool CloseKeyPressedThisFrame()

@@ -70,10 +70,6 @@ public class PetFeedController : MonoBehaviour
 
     static bool FeedKeyPressedThisFrame()
     {
-#if ENABLE_INPUT_SYSTEM
-        return Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(KeyCode.F);
-#endif
+        return GameplayInput.FeedPetPressedThisFrame();
     }
 }

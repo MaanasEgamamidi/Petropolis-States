@@ -56,6 +56,9 @@ public class NotificationController : MonoBehaviour
             offScreenY = _rect.anchoredPosition.y;
 
         SetAnchoredY(offScreenY);
+
+        // Global 2x boost to on-screen hold time for all notifications.
+        displayDuration *= 2f;
     }
 
     void Start()

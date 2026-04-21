@@ -60,6 +60,9 @@ public class BadgeNotificationController : MonoBehaviour
             bodyText = GetComponentInChildren<TMP_Text>(true);
         if (legacyBodyText == null)
             legacyBodyText = GetComponentInChildren<Text>(true);
+
+        // Global 2x boost to on-screen hold time for all notifications.
+        displayDuration *= 2f;
     }
 
     /// <summary>

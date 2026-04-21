@@ -193,10 +193,6 @@ public class InventoryPanelController : MonoBehaviour
 
     static bool TogglePressedThisFrame()
     {
-#if ENABLE_INPUT_SYSTEM
-        return Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(KeyCode.G);
-#endif
+        return GameplayInput.InventoryTogglePressedThisFrame();
     }
 }

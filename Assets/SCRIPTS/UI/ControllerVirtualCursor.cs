@@ -78,6 +78,8 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
             h = h * 29 + (active.name != null ? active.name.GetHashCode() : 0);
             h = h * 29 + (WorldPauseController.IsPaused ? 1 : 0);
             h = h * 29 + (NpcProximityChatOpener.IsWorldNpcChatOpen ? 1 : 0);
+            h = h * 29 + (InventoryPanelController.IsOpen ? 1 : 0);
+            h = h * 29 + (TeleportMenuController.IsOpen ? 1 : 0);
             h = h * 29 + (IsPetChooseSceneLoaded() ? 1 : 0);
             return h;
         }
@@ -167,6 +169,10 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
         if (scene != "World")
             return true;
         if (WorldPauseController.IsPaused)
+            return true;
+        if (InventoryPanelController.IsOpen)
+            return true;
+        if (TeleportMenuController.IsOpen)
             return true;
         return NpcProximityChatOpener.IsWorldNpcChatOpen;
     }
@@ -382,13 +388,19 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
                                  Mouse.current != null;
         bool useGamepad = pad != null && sceneWantsCursor;
 
+        // Inventory and Teleport have no first-selected button to focus, so gating the sprite behind
+        // "first stick motion" leaves the player unable to interact at all. Show the cursor immediately
+        // for those overlays; the idle-hide timer still kicks in after no activity.
+        bool worldOverlayWantsImmediateCursor = SceneManager.GetActiveScene().name == "World"
+            && (InventoryPanelController.IsOpen || TeleportMenuController.IsOpen);
+
         int menuCtx = BuildMenuCursorContextId();
         if (menuCtx != _menuCursorContextId)
         {
             _menuCursorContextId = menuCtx;
             if (sceneWantsCursor)
             {
-                _awaitingFirstGamepadPointerMotion = true;
+                _awaitingFirstGamepadPointerMotion = !worldOverlayWantsImmediateCursor;
                 _gamepadCursorIdleTimer = 0f;
                 _screenPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
             }
@@ -396,7 +408,7 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
 
         if (useGamepad && !_hadGamepadForMenuLastFrame)
         {
-            _awaitingFirstGamepadPointerMotion = true;
+            _awaitingFirstGamepadPointerMotion = !worldOverlayWantsImmediateCursor;
             _gamepadCursorIdleTimer = 0f;
             _screenPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
         }
