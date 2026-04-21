@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -67,8 +68,9 @@ public class ChatManager : MonoBehaviour
         if (_npcIdentity == null) return;
 
         string text = _npcIdentity.FormattedGreeting;
-        SessionChatLog.RecordMessage(NpcName, fromPlayer: false, text, GlobalData.CurrentTimeOfDay);
-        SpawnNpcBubble(text);
+        string visible = StripHiddenBlocks(text);
+        SessionChatLog.RecordMessage(NpcName, fromPlayer: false, visible, GlobalData.CurrentTimeOfDay);
+        SpawnNpcBubble(visible);
         _history.Add(new ChatMessage { role = "assistant", content = text });
     }
 
@@ -102,10 +104,34 @@ public class ChatManager : MonoBehaviour
 
     public void ReceiveNpcReply(string text)
     {
-        SpawnNpcBubble(text);
+        // Display / log only the human-facing part; the full reply (with any hidden
+        // meta blocks like [PRICES]...[/PRICES]) stays in history so the model can
+        // see its own prior state and so ShopPurchaseTracker can parse the raw text.
+        string visible = StripHiddenBlocks(text);
+
+        SpawnNpcBubble(visible);
         _history.Add(new ChatMessage { role = "assistant", content = text });
-        SessionChatLog.RecordMessage(NpcName, fromPlayer: false, text, GlobalData.CurrentTimeOfDay);
+        SessionChatLog.RecordMessage(NpcName, fromPlayer: false, visible, GlobalData.CurrentTimeOfDay);
         OnNpcReplyReceived?.Invoke(text);
+    }
+
+    // ── Hidden-Block Stripping ──────────────────────────────────────
+
+    // Matches a [PRICES]...[/PRICES] block (case-insensitive, spans lines) plus any
+    // whitespace/newlines immediately surrounding it, so removing it doesn't leave
+    // a blank gap at the end of the message.
+    static readonly Regex _hiddenBlockRegex = new Regex(
+        @"\s*\[PRICES\].*?\[/PRICES\]\s*",
+        RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+    /// <summary>
+    /// Strips meta blocks that are meant for the game / model but not the player
+    /// (currently just [PRICES]...[/PRICES]). Safe to call on any string.
+    /// </summary>
+    static string StripHiddenBlocks(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        return _hiddenBlockRegex.Replace(text, "").Trim();
     }
 
     // ── Bubble Spawning ─────────────────────────────────────────────

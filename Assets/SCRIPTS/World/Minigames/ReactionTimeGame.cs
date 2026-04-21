@@ -2,10 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 using UnityEngine.UI;
 
 namespace Petropolis.Minigames
 {
+    /// <summary>
+    /// Three-attempt reaction-time test. Click / Space / Xbox A to advance. When launched from a
+    /// <see cref="MinigameLauncherZone"/>, the total payout is scored proportionally to how fast
+    /// the player reacts across all attempts (faster reactions = more dollars) and awarded when
+    /// they finish the third trial.
+    /// </summary>
     public class ReactionTimeGame : MonoBehaviour
     {
         private enum State
@@ -34,10 +43,25 @@ namespace Petropolis.Minigames
         [SerializeField] private float maxWait = 3.5f;
         [SerializeField] private int totalAttempts = 3;
 
+        [Header("Economy")]
+        [Tooltip("Flat bonus added per completed attempt.")]
+        [SerializeField] private float baseDollarsPerAttempt = 20f;
+
+        [Tooltip("Dollars per millisecond under 600ms. Faster reactions stack this up; anything at/above 600ms gives only the base bonus.")]
+        [SerializeField] private float dollarsPerMsSaved = 0.25f;
+
+        [Tooltip("Milliseconds cutoff: reactions at or above this earn only the flat base bonus.")]
+        [SerializeField] private float slowReactionCutoffMs = 600f;
+
+        [Tooltip("Seconds to hold the final results before banking and returning to the World.")]
+        [SerializeField] private float finishedHoldSeconds = 3.5f;
+
         private State state = State.Idle;
         private float greenShownAt;
         private readonly List<float> reactionTimes = new List<float>();
         private Coroutine waitRoutine;
+        private Coroutine returnRoutine;
+        private bool payoutAwarded;
 
         private void Awake()
         {
@@ -51,7 +75,6 @@ namespace Petropolis.Minigames
 
         private void AutoResolveReferences()
         {
-            // If references weren't wired in the inspector, locate UI pieces by name.
             if (lightImage == null)
             {
                 foreach (Image img in FindObjectsByType<Image>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -74,28 +97,59 @@ namespace Petropolis.Minigames
 
         private void Update()
         {
-            // Accept mouse click, space, or any touch as "respond" input.
-            bool pressed = Input.GetMouseButtonDown(0)
-                           || Input.GetKeyDown(KeyCode.Space)
-                           || Input.GetKeyDown(KeyCode.Return);
+            if (QuitPressedThisFrame())
+            {
+                BeginReturnToWorld();
+                return;
+            }
 
-            if (!pressed) return;
+            if (!RespondPressedThisFrame()) return;
 
             switch (state)
             {
                 case State.Idle:
                 case State.TooSoon:
-                case State.Finished:
                     StartNextAttempt();
                     break;
+                case State.Finished:
+                    // In-session: finishing already triggers return; outside a session, restart.
+                    if (!MinigameSession.IsActive) StartNextAttempt();
+                    break;
                 case State.Waiting:
-                    // Clicked while still red = too soon.
                     FailTooSoon();
                     break;
                 case State.Ready:
                     RegisterReaction();
                     break;
             }
+        }
+
+        static bool RespondPressedThisFrame()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Keyboard kb = Keyboard.current;
+            if (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame)) return true;
+            Mouse mouse = Mouse.current;
+            if (mouse != null && mouse.leftButton.wasPressedThisFrame) return true;
+            Gamepad gp = Gamepad.current;
+            if (gp != null && (gp.buttonSouth.wasPressedThisFrame || gp.buttonWest.wasPressedThisFrame)) return true;
+            return false;
+#else
+            return Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return);
+#endif
+        }
+
+        static bool QuitPressedThisFrame()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Keyboard kb = Keyboard.current;
+            if (kb != null && kb.escapeKey.wasPressedThisFrame) return true;
+            Gamepad gp = Gamepad.current;
+            if (gp != null && (gp.startButton.wasPressedThisFrame || gp.selectButton.wasPressedThisFrame)) return true;
+            return false;
+#else
+            return Input.GetKeyDown(KeyCode.Escape);
+#endif
         }
 
         private void ResetGame()
@@ -105,7 +159,7 @@ namespace Petropolis.Minigames
             state = State.Idle;
             SetLight(redColor);
             if (instructionText != null)
-                instructionText.text = "Reaction Time Test\nClick / Space to start";
+                instructionText.text = "Reaction Time Test\nClick / Space / A to start";
             if (resultText != null) resultText.text = string.Empty;
             UpdateAttemptText();
         }
@@ -132,7 +186,7 @@ namespace Petropolis.Minigames
         private IEnumerator WaitThenGo()
         {
             float delay = Random.Range(minWait, maxWait);
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSecondsRealtime(delay);
 
             state = State.Ready;
             SetLight(greenColor);
@@ -183,16 +237,21 @@ namespace Petropolis.Minigames
             }
             float avg = total / reactionTimes.Count;
 
+            float earned = ComputePayoutForRun();
+            AwardPayoutOnce(earned);
+
             if (instructionText != null)
-                instructionText.text = "Done!\nClick to play again";
+            {
+                instructionText.text = MinigameSession.IsActive
+                    ? $"Done! You earned ${earned:0}"
+                    : "Done!\nClick to play again";
+            }
 
             if (resultText != null)
             {
-                var lines = new System.Text.StringBuilder();
+                System.Text.StringBuilder lines = new System.Text.StringBuilder();
                 for (int i = 0; i < reactionTimes.Count; i++)
-                {
                     lines.AppendLine($"Try {i + 1}: {Mathf.RoundToInt(reactionTimes[i] * 1000f)} ms");
-                }
                 lines.AppendLine();
                 lines.AppendLine($"Best: {Mathf.RoundToInt(best * 1000f)} ms");
                 lines.Append($"Avg:  {Mathf.RoundToInt(avg * 1000f)} ms");
@@ -200,6 +259,59 @@ namespace Petropolis.Minigames
             }
 
             UpdateAttemptText();
+
+            if (MinigameSession.IsActive && returnRoutine == null)
+                returnRoutine = StartCoroutine(ReturnAfterDelay());
+        }
+
+        private float ComputePayoutForRun()
+        {
+            float total = 0f;
+            foreach (float t in reactionTimes)
+                total += PayoutForAttempt(t);
+            return total;
+        }
+
+        /// <summary>
+        /// Payout scale for a single attempt. Faster = more. At ≥<see cref="slowReactionCutoffMs"/>
+        /// only <see cref="baseDollarsPerAttempt"/> is awarded; every ms saved below that adds
+        /// <see cref="dollarsPerMsSaved"/> dollars.
+        /// </summary>
+        private float PayoutForAttempt(float reactionSeconds)
+        {
+            float ms = reactionSeconds * 1000f;
+            float msSaved = Mathf.Max(0f, slowReactionCutoffMs - ms);
+            return baseDollarsPerAttempt + msSaved * dollarsPerMsSaved;
+        }
+
+        private void AwardPayoutOnce(float earned)
+        {
+            if (payoutAwarded) return;
+            if (!MinigameSession.IsActive) return;
+            MinigameSession.AddPayout(earned);
+            payoutAwarded = true;
+        }
+
+        private IEnumerator ReturnAfterDelay()
+        {
+            yield return new WaitForSecondsRealtime(finishedHoldSeconds);
+            MinigameSession.EndSession();
+        }
+
+        private void BeginReturnToWorld()
+        {
+            if (!MinigameSession.IsActive) return;
+            if (returnRoutine != null) return;
+            // Early exit: still award whatever attempts they already completed.
+            if (!payoutAwarded)
+                AwardPayoutOnce(ComputePayoutForRun());
+            returnRoutine = StartCoroutine(ReturnAfterDelay_Immediate());
+        }
+
+        private IEnumerator ReturnAfterDelay_Immediate()
+        {
+            yield return null;
+            MinigameSession.EndSession();
         }
 
         private void UpdateAttemptText()

@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -33,9 +34,17 @@ namespace Petropolis.Minigames.FlappyBird
         [SerializeField] Color groundColor = new Color(0.4f, 0.26f, 0.12f, 1f);
         [SerializeField] Color uiColor = Color.white;
 
+        [Header("Economy")]
+        [Tooltip("Dollars credited to the player per beam cleared.")]
+        [SerializeField] float dollarsPerBeam = 10f;
+
+        [Tooltip("Seconds the GAME OVER screen stays up before returning to the World (only when launched from a MinigameLauncherZone).")]
+        [SerializeField] float gameOverHoldSeconds = 2.25f;
+
         State state = State.WaitingToStart;
         int score;
         int bestScore;
+        bool returningToWorld;
 
         void Awake()
         {
@@ -57,10 +66,27 @@ namespace Petropolis.Minigames.FlappyBird
 
         void Update()
         {
+            if (!returningToWorld && QuitPressedThisFrame())
+            {
+                BeginReturnToWorld("You left early.");
+                return;
+            }
+
+            if (returningToWorld) return;
+
             if (state != State.Playing && ConsumeStartInput())
             {
                 BeginRun();
             }
+        }
+
+        static bool QuitPressedThisFrame()
+        {
+            Keyboard kb = Keyboard.current;
+            if (kb != null && kb.escapeKey.wasPressedThisFrame) return true;
+            Gamepad gp = Gamepad.current;
+            if (gp != null && (gp.startButton.wasPressedThisFrame || gp.selectButton.wasPressedThisFrame)) return true;
+            return false;
         }
 
         static bool ConsumeStartInput()
@@ -108,6 +134,7 @@ namespace Petropolis.Minigames.FlappyBird
             if (state != State.Playing) return;
             score++;
             if (score > bestScore) bestScore = score;
+            MinigameSession.AddPayout(dollarsPerBeam);
             RefreshUI(string.Empty);
         }
 
@@ -118,12 +145,37 @@ namespace Petropolis.Minigames.FlappyBird
             if (spawner != null) spawner.StopSpawning();
             if (bird != null) bird.FreezeForGameOver();
             if (score > bestScore) bestScore = score;
-            RefreshUI("GAME OVER - tap to retry");
+
+            // When launched from a MinigameLauncherZone, the "loss" banks earnings and sends the
+            // player back to the World. In standalone play-mode there's no session active, so we
+            // fall back to the existing retry-on-tap behaviour.
+            if (MinigameSession.IsActive)
+                BeginReturnToWorld("GAME OVER");
+            else
+                RefreshUI("GAME OVER - tap to retry");
+        }
+
+        void BeginReturnToWorld(string status)
+        {
+            if (returningToWorld) return;
+            returningToWorld = true;
+            state = State.GameOver;
+            if (spawner != null) spawner.StopSpawning();
+            if (bird != null) bird.FreezeForGameOver();
+            RefreshUI(status);
+            StartCoroutine(ReturnToWorldAfterDelay());
+        }
+
+        IEnumerator ReturnToWorldAfterDelay()
+        {
+            yield return new WaitForSecondsRealtime(gameOverHoldSeconds);
+            MinigameSession.EndSession();
         }
 
         void RefreshUI(string status)
         {
-            if (scoreText != null) scoreText.text = $"SCORE: {score}";
+            float earned = MinigameSession.IsActive ? MinigameSession.PendingEarnings : score * dollarsPerBeam;
+            if (scoreText != null) scoreText.text = $"SCORE: {score}  (${earned:0})";
             if (bestText != null) bestText.text = $"BEST: {bestScore}";
             if (statusText != null) statusText.text = status;
         }

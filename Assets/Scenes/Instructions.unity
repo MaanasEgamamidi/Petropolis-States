@@ -823,36 +823,21 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit. Iaculis massa
-    nisl malesuada lacinia integer nunc posuere. Nulla molestie mattis scelerisque
-    maximus eget fermentum odio. Ligula congue sollicitudin erat viverra ac tincidunt
-    nam. Dui felis venenatis ultrices proin libero feugiat tristique. Sem placerat
-    in id cursus mi pretium tellus. Taciti sociosqu ad litora torquent per conubia
-    nostra. Mauris pharetra vestibulum fusce dictum risus blandit quis. Justo lectus
-    commodo augue arcu dignissim velit aliquam. Senectus netus suscipit auctor curabitur
-    facilisi cubilia curae. Sed diam urna tempor pulvinar vivamus fringilla lacus.
-    Et magnis dis parturient montes nascetur ridiculus mus. Ante condimentum neque
-    at luctus nibh finibus facilisis. Rutrum gravida cras eleifend turpis fames primis
-    vulputate. Dolor sit amet consectetur adipiscing elit quisque faucibus. Nisl
-    malesuada lacinia integer nunc posuere ut hendrerit. Mattis scelerisque maximus
-    eget fermentum odio phasellus non. Sollicitudin erat viverra ac tincidunt nam
-    porta elementum. Venenatis ultrices proin libero feugiat tristique accumsan maecenas.
-    In id cursus mi pretium tellus duis convallis. Ad litora torquent per conubia
-    nostra inceptos himenaeos. Vestibulum fusce dictum risus blandit quis suspendisse
-    aliquet. Commodo augue arcu dignissim velit aliquam imperdiet mollis. Suscipit
-    auctor curabitur facilisi cubilia curae hac habitasse. Urna tempor pulvinar vivamus
-    fringilla lacus nec metus. Dis parturient montes nascetur ridiculus mus donec
-    rhoncus. Neque at luctus nibh finibus facilisis dapibus etiam. Cras eleifend
-    turpis fames primis vulputate ornare sagittis. Amet consectetur adipiscing elit
-    quisque faucibus ex sapien. Lacinia integer nunc posuere ut hendrerit semper
-    vel. Maximus eget fermentum odio phasellus non purus est. Viverra ac tincidunt
-    nam porta elementum a enim. Proin libero feugiat tristique accumsan maecenas
-    potenti ultricies. Cursus mi pretium tellus duis convallis tempus leo. Torquent
-    per conubia nostra inceptos himenaeos orci varius. Dictum risus blandit quis
-    suspendisse aliquet nisi sodales. Arcu dignissim velit aliquam imperdiet mollis
-    nullam volutpat. Curabitur facilisi cubilia curae hac habitasse platea dictumst.
-    Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Montes nascetur
-    ridiculus mus donec '
+  m_text: "<align=center><size=40><b>OBJECTIVES</b></size><br>Welcome to Petropolis!
+    Adopt a dog and care for it while managing your money in a stylized low-poly
+    city. Watch your pet's five stats (Hunger, Happiness, Energy, Health, Cleanliness),
+    earn a daily allowance, buy supplies, and chat with AI-powered shopkeepers
+    to negotiate better prices. Explore, meet NPCs, earn badges, and survive multiple
+    in-game days.<br><br><size=40><b>CONTROLS</b></size></align><br><align=left><indent=6%><b>Action<pos=40%>Controller<pos=72%>Keyboard
+     /  Mouse</b><br>Move<pos=40%>Left Stick<pos=72%>W  /  A  /  S  /  D<br>Camera<pos=40%>Right
+    Stick<pos=72%>Mouse<br>Jump<pos=40%>A  (South)<pos=72%>Space<br>Sprint<pos=40%>LT
+     /  L3<pos=72%>Left Shift<br>Interact<pos=40%>X  (West)<pos=72%>E<br>Chat with
+    NPC<pos=40%>Y  (North)<pos=72%>C<br>Feed pet<pos=40%>D-Pad Down<pos=72%>F<br>Inventory<pos=40%>D-Pad
+    Left  /  Start<pos=72%>G<br>Pet statistics<pos=40%>D-Pad Right<pos=72%>Q<br>Teleport
+    menu<pos=40%>D-Pad Up<pos=72%>T<br>Toggle minimap<pos=40%>LB<pos=72%>M<br>Pause
+     /  Settings<pos=40%>RB  /  View<pos=72%>Esc<br>Back  /  Cancel<pos=40%>B  (East)<pos=72%>-</indent></align><br><br><align=center><b>Tip:</b>
+    Keep cash in reserve, negotiate prices, and check stats often.<br>Hit <b>Let's
+    Play!</b> when ready.</align>"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 660cf1356726a154aa90b63dd2769fd7, type: 2}
   m_sharedMaterial: {fileID: 2232406774807966550, guid: 660cf1356726a154aa90b63dd2769fd7, type: 2}
@@ -879,15 +864,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1

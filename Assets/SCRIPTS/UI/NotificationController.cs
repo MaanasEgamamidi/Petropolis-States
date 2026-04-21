@@ -1,5 +1,7 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Reusable slide-down notification. Place on any child of a notifications canvas.
@@ -44,6 +46,10 @@ public class NotificationController : MonoBehaviour
 
     RectTransform _rect;
     Coroutine _activeRoutine;
+
+    Text _legacyText;
+    TMP_Text _tmpText;
+    bool _textResolved;
 
     static bool _startInfoShownThisSession;
     static int _lastPetSkinShown = -1;
@@ -96,7 +102,7 @@ public class NotificationController : MonoBehaviour
     IEnumerator DelayedShow(float delay)
     {
         yield return new WaitForSeconds(delay);
-        yield return RunSlideSequence();
+        yield return RunSlideSequence(displayDuration);
     }
 
     /// <summary>Immediately starts the slide-down, hold, slide-up sequence.</summary>
@@ -104,13 +110,42 @@ public class NotificationController : MonoBehaviour
     {
         if (_activeRoutine != null)
             StopCoroutine(_activeRoutine);
-        _activeRoutine = StartCoroutine(RunSlideSequence());
+        _activeRoutine = StartCoroutine(RunSlideSequence(displayDuration));
     }
 
-    IEnumerator RunSlideSequence()
+    /// <summary>
+    /// Replaces the notification text and shows it for <paramref name="holdSeconds"/> seconds
+    /// (slides down, holds, slides up). Pass a negative value to use the configured
+    /// <see cref="displayDuration"/>.
+    /// </summary>
+    public void ShowMessage(string message, float holdSeconds = -1f)
+    {
+        SetText(message);
+
+        float hold = holdSeconds < 0f ? displayDuration : holdSeconds;
+
+        if (_activeRoutine != null)
+            StopCoroutine(_activeRoutine);
+        _activeRoutine = StartCoroutine(RunSlideSequence(hold));
+    }
+
+    void SetText(string message)
+    {
+        if (!_textResolved)
+        {
+            _tmpText = GetComponentInChildren<TMP_Text>(true);
+            _legacyText = GetComponentInChildren<Text>(true);
+            _textResolved = true;
+        }
+
+        if (_tmpText != null) _tmpText.text = message;
+        if (_legacyText != null) _legacyText.text = message;
+    }
+
+    IEnumerator RunSlideSequence(float holdSeconds)
     {
         yield return SlideTo(onScreenY);
-        yield return new WaitForSeconds(displayDuration);
+        yield return new WaitForSeconds(holdSeconds);
         yield return SlideTo(offScreenY);
         _activeRoutine = null;
     }

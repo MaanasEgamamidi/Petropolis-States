@@ -26,6 +26,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ClosingScene.unity
     guid: 8494163256a95dd4ba8b72668c9b0f88
+  - enabled: 1
+    path: Assets/Scenes/Minigames/FlappyBird.unity
+    guid: e90411af740419f44b5c2677bc536537
+  - enabled: 1
+    path: Assets/Scenes/Minigames/Pong.unity
+    guid: 531869a9e7326bf48a5bfad481aeda3f
+  - enabled: 1
+    path: Assets/Scenes/Minigames/ReactionTime.unity
+    guid: 23619a77392071c4f892336d91af345e
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

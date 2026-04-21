@@ -49,9 +49,19 @@ public class NpcProximityChatOpener : MonoBehaviour
         if (interactHintText != null)
         {
             if (WorldPauseController.IsPaused || IsWorldNpcChatOpen)
+            {
                 interactHintText.text = string.Empty;
+            }
             else
-                interactHintText.text = NpcChatZone.CurrentInteractHint ?? string.Empty;
+            {
+                // Prefer the minigame hint when the player is inside a MinigameLauncherZone —
+                // those zones use E/X to play, not C to chat.
+                string minigameHint = MinigameLauncherZone.CurrentInteractHint;
+                if (!string.IsNullOrEmpty(minigameHint))
+                    interactHintText.text = minigameHint;
+                else
+                    interactHintText.text = NpcChatZone.CurrentInteractHint ?? string.Empty;
+            }
         }
 
         if (WorldPauseController.IsPaused)
