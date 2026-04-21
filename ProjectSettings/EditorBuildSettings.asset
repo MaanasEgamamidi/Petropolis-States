@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Main Menu.unity
     guid: bbca0b3b33f3b91458dc5accdfa8d8ae
   - enabled: 1
-    path: Assets/SCENES/Instructions.unity
+    path: Assets/Scenes/Instructions.unity
     guid: d33ea66e17016874ebc9e5fad8e37604
   - enabled: 1
     path: Assets/Scenes/CharacterChoose.unity
