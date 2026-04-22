@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
-/// World: press <b>L</b> (keyboard) or <b>D-pad Right</b> / <b>right trigger (RT)</b> (gamepad) to toggle the loans panel. Opening hides the minimap, money counter,
+/// World: press <b>L</b> (keyboard) or <b>right trigger (RT)</b> (gamepad) to toggle the loans panel. Opening hides the minimap, money counter,
 /// day-night clock, and pet-statistics HUD widgets; closing restores them. Mirrors the
 /// <see cref="InventoryPanelController"/> pattern. Live numbers come from the loan fields on
 /// <see cref="GlobalData"/>; when no loan is active the body collapses to a "Visit the bank..."

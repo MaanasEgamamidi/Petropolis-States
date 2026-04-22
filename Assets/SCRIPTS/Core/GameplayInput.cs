@@ -127,14 +127,13 @@ public static class GameplayInput
         return Gamepad.current != null && Gamepad.current.dpad.down.wasPressedThisFrame;
     }
 
-    /// <summary>L, D-pad Right, or right trigger (RT) — toggle the loans panel.</summary>
+    /// <summary>L (keyboard) or right trigger (RT) — toggle the loans panel.</summary>
     public static bool LoanPanelTogglePressedThisFrame()
     {
         if (Keyboard.current != null && Keyboard.current.lKey.wasPressedThisFrame)
             return true;
         var pad = GetUsableGamepad();
-        return pad != null
-               && (pad.dpad.right.wasPressedThisFrame || pad.rightTrigger.wasPressedThisFrame);
+        return pad != null && pad.rightTrigger.wasPressedThisFrame;
     }
 
     /// <summary>Gamepad B (East) — cancel / back (e.g. close pause when mapped in UI).</summary>
