@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Petropolis — FBLA Intro to Programming Presentation Script (7 min)</title>
+  <style>
+    :root {
+      --p1: #1a5f7a;
+      --p2: #2d6a4f;
+      --p3: #6f42c1;
+      --rubric: #b8860b;
+      --screen: #333;
+      --bg: #f7f5f2;
+      --card: #fff;
+      --border: #ddd;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      line-height: 1.5;
+      color: #222;
+      background: var(--bg);
+      margin: 0;
+      padding: 1.5rem;
+      max-width: 58rem;
+      margin-inline: auto;
+    }
+    h1 { font-size: 1.35rem; margin-top: 0; }
+    h2 { font-size: 1.1rem; margin: 1.75rem 0 0.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.25rem; }
+    h3 { font-size: 1rem; margin: 1rem 0 0.35rem; }
+    .meta {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .meta dl { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 1rem; margin: 0; }
+    .meta dt { font-weight: 600; }
+    .meta dd { margin: 0; }
+    .draft-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+      margin: 0.5rem 0 0;
+    }
+    .route-map {
+      background: linear-gradient(135deg, #e8f4f8 0%, #eef6ec 100%);
+      border: 1px solid #bcd;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+    }
+    .route-map ol { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    .route-map li { margin: 0.35rem 0; }
+    .segment {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+    .time {
+      font-weight: 700;
+      color: #555;
+      font-size: 0.9rem;
+    }
+    .grid {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (min-width: 640px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    .panel {
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.92rem;
+    }
+    .panel-screen {
+      background: #f0f0f0;
+      border-left: 4px solid var(--screen);
+    }
+    .panel-say-p1 { background: #e3f2f7; border-left: 4px solid var(--p1); }
+    .panel-say-p2 { background: #e6f4ea; border-left: 4px solid var(--p2); }
+    .panel-say-p3 { background: #ede7f6; border-left: 4px solid var(--p3); }
+    .panel-rubric {
+      background: #fffbeb;
+      border-left: 4px solid var(--rubric);
+      font-size: 0.88rem;
+    }
+    .panel-rubric strong { color: #7c5e00; }
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+    }
+    .tag-p1 { background: var(--p1); color: #fff; }
+    .tag-p2 { background: var(--p2); color: #fff; }
+    .tag-p3 { background: var(--p3); color: #fff; }
+    .tag-rubric { background: var(--rubric); color: #fff; }
+    .tag-screen { background: #555; color: #fff; }
+    ul.compact { margin: 0.35rem 0; padding-left: 1.2rem; }
+    ul.compact li { margin: 0.2rem 0; }
+    .cue { font-style: italic; color: #444; font-size: 0.9rem; }
+    .toc { font-size: 0.9rem; }
+    .toc a { color: var(--p1); }
+    code, .path { font-family: ui-monospace, monospace; font-size: 0.85em; }
+    .path { background: #eee; padding: 0.1rem 0.35rem; border-radius: 3px; }
+    footer {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Petropolis — Presentation script (FBLA Introduction to Programming)</h1>
+
+  <div class="meta">
+    <dl>
+      <dt>Team</dt>
+      <dd>Harshil Sharma, Maanas Egamamidi, Dev Agarwal</dd>
+      <dt>Topic (2025–2026)</dt>
+      <dd>Build a Virtual Pet — with cost-of-care / financial responsibility</dd>
+      <dt>Time limit</dt>
+      <dd>7 minutes presentation (exclusive of setup &amp; Q&amp;A). Target ~6:00–6:30 spoken; leaves buffer before the 1-minute warning.</dd>
+      <dt>Roles</dt>
+      <dd><strong>Person 1</strong> — introduction, hands keyboard to Person 2, conclusion.<br />
+          <strong>Person 2</strong> — plays live (this document shows what judges should see on screen).<br />
+          <strong>Person 3</strong> — technical explanation tied to the official rating sheet.</dd>
+      <dt>Draft reference (your notes image)</dt>
+      <dd>
+        <img class="draft-img" src="presentation-draft-guide.png" alt="Handwritten draft outline for Petropolis presentation" width="900" />
+      </dd>
+    </dl>
+  </div>
+
+  <h2>Player 2 route map (what judges see, in order)</h2>
+  <div class="route-map">
+    <strong>Linear path through the build</strong> — practice until this fits your timing.
+    <ol>
+      <li><strong>Main Menu</strong> → start game (Person 1 may still be speaking; Person 2 positions hands on controls).</li>
+      <li><strong>Character creation</strong> → choose appearance, enter a valid name, confirm → loads <strong>World</strong>.</li>
+      <li><strong>World</strong> → walk to <strong>pet shop</strong> (additive <strong>PetChoose</strong>) → pick dog appearance / name → return to World.</li>
+      <li><strong>Care &amp; economy</strong> → show HUD / stats (hunger, health, happiness, energy); perform at least one care action (feed, play, rest, clean, or vet) so numbers move.</li>
+      <li><strong>Minigames / jobs</strong> → stand in a <strong>MinigameLauncherZone</strong> (hint: Press E / X to play) → play one short session — e.g. <strong>ReactionTime</strong> (three reaction trials), <strong>Pong</strong> (hits pay until a miss), or <strong>FlappyBird</strong> (beams cleared pay) — then return to World with an on-screen <strong>You earned $X</strong> style notification and higher cash.</li>
+      <li><strong>Supermarket NPC</strong> → open chat → negotiate a price → complete a purchase (shows AI + money + inventory).</li>
+      <li><strong>Bank NPC</strong> (short) → finalize a small loan with stated principal, interest %, and term — OR mention it verbally and show <span class="path">LoansPanelController</span> / owed balance if live chat is too slow.</li>
+      <li><strong>Session report</strong> → stop play mode (Editor) or trigger quit flow so <span class="path">Session Reports/SessionReport#.html</span> is generated → open the HTML file for judges.</li>
+    </ol>
+    <p class="cue">If Wi‑Fi fails at NLC, say your backup plan out loud (PDF warns internet may be unreliable): e.g. show recorded clip, offline error path in chat, or pre-generated report — aligns with “Presentation Protocols” professionalism.</p>
+  </div>
+
+  <h2>How this maps to the rubric (quick index)</h2>
+  <ul class="compact toc">
+    <li><strong>Code Quality &amp; Modularity</strong> — Person 3 cites separate scripts: <span class="path">GlobalData.cs</span>, <span class="path">MinigameSession.cs</span> + <span class="path">MinigameLauncherZone.cs</span> + per-game managers (<span class="path">ReactionTimeGame.cs</span>, <span class="path">PongGameManager.cs</span>, <span class="path">FlappyBirdGameManager.cs</span>), <span class="path">SessionTracker.cs</span> + <span class="path">ReportWriter.cs</span>, <span class="path">ChatManager.cs</span> + <span class="path">NpcOpenAiChatBridge.cs</span> + trackers.</li>
+    <li><strong>User Experience &amp; Navigation</strong> — Menus, world navigation, chat UI, optional pause/instructions; on-screen prompts.</li>
+    <li><strong>Input Validation</strong> — Name rules in character screen; loan bounds in <span class="path">GlobalData.TryOpenLoan</span>; semantic checks in trackers / NPC prompts.</li>
+    <li><strong>Functionality (topic)</strong> — Named pet, care actions, emotional/stat feedback, expenses, <strong>optional earning via minigames</strong> (topic: chores/tasks to earn pet-care funds), loans.</li>
+    <li><strong>Data &amp; Logic</strong> — Static session state, <span class="path">PlayerPrefs</span>, lists of money snapshots for graphs, day-night driving economy events.</li>
+    <li><strong>Presentable report</strong> — HTML export with charts, purchases, feedings, chat transcript.</li>
+    <li><strong>Documentation</strong> — README, source, library list (Unity, Newtonsoft, OpenAI API), asset credits — have a folder or slide ready; Person 1 can hold it up during the conclusion.</li>
+  </ul>
+
+  <!-- ========== SEGMENTS ========== -->
+
+  <h2 id="seg0">Segment 0 — Setup (during official 3 min setup)</h2>
+  <div class="segment">
+    <p class="time">Clock: competition setup window (not scored as the 7 min)</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Laptop: Unity Editor or build fullscreen; second device optional for code PDF. Main Menu visible when judges are ready.
+      </div>
+      <div class="panel panel-say-p1">
+        <span class="tag tag-p1">Person 1</span>
+        (Silent during setup per guidelines.) Test audio comes from the device only — no external speakers in preliminary.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="seg1">Segment 1 — Introduction</h2>
+  <div class="segment">
+    <p class="time">~0:00–0:55 (≈55 s)</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Title / Main Menu. Optional: brief splash or team slide for 5 s, then game. Person 2 does not play yet; Person 1 speaks to judges.
+      </div>
+      <div class="panel panel-say-p1">
+        <span class="tag tag-p1">Person 1</span>
+        “Good morning, judges. We’re Harshil Sharma, Maanas Egamamidi, and Dev Agarwal. We’re presenting <strong>Petropolis</strong>, a 3D life-simulation RPG built in <strong>Unity</strong> for the <strong>Build a Virtual Pet</strong> topic. Players name and customize themselves and their dog, care for it over time, and pay real costs — food, supplies, vet care — using an in-game economy. They can also <strong>earn money through minigames</strong> to cover those costs. We designed it as a modular program with clear data flow, validation, and a session report judges can analyze. I’ll hand the controls to [Person 2] for the live demo, while [Person 3] connects what you see to our code.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric</span>
+        <strong>Functionality / topic alignment</strong> — Opening states the FBLA prompt (pet + financial responsibility). <strong>Presentation Delivery</strong> — Clear, logical opening; all three members introduced; eye contact with judges.
+      </div>
+    </div>
+    <p class="cue">Person 1 slides keyboard/controller to Person 2; Person 3 stands/sits where they can glance at code without blocking the game view.</p>
+  </div>
+
+  <h2 id="seg2">Segment 2 — Character creation → World</h2>
+  <div class="segment">
+    <p class="time">~0:55–1:45 (≈50 s)</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Person 2: Main Menu → New/Start → Character screen. Cycle head/body options; type a valid player name; confirm. Scene loads into <strong>World</strong>. Avatar should match selections.
+      </div>
+      <div class="panel panel-say-p2">
+        <span class="tag tag-p2">Person 2</span>
+        (Short, functional narration.) “I’m choosing my look and name — now we’re in the open world.”
+      </div>
+      <div class="panel panel-say-p3">
+        <span class="tag tag-p3">Person 3</span>
+        “Customization writes to <span class="path">GlobalData.SaveChoice</span> so the next scene reads one consistent player profile. We also mirror indices in <span class="path">PlayerPrefs</span> for persistence. That separation — static session data plus disk prefs — is the kind of structure the rubric calls <strong>Data storage</strong> and <strong>Data &amp; Logic</strong>.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric notes</span>
+        <strong>Topic — Customization</strong> ✓ <strong>Data storage</strong> — show variables with clear roles; mention prefs + static fields. <strong>Code Quality</strong> — point to meaningful API names like <code>SaveChoice</code>. <strong>Presentation</strong> — Person 3 speaks during action so judges hear code while seeing the result.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="seg3">Segment 3 — Pet shop adoption</h2>
+  <div class="segment">
+    <p class="time">~1:45–2:35 (≈50 s)</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Person 2: Walk to pet shop trigger → <strong>PetChoose</strong> overlay → select dog variant / name → confirm → back to World with pet following or visible.
+      </div>
+      <div class="panel panel-say-p2">
+        <span class="tag tag-p2">Person 2</span>
+        “I’m adopting my dog and choosing how it looks.”
+      </div>
+      <div class="panel panel-say-p3">
+        <span class="tag tag-p3">Person 3</span>
+        “Adoption calls <span class="path">GlobalData.SavePetChoice</span>, which clamps the skin index and fires <code>OnPetConfirmed</code>. The world scene reads that static state so art and UI stay in sync — that’s <strong>modular</strong> coupling: one source of truth for pet identity.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric notes</span>
+        <strong>Functionality</strong> — User names pet and chooses type/look. <strong>Modularity</strong> — event-driven updates. <strong>UX / Navigation</strong> — additive scene is a deliberate flow (world still loaded).
+      </div>
+    </div>
+  </div>
+
+  <h2 id="seg4">Segment 4 — Pet care, stats, cost of care</h2>
+  <div class="segment">
+    <p class="time">~2:35–3:15 (≈40 s) — keep care demo tight to leave room for minigames</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Person 2: Open pet status / HUD. Perform care: e.g. feed (costs money), play, rest, clean, or quick vet visit — show stat bars moving and balance decreasing. If day-night is visible, mention morning/evening in one line.
+      </div>
+      <div class="panel panel-say-p2">
+        <span class="tag tag-p2">Person 2</span>
+        “Hunger and happiness dropped over time — I’m feeding and playing to stabilize stats, and my cash is dropping when I buy care.”
+      </div>
+      <div class="panel panel-say-p3">
+        <span class="tag tag-p3">Person 3</span>
+        “Stats live on <span class="path">GlobalData</span> — hunger, health, happiness, energy, cleanliness — updated by care actions and time. Purchases and feedings are logged into lists on <span class="path">SessionTracker</span> for the report. That hits <strong>running totals</strong> and <strong>appropriate data structures</strong> for the topic.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric notes</span>
+        <strong>Topic</strong> — Feed, play, rest, clean, health check. <strong>Reactions</strong> — stats reflect treatment. <strong>Cost of care</strong> — visible money change. <strong>Data &amp; Logic</strong> — centralized stat mutations; session logging.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="seg5">Segment 5 — Minigames (earn pet-care money)</h2>
+  <div class="segment">
+    <p class="time">~3:15–3:55 (≈40 s)</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Person 2: From World, walk to a minigame job zone (on-screen hint such as <strong>Press E / X to play</strong>). Press interact to launch an additively loaded minigame scene — prefer <strong>ReactionTime</strong> for a fast demo (three reaction trials), or show <strong>Pong</strong> / <strong>FlappyBird</strong> if that zone is closer in your layout. Play until payout (reaction test finishes, or one quick game-over in Pong/Flappy). Judges should see the return to World and a notification that dollars were earned; cash in the HUD should increase.
+      </div>
+      <div class="panel panel-say-p2">
+        <span class="tag tag-p2">Person 2</span>
+        “I’m playing a quick minigame job to earn extra money before I go shopping for my pet.”
+      </div>
+      <div class="panel panel-say-p3">
+        <span class="tag tag-p3">Person 3</span>
+        “Zones use <span class="path">MinigameLauncherZone</span>: when you’re inside the trigger and press <strong>E</strong> or the controller’s west face button, we call <span class="path">MinigameSession.StartSession</span> with a scene name like <strong>ReactionTime</strong>, <strong>Pong</strong>, or <strong>FlappyBird</strong> under <span class="path">Assets/Scenes/Minigames/</span>. <span class="path">MinigameSession</span> additively loads that scene, <strong>freezes the World’s root GameObjects</strong> so cameras, audio, and input don’t conflict, then activates the minigame scene — the same additive pattern we use for PetChoose. Each game calls <span class="path">MinigameSession.AddPayout</span> as you score: <span class="path">ReactionTimeGame</span> pays from reaction speed, <span class="path">PongGameManager</span> pays per successful hit until a miss, <span class="path">FlappyBirdGameManager</span> pays per beam cleared. When the run ends, <span class="path">MinigameSession.EndSession</span> rounds <strong>PendingEarnings</strong> and credits <span class="path">GlobalData.PlayerMoney</span>, unloads the minigame, and unfreezes the World. That’s the prompt’s <strong>optional earning system</strong> — tasks to earn pet-care funds — implemented as clean, reusable session logic.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric notes</span>
+        <strong>Functionality / topic</strong> — “Optional: savings goals or earning systems (e.g., chores or tasks to earn pet care funds).” <strong>Modularity</strong> — launcher zone vs session manager vs individual minigame scripts in <code>Petropolis.Minigames</code>. <strong>UX</strong> — clear on-screen interact hint; return flow restores World in place. <strong>Data &amp; Logic</strong> — single payout pipeline into the same balance that feeds purchases and reports.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="seg6">Segment 6 — Supermarket: AI negotiation &amp; purchase</h2>
+  <div class="segment">
+    <p class="time">~3:55–4:50 (≈55 s)</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Person 2: Enter supermarket, open NPC chat. Type one or two messages to haggle (e.g. lower price on dog food). Show finalized purchase and updated inventory / cash.
+      </div>
+      <div class="panel panel-say-p2">
+        <span class="tag tag-p2">Person 2</span>
+        “I’m negotiating in plain English — the shopkeeper just agreed to a final price.”
+      </div>
+      <div class="panel panel-say-p3">
+        <span class="tag tag-p3">Person 3</span>
+        “The NPC uses <span class="path">NpcOpenAiChatBridge</span> to call <span class="path">OpenAiChatCompletionClient</span> with the conversation history. If the API errors, the player sees an error string instead of a fake reply — that’s honest fallback behavior for unreliable conference Wi‑Fi. After each assistant message, <span class="path">ShopPurchaseTracker</span> asks the model for strict JSON extraction of finalized items only; we only debit cash when the model confirms a completed sale. <span class="path">ChatManager</span> strips hidden price/loan blocks from the visible transcript. Together that’s <strong>input validation on semantic level</strong> plus <strong>clean separation of concerns</strong>.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric notes</span>
+        <strong>UX — “intelligent feature such as interactive Q&amp;A”</strong> — natural-language shop. <strong>Input validation</strong> — JSON shape, item names from inventory whitelist, guard rails in NPC docs. <strong>Modularity</strong> — bridge vs tracker vs chat UI. <strong>Documentation</strong> — cite OpenAI + Newtonsoft as external services/libraries.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="seg7">Segment 7 — Bank loan (interest math)</h2>
+  <div class="segment">
+    <p class="time">~4:50–5:15 (≈25 s) — keep short; skip or narrate UI-only if behind schedule</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Person 2: Talk to bank officer OR open loans UI showing principal, APR, days left, amount owed. Prefer a completed in-chat loan if time allows.
+      </div>
+      <div class="panel panel-say-p2">
+        <span class="tag tag-p2">Person 2</span>
+        “I’m taking a short loan so we can show interest and repayment pressure.”
+      </div>
+      <div class="panel panel-say-p3">
+        <span class="tag tag-p3">Person 3</span>
+        “Negotiated loans are extracted by <span class="path">BankLoanTracker</span>, then <span class="path">GlobalData.TryOpenLoan</span> validates principal, interest rate, and term against min/max constants. Amount owed is <code>Round(principal × (1 + interestRate))</code> — simple interest packaged as one payoff total. Each in-game day ticks down with <span class="path">LoanDayTicker</span>; default triggers a fail state — that’s consequence-based <strong>financial literacy</strong> tied to the topic.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric notes</span>
+        <strong>Optional earning/budget systems</strong> — loans as extension. <strong>Data &amp; Logic</strong> — bounded parameters, deterministic formula. <strong>Functionality</strong> — connects economy to pet stakes.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="seg8">Segment 8 — Session HTML report</h2>
+  <div class="segment">
+    <p class="time">~5:15–5:55 (≈40 s)</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Person 2: Exit play (Editor) or quit to generate report. Open latest <span class="path">Session Reports/SessionReport#.html</span> in a browser; scroll to money chart, stat graphs, purchase list, and chat excerpt.
+      </div>
+      <div class="panel panel-say-p2">
+        <span class="tag tag-p2">Person 2</span>
+        “Here’s everything we did — money over time, pet stats, and what I bought.”
+      </div>
+      <div class="panel panel-say-p3">
+        <span class="tag tag-p3">Person 3</span>
+        “<span class="path">SessionTracker</span> samples money and pet stats on a schedule and on quit. <span class="path">ReportWriter.Generate</span> writes UTF‑8 HTML with Chart.js: judges can analyze trends without re-running the game. That directly targets <strong>Program generates a presentable report</strong> at the ‘Exceeds’ level — error-free summaries for analysis.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric notes</span>
+        <strong>Report row</strong> — customizable analysis via charts and tables. <strong>Data storage</strong> — lists of snapshots / purchases / feedings. Tie back to <strong>Functionality</strong> — proves the virtual pet + economy story with evidence.
+      </div>
+    </div>
+  </div>
+
+  <h2 id="seg9">Segment 9 — Conclusion (Person 1 takes floor)</h2>
+  <div class="segment">
+    <p class="time">~5:55–6:40 (≈45 s) — adjust to finish before 7:00</p>
+    <div class="grid">
+      <div class="panel panel-screen">
+        <span class="tag tag-screen">On screen</span>
+        Optional: README / credits slide or folder with printed checklist (templates, Unity, OpenAI, asset packs). Return to neutral desktop or Main Menu.
+      </div>
+      <div class="panel panel-say-p1">
+        <span class="tag tag-p1">Person 1</span>
+        “To summarize: Petropolis meets the prompt with customization, care gameplay, emotional feedback through stats, tracked spending, <strong>minigames to earn pet-care money</strong>, optional loans, AI-assisted shopping, and an HTML session report. Our codebase is split into readable modules with validation and documentation, including a README, full source, and attributions for Unity packages and external APIs. Thank you for your time — we’re happy to answer your questions.”
+      </div>
+      <div class="panel panel-rubric">
+        <span class="tag tag-rubric">Rubric notes</span>
+        <strong>Documentation</strong> — explicitly name deliverables. <strong>Presentation Delivery</strong> — strong close, confident handoff to Q&amp;A. <strong>Protocols</strong> — no QR codes scanned by judges; dress code; ≤3 devices; materials not left behind.
+      </div>
+    </div>
+  </div>
+
+  <h2>Timing checklist (rehearsal)</h2>
+  <ul class="compact">
+    <li>Total scripted segments above: about <strong>6:20–6:45</strong> depending on pauses — trim Segment 7 (bank) or shorten Segment 6 (supermarket) first if needed.</li>
+    <li>At the <strong>1-minute warning</strong>, you should be in Segment 8 or 9 — if not, skip bank detail and jump to report + conclusion.</li>
+    <li>All three members must <strong>speak during the 7 minutes</strong> (team expectation).</li>
+  </ul>
+
+  <footer>
+    Based on FBLA Competitive Events Guidelines — Introduction to Programming (2025–2026), including Event Specific Information and Presentation Rating Sheet categories: Code Quality, User Experience, Functionality, Data Storage, Documentation, Presentation Delivery, and Protocols. Game implementation references: Unity project <em>Petropolis</em> in this repository.
+  </footer>
+
+</body>
+</html>
