@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Session Report — April 21, 2026, 10:35:48 AM</title>
+<title>Session Report — April 22, 2026, 5:10:55 AM</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -99,6 +99,103 @@
   .chat-you { color: #333; }
   .chat-npc { color: #333; }
   .chat-line strong { font-weight: 700; }
+  .chat-transaction {
+    position: relative;
+    background: #eaf7ea;
+    border-left: 3px solid #3a9d4a;
+    padding: 5px 8px 5px 10px;
+    margin: 4px 0;
+    border-radius: 3px;
+    cursor: help;
+    white-space: normal;
+  }
+  .chat-tx-badge {
+    display: inline-block;
+    background: #3a9d4a;
+    color: #fff;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    line-height: 1.2;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .chat-tx-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 12px;
+    min-width: 260px;
+    max-width: 360px;
+    background: #2b2b2b;
+    color: #fff;
+    padding: 10px 12px 10px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    font-size: 0.88em;
+    line-height: 1.4;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    z-index: 20;
+  }
+  .chat-tx-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 24px;
+    border: 6px solid transparent;
+    border-top-color: #2b2b2b;
+  }
+  .chat-transaction:hover .chat-tx-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .chat-tx-tooltip .tt-title {
+    font-weight: 700;
+    color: #7fd88a;
+    font-size: 0.9em;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .chat-tx-tooltip .tt-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+    border: none;
+    margin: 0;
+  }
+  .chat-tx-tooltip .tt-table th,
+  .chat-tx-tooltip .tt-table td {
+    padding: 3px 8px 3px 0;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #fff;
+    background: transparent;
+    font-size: 0.95em;
+    text-align: left;
+    width: auto;
+  }
+  .chat-tx-tooltip .tt-table tr:last-child td { border-bottom: none; }
+  .chat-tx-tooltip .tt-table th {
+    color: #aaa;
+    font-weight: 500;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .chat-tx-tooltip .tt-total {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    font-weight: 700;
+    color: #7fd88a;
+  }
   .chat-transcript-empty {
     color: #666;
     font-size: 0.95em;
@@ -264,22 +361,22 @@
 <body>
 
 <h1>Session Report</h1>
-<p class="report-ts">April 21, 2026, 10:35:48 AM</p>
+<p class="report-ts">April 22, 2026, 5:10:55 AM</p>
 
 <h2>Player Info</h2>
 <table>
-  <tr><th>Player Name</th><td>Dfghr</td></tr>
-  <tr><th>Pet Name</th><td>Zdgzs</td></tr>
-  <tr><th>Session Length</th><td>4 in-game hours</td></tr>
-  <tr><th>Distance with pet</th><td>1.09 km</td></tr>
+  <tr><th>Player Name</th><td>A</td></tr>
+  <tr><th>Pet Name</th><td>A</td></tr>
+  <tr><th>Session Length</th><td>1.2 in-game day</td></tr>
+  <tr><th>Distance with pet</th><td>373.4 m</td></tr>
 </table>
 
 <h2>Money Summary</h2>
 <table>
   <tr><th>Starting Amount</th><td>$150.00</td></tr>
-  <tr><th>Ending Amount</th><td>$618.00</td></tr>
-  <tr><th>Net Change</th><td class="net">+$468.00</td></tr>
-  <tr><th>Highest Reached</th><td>$618.00</td></tr>
+  <tr><th>Ending Amount</th><td>$200.00</td></tr>
+  <tr><th>Net Change</th><td class="net">+$50.00</td></tr>
+  <tr><th>Highest Reached</th><td>$200.00</td></tr>
   <tr><th>Lowest Reached</th><td>$150.00</td></tr>
 </table>
 
@@ -328,9 +425,10 @@
       </ul>
     </div>
   </div>
-  <div class="badge-tile locked">
-    <div class="badge-placeholder"><span>Not earned yet</span></div>
+  <div class="badge-tile earned">
+    <img class="badge-img" src="../Assets/Badges/3. Faithful Companion/bronze.png" alt="Faithful Companion" />
     <div class="badge-name">Faithful Companion</div>
+    <div class="badge-status earned">Bronze Tier</div>
     <div class="badge-tooltip">
       <div class="tt-title">Faithful Companion</div>
       <div class="tt-sub">Days Owned</div>
@@ -342,7 +440,7 @@
     </div>
   </div>
   <div class="badge-tile locked soon">
-    <div class="badge-placeholder"><span>Coming soon</span></div>
+    <div class="badge-placeholder"><span>Not earned yet</span></div>
     <div class="badge-name">High Roller</div>
     <div class="badge-tooltip">
       <div class="tt-title">High Roller</div>
@@ -356,7 +454,7 @@
     </div>
   </div>
   <div class="badge-tile locked soon">
-    <div class="badge-placeholder"><span>Coming soon</span></div>
+    <div class="badge-placeholder"><span>Not earned yet</span></div>
     <div class="badge-name">The Philanthropist</div>
     <div class="badge-tooltip">
       <div class="tt-title">The Philanthropist</div>
@@ -370,7 +468,7 @@
     </div>
   </div>
   <div class="badge-tile locked soon">
-    <div class="badge-placeholder"><span>Coming soon</span></div>
+    <div class="badge-placeholder"><span>Not earned yet</span></div>
     <div class="badge-name">VIP Passenger</div>
     <div class="badge-tooltip">
       <div class="tt-title">VIP Passenger</div>
@@ -411,10 +509,16 @@
 <div class="chat-section">
 <div class="chat-transcript">
   <div class="chat-npc-block">
+    <div class="chat-partner"><strong>Doctor Bob</strong></div>
+    <div class="chat-line chat-npc"><strong>Doctor Bob</strong>: Welcome to the Petropolis Animal Clinic! I'm Doctor Bob. How can I help you and your pet today?</div>
+    <div class="chat-line chat-you"><strong>You</strong>: wassup</div>
+    <div class="chat-line chat-npc"><strong>Doctor Bob</strong>: Hey there! Just keeping things running smoothly here at the clinic. How can I help you and your pet today?</div>
+  </div>
+  <div class="chat-npc-block">
     <div class="chat-partner"><strong>Bernie</strong></div>
     <div class="chat-line chat-npc"><strong>Bernie</strong>: Hey there! Welcome in - Bernie's the name. What can I get you for your pup today?</div>
-    <div class="chat-line chat-you"><strong>You</strong>: devse</div>
-    <div class="chat-line chat-npc"><strong>Bernie</strong>: Hmm, I'm not sure what you mean there. Anyway, I’ve got Normal Dog Food, Enhanced Dog Food, Vitamins, and Portable Watering Cups today. What can I set you up with for Zdgzs?</div>
+    <div class="chat-line chat-you"><strong>You</strong>: yo</div>
+    <div class="chat-line chat-npc"><strong>Bernie</strong>: Hey there! How's it going? What can I help you with for A today?</div>
   </div>
 </div>
 </div>
@@ -422,13 +526,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 (function() {
-  var startHour = 7;
-  var showDays = false;
-  var data = [{x:0,y:150.00},{x:1,y:150.00},{x:2,y:150.00},{x:3,y:618.00},{x:4,y:618.00}];
-  var dataHealth = [{x:0,y:100},{x:1,y:97.29},{x:2,y:76.15},{x:3,y:74.29},{x:4,y:49.99}];
-  var dataHappiness = [{x:0,y:100},{x:1,y:97.23},{x:2,y:52.24},{x:3,y:58.41},{x:4,y:6.72}];
-  var dataEnergy = [{x:0,y:100},{x:1,y:97.27},{x:2,y:99.99},{x:3,y:99.98},{x:4,y:99.99}];
-  var dataHunger = [{x:0,y:100},{x:1,y:97.31},{x:2,y:52.31},{x:3,y:48.61},{x:4,y:0}];
+  var startHour = 11;
+  var showDays = true;
+  var data = [{x:0,y:150.00},{x:1,y:150.00},{x:2,y:150.00},{x:3,y:150.00},{x:4.01,y:150.00},{x:5,y:150.00},{x:6,y:150.00},{x:7,y:150.00},{x:8.01,y:150.00},{x:9,y:150.00},{x:10.02,y:150.00},{x:11,y:150.00},{x:12,y:150.00},{x:13,y:150.00},{x:14,y:150.00},{x:15,y:150.00},{x:16.01,y:150.00},{x:17.01,y:150.00},{x:18,y:150.00},{x:19.03,y:200.00},{x:20,y:200.00},{x:21,y:200.00},{x:22,y:200.00},{x:23,y:200.00},{x:24,y:200.00},{x:25,y:200.00},{x:26,y:200.00},{x:27,y:200.00},{x:28,y:200.00},{x:29,y:200.00}];
+  var dataHealth = [{x:0,y:99.98},{x:1,y:95.78},{x:2,y:91.49},{x:3,y:90.89},{x:4.01,y:91.87},{x:5,y:89.88},{x:6,y:87.89},{x:7,y:86.98},{x:8.01,y:86.98},{x:9,y:86.98},{x:10.02,y:86.98},{x:11,y:86.98},{x:12,y:86.98},{x:13,y:86.98},{x:14,y:86.53},{x:15,y:86.04},{x:16.01,y:85.54},{x:17.01,y:85.04},{x:18,y:84.52},{x:19.03,y:84.01},{x:20,y:82.08},{x:21,y:80.08},{x:22,y:78.08},{x:23,y:77.98},{x:24,y:77.98},{x:25,y:77.98},{x:26,y:77.98},{x:27,y:76.23},{x:28,y:74.22},{x:29,y:97.2}];
+  var dataHappiness = [{x:0,y:99.98},{x:1,y:95.78},{x:2,y:91.79},{x:3,y:87.77},{x:4.01,y:83.76},{x:5,y:79.79},{x:6,y:75.79},{x:7,y:73.97},{x:8.01,y:73.97},{x:9,y:73.97},{x:10.02,y:73.97},{x:11,y:73.97},{x:12,y:73.97},{x:13,y:73.97},{x:14,y:73.08},{x:15,y:72.09},{x:16.01,y:71.08},{x:17.01,y:70.08},{x:18,y:69.07},{x:19.03,y:68.04},{x:20,y:64.17},{x:21,y:60.17},{x:22,y:56.17},{x:23,y:55.95},{x:24,y:55.95},{x:25,y:55.95},{x:26,y:55.95},{x:27,y:52.48},{x:28,y:48.46},{x:29,y:78.94}];
+  var dataEnergy = [{x:0,y:99.98},{x:1,y:95.78},{x:2,y:91.19},{x:3,y:94.02},{x:4.01,y:99.97},{x:5,y:99.98},{x:6,y:99.98},{x:7,y:100},{x:8.01,y:100},{x:9,y:100},{x:10.02,y:100},{x:11,y:100},{x:12,y:100},{x:13,y:100},{x:14,y:99.99},{x:15,y:99.99},{x:16.01,y:99.99},{x:17.01,y:99.99},{x:18,y:99.98},{x:19.03,y:99.98},{x:20,y:99.99},{x:21,y:99.99},{x:22,y:99.98},{x:23,y:100},{x:24,y:100},{x:25,y:100},{x:26,y:100},{x:27,y:99.99},{x:28,y:99.98},{x:29,y:97.41}];
+  var dataHunger = [{x:0,y:99.98},{x:1,y:95.78},{x:2,y:91.79},{x:3,y:87.77},{x:4.01,y:83.76},{x:5,y:79.79},{x:6,y:75.79},{x:7,y:73.97},{x:8.01,y:73.97},{x:9,y:73.97},{x:10.02,y:73.97},{x:11,y:73.97},{x:12,y:73.97},{x:13,y:73.97},{x:14,y:73.08},{x:15,y:72.09},{x:16.01,y:71.08},{x:17.01,y:70.08},{x:18,y:69.07},{x:19.03,y:68.04},{x:20,y:64.17},{x:21,y:60.17},{x:22,y:56.17},{x:23,y:55.95},{x:24,y:55.95},{x:25,y:55.95},{x:26,y:55.95},{x:27,y:52.48},{x:28,y:48.46},{x:29,y:96.98}];
 
   function fmtHour(cumH) {
     var hod = ((startHour + cumH) % 24 + 24) % 24;
