@@ -177,8 +177,13 @@ public class PetChooseController : MonoBehaviour
         ApplyMaterial(_currentIndex);
     }
 
+    bool _confirmInFlight;
+
     public void OnConfirmClicked()
     {
+        if (_confirmInFlight)
+            return;
+
         string petName = (petNameInputField != null) ? petNameInputField.text : "";
         if (NameSelectionSettings.IsMandatory && string.IsNullOrWhiteSpace(petName))
             return;
@@ -186,7 +191,21 @@ public class PetChooseController : MonoBehaviour
         GlobalData.PetName = string.IsNullOrWhiteSpace(petName) ? "Dog" : petName.Trim();
         GlobalData.SavePetChoice(_currentIndex);
 
-        if (GlobalData.PetChooseOpenedFromWorld)
+        _confirmInFlight = true;
+        if (confirmButton != null)
+            confirmButton.interactable = false;
+        if (backButton != null)
+            backButton.interactable = false;
+        if (nextButton != null)
+            nextButton.interactable = false;
+
+        // Return to wherever the player was when they opened PetChoose: if World is still
+        // loaded (additive flow), unload PetChoose so World unfreezes at the exact spot the
+        // player walked to. Only load World fresh if it isn't in memory (stand-alone flow
+        // from MainMenu → CharacterChoose → PetChoose for testing).
+        bool worldLoadedAdditively = IsSceneLoaded(nextSceneName);
+
+        if (worldLoadedAdditively || GlobalData.PetChooseOpenedFromWorld)
         {
             GlobalData.PetChooseOpenedFromWorld = false;
             if (fadePanel != null && fadePanel.GetComponent<CanvasGroup>() != null)
@@ -209,6 +228,14 @@ public class PetChooseController : MonoBehaviour
                 UnityEngine.SceneManagement.SceneManager.LoadScene(nextSceneName);
             }
         }
+    }
+
+    static bool IsSceneLoaded(string sceneName)
+    {
+        if (string.IsNullOrEmpty(sceneName))
+            return false;
+        var scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(sceneName);
+        return scene.IsValid() && scene.isLoaded;
     }
 
     void ApplyMaterial(int oneBasedIndex)

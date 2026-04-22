@@ -217,18 +217,23 @@ public class FadeTransitionRunner : MonoBehaviour
 
     System.Collections.IEnumerator FadeOutFadeInAndUnloadScene(CanvasGroup cg, float duration, string sceneName)
     {
-        cg.alpha = 0f;
-        cg.gameObject.SetActive(true);
+        if (cg != null)
+        {
+            cg.alpha = 0f;
+            cg.gameObject.SetActive(true);
+        }
 
         float half = duration * 0.5f;
         float elapsed = 0f;
         while (elapsed < half)
         {
             elapsed += Time.deltaTime;
-            cg.alpha = Mathf.Lerp(0f, 1f, elapsed / half);
+            if (cg != null)
+                cg.alpha = Mathf.Lerp(0f, 1f, elapsed / half);
             yield return null;
         }
-        cg.alpha = 1f;
+        if (cg != null)
+            cg.alpha = 1f;
 
         var scene = SceneManager.GetSceneByName(sceneName);
         if (scene.isLoaded)
@@ -244,10 +249,12 @@ public class FadeTransitionRunner : MonoBehaviour
         while (elapsed < half)
         {
             elapsed += Time.deltaTime;
-            cg.alpha = Mathf.Lerp(1f, 0f, elapsed / half);
+            if (cg != null)
+                cg.alpha = Mathf.Lerp(1f, 0f, elapsed / half);
             yield return null;
         }
-        cg.alpha = 0f;
+        if (cg != null)
+            cg.alpha = 0f;
         Destroy(gameObject);
     }
 
