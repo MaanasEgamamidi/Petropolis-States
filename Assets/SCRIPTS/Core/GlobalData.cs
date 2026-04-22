@@ -86,9 +86,9 @@ public class GlobalData : MonoBehaviour
         { "Portable Watering Cup", new float[] { 20f, 0f } },
     };
 
-    /// <summary>Matches <c>NPC_Personalities/supermarket_owner.md</c> — +20% Hunger per feeding.</summary>
+    /// <summary>Matches <c>NPC_Personalities/supermarket_owner.md</c> — +20% Hunger and Energy per feeding.</summary>
     public const string NormalDogFoodItemName = "Normal Dog Food";
-    /// <summary>Matches supermarket guide — +40% Hunger per feeding.</summary>
+    /// <summary>Matches supermarket guide — +40% Hunger and Energy per feeding.</summary>
     public const string EnhancedDogFoodItemName = "Enhanced Dog Food";
     public const string VitaminsItemName = "Vitamins";
     public const string PortableWateringCupItemName = "Portable Watering Cup";
@@ -346,7 +346,7 @@ public class GlobalData : MonoBehaviour
 
     /// <summary>
     /// Consumes one unit of dog food from inventory (normal first, then enhanced), and adds Hunger
-    /// per the supermarket item guide. Returns false if no food remains.
+    /// and Energy per the supermarket item guide. Returns false if no food remains.
     /// </summary>
     public static bool TryFeedDogFromInventory()
     {
@@ -359,7 +359,8 @@ public class GlobalData : MonoBehaviour
 
     /// <summary>
     /// Consumes one unit of <paramref name="itemName"/> from inventory and applies its
-    /// <see cref="ItemEffect"/> to the pet (clamped to 100). Fires <see cref="OnInventoryChanged"/>
+    /// <see cref="ItemEffect"/> to the pet (clamped to 100). Dog food also adds the same amount to
+    /// <see cref="PetEnergy"/> as to <see cref="PetHunger"/>. Fires <see cref="OnInventoryChanged"/>
     /// and, for dog food, <see cref="OnPetFed"/>. Returns false if the item is unknown or quantity is 0.
     /// </summary>
     public static bool TryUseItem(string itemName)
@@ -373,6 +374,8 @@ public class GlobalData : MonoBehaviour
 
         entry[InventoryQuantityIndex] = q - 1;
         ApplyItemEffect(effect);
+        if (itemName == NormalDogFoodItemName || itemName == EnhancedDogFoodItemName)
+            PetEnergy = Mathf.Min(100f, PetEnergy + effect.Amount);
         RecomputeHealth();
 
         OnInventoryChanged?.Invoke();
