@@ -8,9 +8,10 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Drives the four pet-stat bar fills from <see cref="GlobalData"/> values,
-/// applies passive decay each frame, and optionally lets number keys 2-4 boost happiness/energy/hunger.
-/// Health is a derived stat: <c>(PetEnergy + PetHunger) / 2</c>; when it reaches 0 the world fades to the
-/// closing scene (same path as the pause-menu Quit button).
+/// and optionally lets number keys 2-4 boost happiness/energy/hunger. Passive decay runs in
+/// <see cref="PetNeedsSimulator"/> (not here) so stats always tick. Health is a derived stat:
+/// <c>(PetEnergy + PetHunger) / 2</c>. When at least two care stats hit zero, the world fades to the
+/// closing scene.
 /// Bar widths can ease toward live stats (<see cref="smoothBarChanges"/>) so jumps from zones or keys animate smoothly.
 /// Each bar has a full-width background track (dark border, dimmed) and a fill Image whose
 /// border and right-edge curve follow the fill as it decays.
@@ -19,7 +20,6 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class PetStatsBarsController : MonoBehaviour
 {
-    static bool s_GameOverTriggered;
     const int BarTexWidth = 128;
 
     // Fill bar sprite: colored fill with dark border ring baked in.
@@ -59,20 +59,10 @@ public class PetStatsBarsController : MonoBehaviour
     [Tooltip("Alpha of the background track image (0 = invisible, 1 = opaque).")]
     [SerializeField] [Range(0f, 1f)] float trackAlpha = 0.35f;
 
-    [Header("Decay")]
-    [Tooltip("Points lost per second on each stat while in-game.")]
-    [SerializeField] [Min(0f)] float decayRate = 1f;
-
     [Header("Number-Key Boost")]
     [Tooltip("When enabled, keys 2-4 add boostAmount to Happiness, Energy, Hunger. Health is derived and not boosted directly.")]
     [SerializeField] bool numberKeyBoostEnabled = true;
     [SerializeField] [Min(0f)] float boostAmount = 10f;
-
-    [Header("Game Over")]
-    [Tooltip("Scene loaded when health reaches 0 (energy + hunger both empty). Matches the pause-menu Quit destination.")]
-    [SerializeField] string closingSceneName = "ClosingScene";
-    [Tooltip("Black-fade duration before loading the closing scene on game over.")]
-    [SerializeField] [Min(0.02f)] float gameOverFadeDuration = 0.85f;
 
     [Header("Feeling Text")]
     [Tooltip("TMP text under Pet Statistics / Left Box / Stats / FeelingText. Auto-resolved by name if unset.")]
@@ -101,9 +91,7 @@ public class PetStatsBarsController : MonoBehaviour
     {
         ResolveBarReferences();
         ResolveFeelingText();
-        if (GlobalData.PetEnergy > 0.5f || GlobalData.PetHunger > 0.5f)
-            s_GameOverTriggered = false;
-        RecomputeHealth();
+        GlobalData.RecomputeHealth();
         ResetDisplayedStatsToGlobal();
     }
 
@@ -378,32 +366,12 @@ public class PetStatsBarsController : MonoBehaviour
     {
         if (!Application.isPlaying) return;
 
-        ApplyDecay(Time.deltaTime);
-
         if (numberKeyBoostEnabled)
             HandleBoostInput();
 
-        RecomputeHealth();
+        GlobalData.RecomputeHealth();
         UpdateFeeling();
-        CheckGameOver();
         SyncFills();
-    }
-
-    void ApplyDecay(float dt)
-    {
-        if (NpcProximityChatOpener.IsWorldNpcChatOpen)
-            return;
-
-        float loss = decayRate * dt;
-        GlobalData.PetHappiness = Mathf.Max(0f, GlobalData.PetHappiness - loss);
-        GlobalData.PetEnergy    = Mathf.Max(0f, GlobalData.PetEnergy    - loss);
-        GlobalData.PetHunger    = Mathf.Max(0f, GlobalData.PetHunger    - loss);
-    }
-
-    /// <summary>Health is the average of energy and hunger; reaching 0 ends the game.</summary>
-    static void RecomputeHealth()
-    {
-        GlobalData.PetHealth = (GlobalData.PetEnergy + GlobalData.PetHunger) * 0.5f;
     }
 
     void HandleBoostInput()
@@ -411,25 +379,14 @@ public class PetStatsBarsController : MonoBehaviour
 #if ENABLE_INPUT_SYSTEM
         var kb = Keyboard.current;
         if (kb == null) return;
-        if (kb[Key.Digit2].wasPressedThisFrame) GlobalData.PetHappiness = Mathf.Min(100f, GlobalData.PetHappiness + boostAmount);
-        if (kb[Key.Digit3].wasPressedThisFrame) GlobalData.PetEnergy    = Mathf.Min(100f, GlobalData.PetEnergy    + boostAmount);
-        if (kb[Key.Digit4].wasPressedThisFrame) GlobalData.PetHunger    = Mathf.Min(100f, GlobalData.PetHunger    + boostAmount);
+        if (kb[Key.Digit2].wasPressedThisFrame) { GlobalData.PetHappiness = Mathf.Min(100f, GlobalData.PetHappiness + boostAmount); GlobalData.RecomputeHealth(); }
+        if (kb[Key.Digit3].wasPressedThisFrame) { GlobalData.PetEnergy    = Mathf.Min(100f, GlobalData.PetEnergy    + boostAmount); GlobalData.RecomputeHealth(); }
+        if (kb[Key.Digit4].wasPressedThisFrame) { GlobalData.PetHunger    = Mathf.Min(100f, GlobalData.PetHunger    + boostAmount); GlobalData.RecomputeHealth(); }
 #else
-        if (Input.GetKeyDown(KeyCode.Alpha2)) GlobalData.PetHappiness = Mathf.Min(100f, GlobalData.PetHappiness + boostAmount);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) GlobalData.PetEnergy    = Mathf.Min(100f, GlobalData.PetEnergy    + boostAmount);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) GlobalData.PetHunger    = Mathf.Min(100f, GlobalData.PetHunger    + boostAmount);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) { GlobalData.PetHappiness = Mathf.Min(100f, GlobalData.PetHappiness + boostAmount); GlobalData.RecomputeHealth(); }
+        if (Input.GetKeyDown(KeyCode.Alpha3)) { GlobalData.PetEnergy    = Mathf.Min(100f, GlobalData.PetEnergy    + boostAmount); GlobalData.RecomputeHealth(); }
+        if (Input.GetKeyDown(KeyCode.Alpha4)) { GlobalData.PetHunger    = Mathf.Min(100f, GlobalData.PetHunger    + boostAmount); GlobalData.RecomputeHealth(); }
 #endif
-    }
-
-    void CheckGameOver()
-    {
-        if (s_GameOverTriggered) return;
-        if (GlobalData.PetHealth > 0.001f) return;
-
-        s_GameOverTriggered = true;
-        Time.timeScale = 1f;
-        GameObject panel = FadeTransitionRunner.CreateFullScreenBlackFadePanel();
-        FadeTransitionRunner.RunFadeThenLoadScene(panel, gameOverFadeDuration, closingSceneName);
     }
 
     // ── Feeling word ───────────────────────────────────────────────────────────

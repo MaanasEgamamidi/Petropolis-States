@@ -49,6 +49,7 @@ public class HomeZone : MonoBehaviour
 
         float dt = Time.deltaTime;
         GlobalData.PetEnergy = Mathf.Clamp(GlobalData.PetEnergy + energyGainPerSecond * dt, 0f, 100f);
+        GlobalData.RecomputeHealth();
     }
 
     bool IsPlayer(Collider other)

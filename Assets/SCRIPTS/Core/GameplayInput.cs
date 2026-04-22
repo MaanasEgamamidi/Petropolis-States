@@ -1,5 +1,5 @@
-#if ENABLE_INPUT_SYSTEM
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
 
@@ -127,10 +127,49 @@ public static class GameplayInput
         return Gamepad.current != null && Gamepad.current.dpad.down.wasPressedThisFrame;
     }
 
+    /// <summary>L or D-pad Right — toggle the loans panel.</summary>
+    public static bool LoanPanelTogglePressedThisFrame()
+    {
+        if (Keyboard.current != null && Keyboard.current.lKey.wasPressedThisFrame)
+            return true;
+        return Gamepad.current != null && Gamepad.current.dpad.right.wasPressedThisFrame;
+    }
+
     /// <summary>Gamepad B (East) — cancel / back (e.g. close pause when mapped in UI).</summary>
     public static bool GamepadCancelPressedThisFrame()
     {
-        return Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame;
+        var pad = GetUsableGamepad();
+        return pad != null && pad.buttonEast.wasPressedThisFrame;
+    }
+
+    /// <summary>Gamepad A (South) — submit / confirm the currently-focused UI element.</summary>
+    public static bool GamepadSubmitPressedThisFrame()
+    {
+        var pad = GetUsableGamepad();
+        return pad != null && pad.buttonSouth.wasPressedThisFrame;
+    }
+
+    /// <summary>
+    /// One-shot D-pad navigation direction. Returns Vector2Int components in {-1,0,1} for up/down/left/right
+    /// discrete D-pad presses. Left-stick is intentionally not included here because the virtual UI cursor
+    /// already consumes it for pointer motion; reusing the same stick for selection navigation would move
+    /// the selection and the cursor at the same time.
+    /// </summary>
+    public static Vector2Int GamepadNavigateStepThisFrame()
+    {
+        var pad = GetUsableGamepad();
+        if (pad == null)
+            return Vector2Int.zero;
+
+        int x = 0;
+        int y = 0;
+
+        if (pad.dpad.left.wasPressedThisFrame) x -= 1;
+        if (pad.dpad.right.wasPressedThisFrame) x += 1;
+        if (pad.dpad.down.wasPressedThisFrame) y -= 1;
+        if (pad.dpad.up.wasPressedThisFrame) y += 1;
+
+        return new Vector2Int(Mathf.Clamp(x, -1, 1), Mathf.Clamp(y, -1, 1));
     }
 #else
     public static bool InteractPressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.E);
@@ -140,6 +179,9 @@ public static class GameplayInput
     public static bool TeleportMenuTogglePressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.T);
     public static bool InventoryTogglePressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.G);
     public static bool FeedPetPressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F);
+    public static bool LoanPanelTogglePressedThisFrame() => UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.L);
     public static bool GamepadCancelPressedThisFrame() => false;
+    public static bool GamepadSubmitPressedThisFrame() => false;
+    public static Vector2Int GamepadNavigateStepThisFrame() => Vector2Int.zero;
 #endif
 }

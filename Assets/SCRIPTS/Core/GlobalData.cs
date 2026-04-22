@@ -55,6 +55,23 @@ public class GlobalData : MonoBehaviour
     public static float PetEnergy { get; set; } = 100f;
     public static float PetCleanliness { get; set; } = 100f;
 
+    /// <summary>Care stats (hunger, energy, happiness, cleanliness) at or below this count as "empty" for neglect death.</summary>
+    public const float VitalDepletedEpsilon = 0.05f;
+
+    /// <summary>How many of the four care stats are at or near zero. Used for neglect-based game over.</summary>
+    public static int CountDepletedCareStats()
+    {
+        int n = 0;
+        if (PetHunger <= VitalDepletedEpsilon) n++;
+        if (PetEnergy <= VitalDepletedEpsilon) n++;
+        if (PetHappiness <= VitalDepletedEpsilon) n++;
+        if (PetCleanliness <= VitalDepletedEpsilon) n++;
+        return n;
+    }
+
+    /// <summary>True when at least two care stats are depleted — triggers end screen.</summary>
+    public static bool IsNeglectDeathConditionMet() => CountDepletedCareStats() >= 2;
+
     // ─── Inventory ───────────────────────────────────────────────────────────
     // Key:   item name (must match the names in NPC_Personalities/supermarket_owner.md)
     // Value: float[2] => [0] = base / list price, [1] = quantity the player currently owns
@@ -165,6 +182,128 @@ public class GlobalData : MonoBehaviour
 
     /// <summary>Fires after a vet visit is successfully booked and applied. Args: visit name, price paid, health delta actually applied (after clamping).</summary>
     public static event Action<string, float, float> OnVetVisitCompleted;
+
+    // ─── Bank Loans ──────────────────────────────────────────────────────────
+    // One active loan at a time. The player negotiates a loan with the bank NPC
+    // (principal, interest percent, term in in-game days). On TryOpenLoan the
+    // principal is credited to PlayerMoney and the amount owed
+    // (principal + interest) must be repaid in full via TryRepayLoan before the
+    // term counts down to 0. LoanDayTicker drives AdvanceOneDay from
+    // DayNightCycle.OnDayStarted. If the term expires with a balance owed,
+    // ForceDefault is invoked and GameOverFlow takes the pet.
+
+    public const float LoanMinPrincipal   = 50f;
+    public const float LoanMaxPrincipal   = 500f;
+    /// <summary>Minimum negotiated APR as a decimal (5% = 0.05).</summary>
+    public const float LoanMinInterestPct = 0.05f;
+    /// <summary>Maximum negotiated APR as a decimal (40% = 0.40).</summary>
+    public const float LoanMaxInterestPct = 0.40f;
+    public const int   LoanMinTermDays    = 1;
+    public const int   LoanMaxTermDays    = 7;
+
+    /// <summary>True when an outstanding loan exists and has not been repaid.</summary>
+    public static bool HasActiveLoan { get; private set; }
+    /// <summary>Original principal credited on TryOpenLoan.</summary>
+    public static float LoanPrincipal { get; private set; }
+    /// <summary>Negotiated interest rate as a decimal (e.g. 0.20 = 20%).</summary>
+    public static float LoanInterestRate { get; private set; }
+    /// <summary>Original term in in-game days at loan open time.</summary>
+    public static int LoanTermDays { get; private set; }
+    /// <summary>Days remaining until default. Decremented each new in-game day by LoanDayTicker.</summary>
+    public static int LoanDaysRemaining { get; private set; }
+    /// <summary>Total amount the player must repay (principal + interest), rounded to the nearest whole dollar.</summary>
+    public static float LoanAmountOwed { get; private set; }
+
+    /// <summary>Fires when a loan is successfully opened. Args: principal, interest rate, term days.</summary>
+    public static event Action<float, float, int> OnLoanOpened;
+    /// <summary>Fires when an active loan is fully repaid. Arg: amount repaid.</summary>
+    public static event Action<float> OnLoanRepaid;
+    /// <summary>Fires whenever any loan field changes (open, repay, day tick). Consumers re-read the static fields.</summary>
+    public static event Action OnLoanChanged;
+    /// <summary>Fires when a loan's term expired with an outstanding balance. Consumers should end the game.</summary>
+    public static event Action OnLoanDefaulted;
+
+    /// <summary>
+    /// Attempts to open a new loan. Fails if a loan is already active or any value is out of range.
+    /// On success: credits <paramref name="principal"/> to <see cref="PlayerMoney"/>, stores the loan
+    /// state (amount owed = round(principal * (1 + interestRate))), and fires
+    /// <see cref="OnLoanOpened"/> + <see cref="OnLoanChanged"/>.
+    /// </summary>
+    public static bool TryOpenLoan(float principal, float interestRate, int termDays)
+    {
+        if (HasActiveLoan) return false;
+        if (principal < LoanMinPrincipal || principal > LoanMaxPrincipal) return false;
+        if (interestRate < LoanMinInterestPct || interestRate > LoanMaxInterestPct) return false;
+        if (termDays < LoanMinTermDays || termDays > LoanMaxTermDays) return false;
+
+        LoanPrincipal     = Mathf.Round(principal);
+        LoanInterestRate  = interestRate;
+        LoanTermDays      = termDays;
+        LoanDaysRemaining = termDays;
+        LoanAmountOwed    = Mathf.Round(LoanPrincipal * (1f + interestRate));
+        HasActiveLoan     = true;
+
+        PlayerMoney += LoanPrincipal;
+        OnLoanOpened?.Invoke(LoanPrincipal, interestRate, termDays);
+        OnLoanChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>
+    /// Pays off the active loan in full. Fails if no loan is active or the player can't afford it.
+    /// On success: deducts <see cref="LoanAmountOwed"/> from <see cref="PlayerMoney"/>, clears loan
+    /// state, fires <see cref="OnLoanRepaid"/> + <see cref="OnLoanChanged"/>.
+    /// </summary>
+    public static bool TryRepayLoan()
+    {
+        if (!HasActiveLoan) return false;
+        if (PlayerMoney < LoanAmountOwed) return false;
+
+        float paid = LoanAmountOwed;
+        PlayerMoney -= paid;
+        ClearLoanState();
+
+        OnLoanRepaid?.Invoke(paid);
+        OnLoanChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>
+    /// Decrements the active loan's days-remaining by 1. If it reaches 0 with an outstanding balance,
+    /// fires <see cref="OnLoanDefaulted"/> (the ticker wires this to the pet-taken game-over flow).
+    /// No-op when no loan is active.
+    /// </summary>
+    public static void AdvanceOneDay()
+    {
+        if (!HasActiveLoan) return;
+        LoanDaysRemaining = Mathf.Max(0, LoanDaysRemaining - 1);
+        OnLoanChanged?.Invoke();
+        if (LoanDaysRemaining <= 0)
+            OnLoanDefaulted?.Invoke();
+    }
+
+    /// <summary>
+    /// Immediately treats the loan as defaulted (used by menu tests / cheats). Fires
+    /// <see cref="OnLoanDefaulted"/> even if days remain; does NOT clear loan state (so the pet-taken
+    /// screen can still inspect the numbers).
+    /// </summary>
+    public static void ForceDefault()
+    {
+        if (!HasActiveLoan) return;
+        LoanDaysRemaining = 0;
+        OnLoanChanged?.Invoke();
+        OnLoanDefaulted?.Invoke();
+    }
+
+    static void ClearLoanState()
+    {
+        HasActiveLoan     = false;
+        LoanPrincipal     = 0f;
+        LoanInterestRate  = 0f;
+        LoanTermDays      = 0;
+        LoanDaysRemaining = 0;
+        LoanAmountOwed    = 0f;
+    }
 
     /// <summary>
     /// Attempts to buy <paramref name="quantity"/> packs of <paramref name="itemName"/> at

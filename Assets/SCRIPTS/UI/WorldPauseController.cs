@@ -50,6 +50,7 @@ public class WorldPauseController : MonoBehaviour
     bool _busy;
     bool _settingsBound;
     bool _helpOverlayActive;
+    GameObject _prevSelectedForNavDedupe;
 
     void Awake()
     {
@@ -216,10 +217,23 @@ public class WorldPauseController : MonoBehaviour
             return;
 
 #if ENABLE_INPUT_SYSTEM
-        if (_paused && GameplayInput.GamepadCancelPressedThisFrame() && !IsTypingInUiInput())
+        if (_paused)
         {
-            StartCoroutine(ClosePauseRoutine());
-            return;
+            if (GameplayInput.GamepadCancelPressedThisFrame())
+            {
+                // If the player is focused on a text input, first B press just deselects the field so they
+                // can navigate buttons again; a second B (now that no input is focused) closes the menu.
+                if (IsTypingInUiInput())
+                {
+                    FocusFirstPauseMenuSelectable();
+                    return;
+                }
+
+                StartCoroutine(ClosePauseRoutine());
+                return;
+            }
+
+            HandleGamepadPauseNavigation();
         }
 #endif
 
@@ -261,6 +275,66 @@ public class WorldPauseController : MonoBehaviour
     }
 
     static bool IsTypingInUiInput() => IsFocusedOnTextInput();
+
+#if ENABLE_INPUT_SYSTEM
+    /// <summary>
+    /// Explicit gamepad UI routing for the pause menu. Unity's <c>InputSystemUIInputModule</c> is supposed to
+    /// do this, but in this project the module's actions can end up silent (no gamepad UI control scheme is
+    /// enabled, the PlayerInput on the player owns the action asset, etc.), leaving controllers dead in the
+    /// pause menu. Driving navigation and submit directly off <see cref="GameplayInput"/> makes the pause
+    /// menu usable with a pad regardless of the UI module state.
+    /// </summary>
+    void HandleGamepadPauseNavigation()
+    {
+        var es = EventSystem.current;
+        if (es == null)
+            return;
+
+        // Keep a valid selection pinned so D-pad navigation always has somewhere to move from.
+        GameObject selected = es.currentSelectedGameObject;
+        if (selected == null || !selected.activeInHierarchy ||
+            (pauseMenuRoot != null && !selected.transform.IsChildOf(pauseMenuRoot.transform)))
+        {
+            FocusFirstPauseMenuSelectable();
+            selected = es.currentSelectedGameObject;
+        }
+
+        Vector2Int step = GameplayInput.GamepadNavigateStepThisFrame();
+        // Skip if the UI input module already moved the selection this frame in response to the same input —
+        // otherwise the D-pad tap would step twice (once from the module, once from here).
+        bool uiModuleAlreadyMovedSelection = selected != _prevSelectedForNavDedupe && _prevSelectedForNavDedupe != null;
+        if (step.sqrMagnitude > 0 && selected != null && !uiModuleAlreadyMovedSelection)
+        {
+            Selectable sel = selected.GetComponent<Selectable>();
+            Selectable next = null;
+            if (sel != null)
+            {
+                if (step.y > 0) next = sel.FindSelectableOnUp();
+                else if (step.y < 0) next = sel.FindSelectableOnDown();
+                else if (step.x > 0) next = sel.FindSelectableOnRight();
+                else if (step.x < 0) next = sel.FindSelectableOnLeft();
+            }
+
+            if (next != null && next.interactable && next.isActiveAndEnabled)
+            {
+                es.SetSelectedGameObject(next.gameObject);
+                selected = next.gameObject;
+            }
+        }
+
+        _prevSelectedForNavDedupe = selected;
+
+        // A (south) submit: only when focused on a plain button. Sliders/dropdowns/input fields either have
+        // their own submit semantics (e.g. opening the dropdown panel) that would fight this, or are driven
+        // through the virtual-cursor pointer click path instead.
+        if (GameplayInput.GamepadSubmitPressedThisFrame() && selected != null && !IsTypingInUiInput())
+        {
+            var btn = selected.GetComponent<Button>();
+            if (btn != null && btn.interactable && btn.IsActive())
+                btn.onClick.Invoke();
+        }
+    }
+#endif
 
     void FocusFirstPauseMenuSelectable()
     {
@@ -332,6 +406,7 @@ public class WorldPauseController : MonoBehaviour
     IEnumerator ClosePauseRoutine()
     {
         _busy = true;
+        _prevSelectedForNavDedupe = null;
         _pauseGroup.interactable = false;
         _pauseGroup.blocksRaycasts = false;
 

@@ -23,6 +23,10 @@ public class BedZone : MonoBehaviour
     [Tooltip("…or < this value. Default 6 (6 AM). Wakes up at this hour.")]
     [SerializeField] [Range(0f, 24f)] float sleepEndHour = 6f;
 
+    [Header("Rest")]
+    [Tooltip("Amount added to PetEnergy (0-100) when the player sleeps with the pet. Clamped to 100.")]
+    [SerializeField] [Range(0f, 100f)] float energyRestoreAmount = 50f;
+
     [Header("Fade")]
     [Tooltip("Total fade time in real seconds (fade-out + hold + fade-in).")]
     [SerializeField] [Min(0.1f)] float fadeDuration = 1.2f;
@@ -152,6 +156,12 @@ public class BedZone : MonoBehaviour
         if (cycle != null)
             cycle.SetTimeInstantly(sleepEndHour);
         GlobalData.SetTimeOfDay(sleepEndHour);
+
+        if (energyRestoreAmount > 0f)
+        {
+            GlobalData.PetEnergy = Mathf.Min(100f, GlobalData.PetEnergy + energyRestoreAmount);
+            GlobalData.RecomputeHealth();
+        }
 
         if (blackHoldDuration > 0f)
             yield return new WaitForSecondsRealtime(blackHoldDuration);

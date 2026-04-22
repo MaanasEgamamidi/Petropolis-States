@@ -117,16 +117,16 @@ public class ChatManager : MonoBehaviour
 
     // ── Hidden-Block Stripping ──────────────────────────────────────
 
-    // Matches a [PRICES]...[/PRICES] block (case-insensitive, spans lines) plus any
-    // whitespace/newlines immediately surrounding it, so removing it doesn't leave
-    // a blank gap at the end of the message.
+    // Matches [PRICES]...[/PRICES] or [LOAN]...[/LOAN] (case-insensitive, spans lines)
+    // plus any whitespace/newlines immediately surrounding it, so removing it doesn't
+    // leave a blank gap at the end of the message.
     static readonly Regex _hiddenBlockRegex = new Regex(
-        @"\s*\[PRICES\].*?\[/PRICES\]\s*",
+        @"\s*\[(?:PRICES|LOAN)\].*?\[/(?:PRICES|LOAN)\]\s*",
         RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
     /// <summary>
     /// Strips meta blocks that are meant for the game / model but not the player
-    /// (currently just [PRICES]...[/PRICES]). Safe to call on any string.
+    /// ([PRICES]...[/PRICES], [LOAN]...[/LOAN]). Safe to call on any string.
     /// </summary>
     static string StripHiddenBlocks(string text)
     {

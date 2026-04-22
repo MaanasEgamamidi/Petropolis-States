@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 #if ENABLE_INPUT_SYSTEM
@@ -7,7 +8,9 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// After load (e.g. from pause quit), shows the closing screen for <see cref="displaySeconds"/> or until
-/// the player clicks, then fades to black and exits the application.
+/// the player clicks, then fades to black and exits the application. If a <see cref="reasonSubtext"/>
+/// TMP is assigned, it is filled from <see cref="GameOverFlow.LastReason"/> so the pet-taken ending
+/// shows different flavor text than starvation / quit.
 /// </summary>
 public class ClosingSequenceController : MonoBehaviour
 {
@@ -18,9 +21,32 @@ public class ClosingSequenceController : MonoBehaviour
     [Tooltip("Ignore mouse clicks for this many seconds after load to avoid the pause Quit click carrying over.")]
     [SerializeField] [Min(0f)] float clickGraceAfterLoad = 0.3f;
 
+    [Header("Reason-specific subtext (optional)")]
+    [Tooltip("TMP line populated from GameOverFlow.LastReason. Leave null to skip.")]
+    [SerializeField] TMP_Text reasonSubtext;
+    [TextArea(1, 3)] [SerializeField] string subtextStarved  = "{pet} couldn't hold on.";
+    [TextArea(1, 3)] [SerializeField] string subtextNeglect  = "{pet} had too many needs go unmet.";
+    [TextArea(1, 3)] [SerializeField] string subtextPetTaken = "The bank came and took {pet}.";
+    [TextArea(1, 3)] [SerializeField] string subtextDefault  = string.Empty;
+
     void Start()
     {
+        ApplyReasonSubtext();
         StartCoroutine(ClosingRoutine());
+    }
+
+    void ApplyReasonSubtext()
+    {
+        if (reasonSubtext == null) return;
+        string pet = string.IsNullOrWhiteSpace(GlobalData.PetName) ? "your pet" : GlobalData.PetName;
+        string template = GameOverFlow.LastReason switch
+        {
+            GameOverFlow.GameOverReason.PetStarved     => subtextStarved,
+            GameOverFlow.GameOverReason.PetNeglect     => subtextNeglect,
+            GameOverFlow.GameOverReason.PetTakenByBank => subtextPetTaken,
+            _                                          => subtextDefault,
+        };
+        reasonSubtext.text = string.IsNullOrEmpty(template) ? string.Empty : template.Replace("{pet}", pet);
     }
 
     IEnumerator ClosingRoutine()

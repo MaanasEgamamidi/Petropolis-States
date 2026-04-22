@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// Attach to the "Park Zone" trigger collider in the World scene.
-/// - While inside (with a pet): applies continuous stat drift each frame (health/happiness up, energy/hunger down); bars follow <see cref="GlobalData"/>.
+/// - While inside (with a pet): applies continuous stat drift each frame (happiness up, energy/hunger down); <see cref="GlobalData.PetHealth"/> is derived and recomputed.
 /// - While inside: logs "Inside of park with [pet name]" (pet) or "Inside of park without a pet" every <see cref="logInterval"/>.
 /// - On exit: logs "Left park".
 /// </summary>
@@ -17,8 +17,6 @@ public class ParkZone : MonoBehaviour
     public float logInterval = 1f;
 
     [Header("Pet stats while in park (per real-time second, only if player has a pet)")]
-    [Tooltip("PetHealth change per second (positive = recover).")]
-    [SerializeField] float healthChangePerSecond = 1.5f;
     [Tooltip("PetHappiness change per second (positive = gain).")]
     [SerializeField] float happinessChangePerSecond = 4f;
     [Tooltip("PetEnergy lost per second (positive value; subtracted from energy).")]
@@ -67,10 +65,11 @@ public class ParkZone : MonoBehaviour
             return;
 
         float dt = Time.deltaTime;
-        GlobalData.PetHealth    = Mathf.Clamp(GlobalData.PetHealth    + healthChangePerSecond    * dt, 0f, 100f);
         GlobalData.PetHappiness = Mathf.Clamp(GlobalData.PetHappiness + happinessChangePerSecond * dt, 0f, 100f);
         GlobalData.PetEnergy    = Mathf.Clamp(GlobalData.PetEnergy    - energyDrainPerSecond     * dt, 0f, 100f);
         GlobalData.PetHunger    = Mathf.Clamp(GlobalData.PetHunger    - hungerDrainPerSecond    * dt, 0f, 100f);
+        // Health is derived from energy + hunger; never write PetHealth here or it fight PetNeedsSimulator.
+        GlobalData.RecomputeHealth();
     }
 
     void AccumulateParkGameHours()
