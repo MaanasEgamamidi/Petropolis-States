@@ -186,14 +186,60 @@ public static class ReportWriter
             }
 
             if (e.FromPlayer)
+            {
                 sb.Append($"    <div class=\"chat-line chat-you\"><strong>You</strong>: {Escape(e.Message)}</div>\n");
+            }
+            else if (e.Purchases != null && e.Purchases.Count > 0)
+            {
+                sb.Append("    <div class=\"chat-line chat-npc chat-transaction\">")
+                  .Append("<span class=\"chat-tx-badge\">Transaction</span>")
+                  .Append($"<strong>{Escape(partner)}</strong>: {Escape(e.Message)}")
+                  .Append(BuildTransactionTooltip(e.Purchases))
+                  .Append("</div>\n");
+            }
             else
+            {
                 sb.Append($"    <div class=\"chat-line chat-npc\"><strong>{Escape(partner)}</strong>: {Escape(e.Message)}</div>\n");
+            }
         }
 
         if (prevPartner != null)
             sb.Append("  </div>\n");
         sb.Append("</div>");
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Builds the hover tooltip listing every item that changed hands inside a single NPC reply,
+    /// with quantity, unit price, and line total — rendered next to the "Transaction" badge.
+    /// </summary>
+    static string BuildTransactionTooltip(IReadOnlyList<SessionChatLog.Purchase> purchases)
+    {
+        var sb = new StringBuilder();
+        sb.Append("      <div class=\"chat-tx-tooltip\">\n");
+        sb.Append("        <div class=\"tt-title\">Transaction</div>\n");
+        sb.Append("        <table class=\"tt-table\"><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Total</th></tr>\n");
+
+        float grandTotal = 0f;
+        for (int i = 0; i < purchases.Count; i++)
+        {
+            SessionChatLog.Purchase p = purchases[i];
+            float lineTotal = p.PricePerUnit * p.Quantity;
+            grandTotal += lineTotal;
+
+            sb.Append("          <tr>")
+              .Append("<td>").Append(Escape(p.ItemName)).Append("</td>")
+              .Append("<td>×").Append(p.Quantity.ToString(CultureInfo.InvariantCulture)).Append("</td>")
+              .Append("<td>$").Append(p.PricePerUnit.ToString("0.00", CultureInfo.InvariantCulture)).Append("</td>")
+              .Append("<td>$").Append(lineTotal.ToString("0.00", CultureInfo.InvariantCulture)).Append("</td>")
+              .Append("</tr>\n");
+        }
+
+        sb.Append("        </table>\n");
+        sb.Append("        <div class=\"tt-total\">Total paid: $")
+          .Append(grandTotal.ToString("0.00", CultureInfo.InvariantCulture))
+          .Append("</div>\n");
+        sb.Append("      </div>\n");
         return sb.ToString();
     }
 
@@ -472,6 +518,103 @@ public static class ReportWriter
   .chat-you {{ color: #333; }}
   .chat-npc {{ color: #333; }}
   .chat-line strong {{ font-weight: 700; }}
+  .chat-transaction {{
+    position: relative;
+    background: #eaf7ea;
+    border-left: 3px solid #3a9d4a;
+    padding: 5px 8px 5px 10px;
+    margin: 4px 0;
+    border-radius: 3px;
+    cursor: help;
+    white-space: normal;
+  }}
+  .chat-tx-badge {{
+    display: inline-block;
+    background: #3a9d4a;
+    color: #fff;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    line-height: 1.2;
+    margin-right: 6px;
+    vertical-align: middle;
+  }}
+  .chat-tx-tooltip {{
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 12px;
+    min-width: 260px;
+    max-width: 360px;
+    background: #2b2b2b;
+    color: #fff;
+    padding: 10px 12px 10px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    font-size: 0.88em;
+    line-height: 1.4;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    z-index: 20;
+  }}
+  .chat-tx-tooltip::after {{
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 24px;
+    border: 6px solid transparent;
+    border-top-color: #2b2b2b;
+  }}
+  .chat-transaction:hover .chat-tx-tooltip {{
+    opacity: 1;
+    transform: translateY(0);
+  }}
+  .chat-tx-tooltip .tt-title {{
+    font-weight: 700;
+    color: #7fd88a;
+    font-size: 0.9em;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }}
+  .chat-tx-tooltip .tt-table {{
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+    border: none;
+    margin: 0;
+  }}
+  .chat-tx-tooltip .tt-table th,
+  .chat-tx-tooltip .tt-table td {{
+    padding: 3px 8px 3px 0;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #fff;
+    background: transparent;
+    font-size: 0.95em;
+    text-align: left;
+    width: auto;
+  }}
+  .chat-tx-tooltip .tt-table tr:last-child td {{ border-bottom: none; }}
+  .chat-tx-tooltip .tt-table th {{
+    color: #aaa;
+    font-weight: 500;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }}
+  .chat-tx-tooltip .tt-total {{
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    font-weight: 700;
+    color: #7fd88a;
+  }}
   .chat-transcript-empty {{
     color: #666;
     font-size: 0.95em;

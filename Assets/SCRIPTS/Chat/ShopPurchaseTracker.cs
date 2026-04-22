@@ -141,6 +141,9 @@ public class ShopPurchaseTracker : MonoBehaviour
                 anyApplied = true;
                 int owned = GlobalData.GetItemQuantity(item);
                 summary.AppendLine($"  - {item} x{quantity} @ ${unitPrice:0.##} each (now own {owned})");
+                // Mark the NPC reply that just resolved into this sale so the session report
+                // can highlight the transaction inline in the chat transcript.
+                SessionChatLog.AttachPurchaseToLastNpcMessage(_chat.NpcName, item, quantity, unitPrice);
             }
             else
             {

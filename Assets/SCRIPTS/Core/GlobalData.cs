@@ -130,6 +130,42 @@ public class GlobalData : MonoBehaviour
     /// <summary>Fires after one unit of dog food (normal or enhanced) is consumed via F key or the inventory Use button. Args: food item name.</summary>
     public static event Action<string> OnPetFed;
 
+    // ─── Vet Visits ──────────────────────────────────────────────────────────
+    // Bookings offered by the hospital NPC. A successful negotiation (extracted by
+    // VetVisitTracker from the NPC's confirming reply) charges the agreed price and
+    // raises the pet's Health. Health is the average of Energy and Hunger — see
+    // TryUseItem / ApplyVetTreatment — so a vet visit lifts both underlying stats,
+    // which in turn makes the Health stat recompute higher.
+    public const string BasicCheckupVisitName  = "Basic Checkup";
+    public const string WellnessExamVisitName  = "Wellness Exam";
+    public const string FullTreatmentVisitName = "Full Treatment";
+
+    public const float BasicCheckupHealthBoost  = 15f;
+    public const float WellnessExamHealthBoost  = 30f;
+    public const float FullTreatmentHealthBoost = 60f;
+
+    /// <summary>Describes a single vet visit: its posted base price and the health percentage it restores.</summary>
+    public readonly struct VetVisit
+    {
+        public readonly float BasePrice;
+        public readonly float HealthBoost;
+        public VetVisit(float basePrice, float healthBoost) { BasePrice = basePrice; HealthBoost = healthBoost; }
+    }
+
+    /// <summary>
+    /// Authoritative catalogue of vet visits the hospital receptionist can book. Keys match the
+    /// names used in `NPC_Personalities/vet/vet_visits.md` and the `[PRICES]` block the NPC emits.
+    /// </summary>
+    public static readonly Dictionary<string, VetVisit> VetVisits = new Dictionary<string, VetVisit>
+    {
+        { BasicCheckupVisitName,  new VetVisit( 30f, BasicCheckupHealthBoost)  },
+        { WellnessExamVisitName,  new VetVisit( 60f, WellnessExamHealthBoost)  },
+        { FullTreatmentVisitName, new VetVisit(120f, FullTreatmentHealthBoost) },
+    };
+
+    /// <summary>Fires after a vet visit is successfully booked and applied. Args: visit name, price paid, health delta actually applied (after clamping).</summary>
+    public static event Action<string, float, float> OnVetVisitCompleted;
+
     /// <summary>
     /// Attempts to buy <paramref name="quantity"/> packs of <paramref name="itemName"/> at
     /// <paramref name="pricePerUnit"/> (price per pack). Deducts money and increases inventory
@@ -198,11 +234,45 @@ public class GlobalData : MonoBehaviour
 
         entry[InventoryQuantityIndex] = q - 1;
         ApplyItemEffect(effect);
-        PetHealth = (PetEnergy + PetHunger) * 0.5f;
+        RecomputeHealth();
 
         OnInventoryChanged?.Invoke();
         if (itemName == NormalDogFoodItemName || itemName == EnhancedDogFoodItemName)
             OnPetFed?.Invoke(itemName);
+        return true;
+    }
+
+    /// <summary>
+    /// Recomputes <see cref="PetHealth"/> as the average of <see cref="PetEnergy"/> and
+    /// <see cref="PetHunger"/>. Call whenever either underlying stat changes so Health stays in sync.
+    /// </summary>
+    public static void RecomputeHealth()
+    {
+        PetHealth = (PetEnergy + PetHunger) * 0.5f;
+    }
+
+    /// <summary>
+    /// Attempts to book <paramref name="visitName"/> at <paramref name="agreedPrice"/>. On success:
+    /// deducts money, raises both <see cref="PetEnergy"/> and <see cref="PetHunger"/> by the visit's
+    /// health boost (clamped to 100), recomputes <see cref="PetHealth"/>, and fires
+    /// <see cref="OnVetVisitCompleted"/> with the actual health delta applied. Returns false if the
+    /// visit name is unknown, the price is non-positive above the free case, or the player can't afford it.
+    /// </summary>
+    public static bool TryCompleteVetVisit(string visitName, float agreedPrice)
+    {
+        if (string.IsNullOrWhiteSpace(visitName) || agreedPrice < 0f) return false;
+        if (!VetVisits.TryGetValue(visitName, out VetVisit visit)) return false;
+        if (PlayerMoney < agreedPrice) return false;
+
+        float healthBefore = PetHealth;
+        PlayerMoney -= agreedPrice;
+
+        PetEnergy = Mathf.Min(100f, PetEnergy + visit.HealthBoost);
+        PetHunger = Mathf.Min(100f, PetHunger + visit.HealthBoost);
+        RecomputeHealth();
+
+        float healthDelta = PetHealth - healthBefore;
+        OnVetVisitCompleted?.Invoke(visitName, agreedPrice, healthDelta);
         return true;
     }
 
