@@ -1,0 +1,55 @@
+{
+  "version": 3,
+  "app": "codeflow",
+  "exported": "2026-04-23T00:00:00.000Z",
+  "paths": [
+    "SCRIPTS/Chat/ChatManager.cs",
+    "SCRIPTS/Chat/NpcOpenAiChatBridge.cs",
+    "SCRIPTS/Chat/OpenAiChatCompletionClient.cs",
+    "SCRIPTS/Core/GlobalData.cs",
+    "SCRIPTS/Core/SessionTracker.cs"
+  ],
+  "snippets": [
+    {
+      "id": 1,
+      "filePath": "SCRIPTS/Chat/ChatManager.cs",
+      "startLine": 9,
+      "endLine": 44,
+      "label": "1 · XML summaries + split UI layer",
+      "color": 0
+    },
+    {
+      "id": 2,
+      "filePath": "SCRIPTS/Chat/NpcOpenAiChatBridge.cs",
+      "startLine": 23,
+      "endLine": 49,
+      "label": "2 · Functions — bridge",
+      "color": 1
+    },
+    {
+      "id": 3,
+      "filePath": "SCRIPTS/Chat/OpenAiChatCompletionClient.cs",
+      "startLine": 16,
+      "endLine": 90,
+      "label": "3 · Structured data — JSON DTOs",
+      "color": 2
+    },
+    {
+      "id": 4,
+      "filePath": "SCRIPTS/Core/GlobalData.cs",
+      "startLine": 75,
+      "endLine": 94,
+      "label": "4 · Uniform convention — schema + names",
+      "color": 3
+    },
+    {
+      "id": 5,
+      "filePath": "SCRIPTS/Core/SessionTracker.cs",
+      "startLine": 13,
+      "endLine": 41,
+      "label": "5 · Session structs",
+      "color": 4
+    }
+  ],
+  "nextId": 6
+}
