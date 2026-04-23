@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/Scenes/World.unity
     guid: 076cb2f367ce37d4aa3ee4769e8307af
   - enabled: 1
+    path: Assets/Scenes/HelpQa.unity
+    guid: e1f2a3b4c5d6789012345678abcdef00
+  - enabled: 1
     path: Assets/Scenes/PetChoose.unity
     guid: fd0b6fb85d3d7cb4ebc8a88ec5888fa9
   - enabled: 1

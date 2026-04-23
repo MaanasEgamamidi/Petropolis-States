@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 #if ENABLE_INPUT_SYSTEM
@@ -36,7 +37,9 @@ public class WorldPauseController : MonoBehaviour
     [SerializeField] [Min(0.02f)] float quitFadeToClosingDuration = 0.85f;
 
     [Header("Help overlay")]
-    [SerializeField] string instructionsSceneName = "Instructions";
+    [Tooltip("Additively loaded from the pause menu Help button (interactive Q&A).")]
+    [FormerlySerializedAs("instructionsSceneName")]
+    [SerializeField] string helpOverlaySceneName = "HelpQa";
 
     static readonly string[] HudChildNamesUnderUi = { "MinimapCircle", "DayNightUI", "MoneyCounter" };
     static readonly string[] HudRootNames = { "Pet Statistics", "Notifications" };
@@ -477,21 +480,21 @@ public class WorldPauseController : MonoBehaviour
         if (EventSystem.current != null)
             EventSystem.current.SetSelectedGameObject(null);
 
-        InstructionsController.ReturnToPauseOnPlay = true;
+        HelpQaOverlayController.ReturnToPauseOnClose = true;
 
         SuspendWorldSceneSingletons();
 
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-        var op = SceneManager.LoadSceneAsync(instructionsSceneName, LoadSceneMode.Additive);
+        var op = SceneManager.LoadSceneAsync(helpOverlaySceneName, LoadSceneMode.Additive);
         if (op != null)
         {
             while (!op.isDone)
                 yield return null;
         }
 
-        // If the additively-loaded scene doesn't provide its own EventSystem or
+        // If the additively-loaded help scene doesn't provide its own EventSystem or
         // AudioListener, revive one from the world so we don't end up with zero.
         EnsureAtLeastOneActive(_suspendedEventSystems);
         EnsureAtLeastOneActive(_suspendedAudioListeners);
@@ -517,7 +520,7 @@ public class WorldPauseController : MonoBehaviour
 
     /// <summary>
     /// Disable every currently-active EventSystem and AudioListener in all loaded
-    /// scenes before additively loading Instructions, so the incoming scene's
+    /// scenes before additively loading the help overlay, so the incoming scene's
     /// copies become the sole active singletons. Avoids the "more than one"
     /// warnings Unity logs on OnEnable/Update when duplicates coexist.
     /// </summary>
@@ -561,7 +564,7 @@ public class WorldPauseController : MonoBehaviour
 
     void OnSceneUnloaded(Scene scene)
     {
-        if (!_helpOverlayActive || scene.name != instructionsSceneName)
+        if (!_helpOverlayActive || scene.name != helpOverlaySceneName)
             return;
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
         RestoreWorldSceneSingletons();

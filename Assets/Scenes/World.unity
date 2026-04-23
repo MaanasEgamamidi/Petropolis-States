@@ -18678,7 +18678,7 @@ MonoBehaviour:
   pauseCanvasSortOrder: 400
   closingSceneName: ClosingScene
   quitFadeToClosingDuration: 0.85
-  instructionsSceneName: Instructions
+  helpOverlaySceneName: HelpQa
 --- !u!114 &846814951
 MonoBehaviour:
   m_ObjectHideFlags: 0
