@@ -1,5 +1,9 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
 /// Controls the Instructions scene. Play button normally loads CharacterChoose,
@@ -19,6 +23,106 @@ public class InstructionsController : MonoBehaviour
 
     [Tooltip("Optional full-screen black image for fade transition. Must have CanvasGroup.")]
     [SerializeField] GameObject fadeToBlackPanel;
+
+    [Tooltip("Must match <see cref=\"WorldPauseController.helpOverlaySceneName\"/> and Build Settings.")]
+    [SerializeField] string helpQaSceneName = "HelpQa";
+
+    [Tooltip("Pixels to offset the \"Ask the guide\" button above the Play button (created at runtime).")]
+    [SerializeField] float interactiveHelpButtonOffsetY = 150f;
+
+    bool _helpQaLoadInProgress;
+
+    void OnDisable()
+    {
+        SceneManager.sceneUnloaded -= OnHelpQaSceneUnloaded;
+    }
+
+    void Start()
+    {
+        TryAddInteractiveHelpButton();
+    }
+
+    void TryAddInteractiveHelpButton()
+    {
+        var canvas = GetComponent<Canvas>();
+        if (canvas == null)
+            return;
+        if (canvas.transform.Find("HelpQa") != null)
+            return;
+
+        var playTf = canvas.transform.Find("Play");
+        if (playTf == null)
+            return;
+
+        var helpGo = Instantiate(playTf.gameObject, playTf.parent);
+        helpGo.name = "HelpQa";
+        var rt = helpGo.GetComponent<RectTransform>();
+        var playRt = playTf.GetComponent<RectTransform>();
+        if (rt != null && playRt != null)
+        {
+            rt.sizeDelta = playRt.sizeDelta;
+            var pos = playRt.anchoredPosition;
+            pos.y += interactiveHelpButtonOffsetY;
+            rt.anchoredPosition = pos;
+        }
+
+        helpGo.transform.SetSiblingIndex(playTf.GetSiblingIndex() + 1);
+
+        var helpBtn = helpGo.GetComponent<Button>();
+        if (helpBtn != null)
+        {
+            helpBtn.onClick.RemoveAllListeners();
+            helpBtn.onClick.AddListener(OpenInteractiveHelp);
+        }
+
+        var tmp = helpGo.GetComponentInChildren<TMP_Text>();
+        if (tmp != null)
+            tmp.text = "Ask the guide";
+    }
+
+    /// <summary>
+    /// Opens the interactive Help Q&amp;A additively on top of this scene (main menu → How to play).
+    /// </summary>
+    public void OpenInteractiveHelp()
+    {
+        if (_helpQaLoadInProgress)
+            return;
+        StartCoroutine(OpenInteractiveHelpRoutine());
+    }
+
+    IEnumerator OpenInteractiveHelpRoutine()
+    {
+        _helpQaLoadInProgress = true;
+
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
+
+        HelpQaOverlayController.ReturnToPauseOnClose = false;
+        HelpQaOverlayLoadUtility.SuspendEventSystemsAndAudioListeners();
+
+        SceneManager.sceneUnloaded -= OnHelpQaSceneUnloaded;
+        SceneManager.sceneUnloaded += OnHelpQaSceneUnloaded;
+
+        var op = SceneManager.LoadSceneAsync(helpQaSceneName, LoadSceneMode.Additive);
+        if (op != null)
+        {
+            while (!op.isDone)
+                yield return null;
+        }
+
+        HelpQaOverlayLoadUtility.EnsureAtLeastOneActiveEventSystem();
+        HelpQaOverlayLoadUtility.EnsureAtLeastOneActiveAudioListener();
+
+        _helpQaLoadInProgress = false;
+    }
+
+    void OnHelpQaSceneUnloaded(Scene scene)
+    {
+        if (scene.name != helpQaSceneName)
+            return;
+        SceneManager.sceneUnloaded -= OnHelpQaSceneUnloaded;
+        HelpQaOverlayLoadUtility.RestoreSuspendedSingletons();
+    }
 
     /// <summary>
     /// Called by the Play button. Loads CharacterChoose scene, unless this Instructions

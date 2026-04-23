@@ -388,11 +388,12 @@ public sealed class ControllerVirtualCursor : MonoBehaviour
                                  Mouse.current != null;
         bool useGamepad = pad != null && sceneWantsCursor;
 
-        // Inventory and Teleport have no first-selected button to focus, so gating the sprite behind
-        // "first stick motion" leaves the player unable to interact at all. Show the cursor immediately
-        // for those overlays; the idle-hide timer still kicks in after no activity.
+        // Same as inventory/teleport: the pause menu has sliders and fields that need a pointer
+        // without forcing an extra stick wiggle to reveal the gamepad cursor.
         bool worldOverlayWantsImmediateCursor = SceneManager.GetActiveScene().name == "World"
-            && (InventoryPanelController.IsOpen || TeleportMenuController.IsOpen);
+            && (WorldPauseController.IsPaused
+                || InventoryPanelController.IsOpen
+                || TeleportMenuController.IsOpen);
 
         int menuCtx = BuildMenuCursorContextId();
         if (menuCtx != _menuCursorContextId)

@@ -35,6 +35,6 @@ This document is the **system context** for the **Pause → Help** chat. The Cit
 ## Help channels (for the player)
 
 - **Pause → Help**: this interactive Q&A (you).
-- **Main menu → How to play**: the **Instructions** screen (static), separate from this chat.
+- **Main menu → How to play**: the **Instructions** screen includes an **Ask the guide** button that opens the same interactive Q&A on top of that screen.
 
 This file is maintained as the **source of truth** for Help answers; when design changes, update it here so the guide stays accurate.

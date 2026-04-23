@@ -156,6 +156,41 @@ public static class PauseMenuSettingsHelper
         lengthOfDayInput.caretPosition = Mathf.Min(caret, filtered.Length);
     }
 
+    /// <summary>Controller-friendly step for <c>LengthOfDayInput</c> (D-pad / bumpers) without editing text directly.</summary>
+    public static void NudgeLengthOfDayMinutes(Transform root, int delta)
+    {
+        if (root == null || delta == 0)
+            return;
+        TMP_InputField lengthOfDayInput = null;
+        foreach (var f in root.GetComponentsInChildren<TMP_InputField>(true))
+        {
+            if (f != null && f.gameObject.name == "LengthOfDayInput")
+            {
+                lengthOfDayInput = f;
+                break;
+            }
+        }
+
+        if (lengthOfDayInput == null)
+            return;
+
+        int current = 0;
+        if (string.IsNullOrEmpty(lengthOfDayInput.text?.Trim()))
+        {
+            if (!int.TryParse(DayNightSettings.GetMenuDisplayMinutes(), out current))
+                current = Mathf.RoundToInt(DayNightSettings.DefaultMinutes);
+        }
+        else
+        {
+            if (!int.TryParse(lengthOfDayInput.text.Trim(), out current))
+                current = Mathf.RoundToInt(DayNightSettings.GetFullCycleMinutes(DayNightSettings.DefaultMinutes));
+        }
+
+        int next = Mathf.Clamp(current + delta, (int)DayNightSettings.MinMinutes, (int)DayNightSettings.MaxMinutes);
+        DayNightSettings.SetFullCycleMinutes(next);
+        lengthOfDayInput.SetTextWithoutNotify(next.ToString());
+    }
+
     static void OnLengthOfDayEndEdit(TMP_InputField lengthOfDayInput, string text)
     {
         if (lengthOfDayInput == null)

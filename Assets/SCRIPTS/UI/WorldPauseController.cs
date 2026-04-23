@@ -45,8 +45,6 @@ public class WorldPauseController : MonoBehaviour
     static readonly string[] HudRootNames = { "Pet Statistics", "Notifications" };
 
     readonly List<CanvasGroup> _hudGroups = new();
-    readonly List<EventSystem> _suspendedEventSystems = new();
-    readonly List<AudioListener> _suspendedAudioListeners = new();
     Canvas _pauseCanvas;
     CanvasGroup _pauseGroup;
     bool _paused;
@@ -302,11 +300,54 @@ public class WorldPauseController : MonoBehaviour
             selected = es.currentSelectedGameObject;
         }
 
+        if (selected == null)
+            return;
+
+        var pad = GameplayInput.GetUsableGamepad();
+        const float dpadSliderStep = 0.05f;
+        const float rightStickScale = 2.2f;
+
+        // Sliders: D-pad left/right and right stick adjust the value. Horizontal "move" would leave the
+        // control without ever changing the track (A only fires Button — Sliders are not buttons).
+        var slider = selected.GetComponent<Slider>();
+        if (slider != null && slider.interactable)
+        {
+            if (pad != null)
+            {
+                if (pad.dpad.left.wasPressedThisFrame)
+                    slider.value = Mathf.Clamp01(slider.value - dpadSliderStep);
+                else if (pad.dpad.right.wasPressedThisFrame)
+                    slider.value = Mathf.Clamp01(slider.value + dpadSliderStep);
+
+                float rx = pad.rightStick.ReadValue().x;
+                if (Mathf.Abs(rx) > 0.12f)
+                    slider.value = Mathf.Clamp01(slider.value + rx * rightStickScale * Time.unscaledDeltaTime);
+            }
+        }
+
+        // Length of day: D-pad ±1, triggers ±5 (Loans and other world listeners skip while paused).
+        if (selected.name == "LengthOfDayInput" && pauseMenuRoot != null && pad != null)
+        {
+            if (pad.dpad.left.wasPressedThisFrame)
+                PauseMenuSettingsHelper.NudgeLengthOfDayMinutes(pauseMenuRoot.transform, -1);
+            else if (pad.dpad.right.wasPressedThisFrame)
+                PauseMenuSettingsHelper.NudgeLengthOfDayMinutes(pauseMenuRoot.transform, 1);
+            if (pad.leftTrigger.wasPressedThisFrame)
+                PauseMenuSettingsHelper.NudgeLengthOfDayMinutes(pauseMenuRoot.transform, -5);
+            if (pad.rightTrigger.wasPressedThisFrame)
+                PauseMenuSettingsHelper.NudgeLengthOfDayMinutes(pauseMenuRoot.transform, 5);
+        }
+
         Vector2Int step = GameplayInput.GamepadNavigateStepThisFrame();
+        if (slider != null)
+            step.x = 0;
+        else if (selected.name == "LengthOfDayInput")
+            step.x = 0;
+
         // Skip if the UI input module already moved the selection this frame in response to the same input —
         // otherwise the D-pad tap would step twice (once from the module, once from here).
         bool uiModuleAlreadyMovedSelection = selected != _prevSelectedForNavDedupe && _prevSelectedForNavDedupe != null;
-        if (step.sqrMagnitude > 0 && selected != null && !uiModuleAlreadyMovedSelection)
+        if (step.sqrMagnitude > 0 && !uiModuleAlreadyMovedSelection)
         {
             Selectable sel = selected.GetComponent<Selectable>();
             Selectable next = null;
@@ -327,15 +368,26 @@ public class WorldPauseController : MonoBehaviour
 
         _prevSelectedForNavDedupe = selected;
 
-        // A (south) submit: only when focused on a plain button. Sliders/dropdowns/input fields either have
-        // their own submit semantics (e.g. opening the dropdown panel) that would fight this, or are driven
-        // through the virtual-cursor pointer click path instead.
-        if (GameplayInput.GamepadSubmitPressedThisFrame() && selected != null && !IsTypingInUiInput())
+        if (!GameplayInput.GamepadSubmitPressedThisFrame() || selected == null)
+            return;
+
+        if (IsTypingInUiInput())
         {
-            var btn = selected.GetComponent<Button>();
-            if (btn != null && btn.interactable && btn.IsActive())
-                btn.onClick.Invoke();
+            // Keep submit from firing a mis-focused button; LengthOfDay and sliders use D-pad / sticks above.
+            return;
         }
+
+        var drop = selected.GetComponent<TMP_Dropdown>();
+        if (drop != null)
+        {
+            if (!drop.IsExpanded)
+                drop.Show();
+            return;
+        }
+
+        var btn = selected.GetComponent<Button>();
+        if (btn != null && btn.interactable && btn.IsActive())
+            btn.onClick.Invoke();
     }
 #endif
 
@@ -496,26 +548,10 @@ public class WorldPauseController : MonoBehaviour
 
         // If the additively-loaded help scene doesn't provide its own EventSystem or
         // AudioListener, revive one from the world so we don't end up with zero.
-        EnsureAtLeastOneActive(_suspendedEventSystems);
-        EnsureAtLeastOneActive(_suspendedAudioListeners);
+        HelpQaOverlayLoadUtility.EnsureAtLeastOneActiveEventSystem();
+        HelpQaOverlayLoadUtility.EnsureAtLeastOneActiveAudioListener();
 
         _busy = false;
-    }
-
-    static void EnsureAtLeastOneActive<T>(List<T> fallback) where T : Behaviour
-    {
-        foreach (var comp in Object.FindObjectsByType<T>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
-        {
-            if (comp != null && comp.enabled)
-                return;
-        }
-        foreach (var comp in fallback)
-        {
-            if (comp == null)
-                continue;
-            comp.enabled = true;
-            return;
-        }
     }
 
     /// <summary>
@@ -526,40 +562,12 @@ public class WorldPauseController : MonoBehaviour
     /// </summary>
     void SuspendWorldSceneSingletons()
     {
-        _suspendedEventSystems.Clear();
-        foreach (var es in Object.FindObjectsByType<EventSystem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
-        {
-            if (es == null || !es.enabled)
-                continue;
-            _suspendedEventSystems.Add(es);
-            es.enabled = false;
-        }
-
-        _suspendedAudioListeners.Clear();
-        foreach (var al in Object.FindObjectsByType<AudioListener>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
-        {
-            if (al == null || !al.enabled)
-                continue;
-            _suspendedAudioListeners.Add(al);
-            al.enabled = false;
-        }
+        HelpQaOverlayLoadUtility.SuspendEventSystemsAndAudioListeners();
     }
 
     void RestoreWorldSceneSingletons()
     {
-        foreach (var es in _suspendedEventSystems)
-        {
-            if (es != null)
-                es.enabled = true;
-        }
-        _suspendedEventSystems.Clear();
-
-        foreach (var al in _suspendedAudioListeners)
-        {
-            if (al != null)
-                al.enabled = true;
-        }
-        _suspendedAudioListeners.Clear();
+        HelpQaOverlayLoadUtility.RestoreSuspendedSingletons();
     }
 
     void OnSceneUnloaded(Scene scene)
